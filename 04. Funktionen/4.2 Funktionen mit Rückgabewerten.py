@@ -53,7 +53,7 @@ def powers(number):
     square = number * number
     third = number * number * number
 
-    return quadrat, dritte_potenz  # Gibt beide Werte als Tupel zurück
+    return square, third  # Gibt beide Werte als Tupel zurück
 
 # Wir können die Rückgabewerte direkt in zwei Variablen speichern:
 result1, result2 = powers(4)

@@ -60,7 +60,7 @@ account.deposit(50)  # Ausgabe: "50 wurde eingezahlt. Neuer Kontostand: 150"
 
 # Beispiel: Getter und Setter für das private Attribut `__balance`
 
-class Bankkonto:
+class BankAccount:
     def __init__(self, owner, start_balance):
         self.owner = owner
         self.__balance = start_balance  # Privates Attribut
@@ -78,9 +78,9 @@ class Bankkonto:
             print("Der Betrag muss positiv sein.")
 
 
-account = Account("Anna", 200)
+account = BankAccount("Anna", 200)
 print("Aktueller Kontostand:", account.get_balance())  # Ausgabe: "Aktueller Kontostand: 200"
-konto.set_balance(300)  # Ausgabe: "Neuer Kontostand: 300"
+account.set_balance(300)  # Ausgabe: "Neuer Kontostand: 300"
 
 
 
