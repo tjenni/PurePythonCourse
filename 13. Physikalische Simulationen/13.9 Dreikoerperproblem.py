@@ -1,6 +1,6 @@
 #              ____________________________________
 #       ______|                                    |_____
-#       \     |     13.5 DAS DREIKÖRPERPROBLEM     |    /
+#       \     |     13.9 DAS DREIKÖRPERPROBLEM     |    /
 #        )    |____________________________________|   (
 #       /________)                             (________\      11.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
@@ -148,7 +148,7 @@ class World:
             for i, body in enumerate(self.bodies):
                 body.update(self.positions[i], self.velocities[i])
                 positions[i].append(body.position.copy())
-                
+            
             time_elapsed += dt
             
         return [np.array(pos) for pos in positions]

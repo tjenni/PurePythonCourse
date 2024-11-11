@@ -1,7 +1,7 @@
-#              _______________________________________________
-#       ______|                                               |_____
-#       \     |         13.2 DAS EULER-CROMER-VERFAHREN       |    /
-#        )    |_______________________________________________|   (
+#              ______________________________________________
+#       ______|                                              |_____
+#       \     |        13.2 DAS EULER-CROMER-VERFAHREN       |    /
+#        )    |______________________________________________|   (
 #       /________)                                       (________\      11.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Das Euler-Cromer-Verfahren ist eine Abwandlung des Euler-Verfahrens. 

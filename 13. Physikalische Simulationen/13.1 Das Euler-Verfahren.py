@@ -1,16 +1,14 @@
-#              _____________________________
-#       ______|                             |_____
-#       \     |  13.1 DAS EULER-VERFAHREN   |    /
-#        )    |_____________________________|   (
-#       /________)                      (________\      11.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              __________________________________
+#       ______|                                  |_____
+#       \     |     13.1 DAS EULER-VERFAHREN     |    /
+#        )    |__________________________________|   (
+#       /________)                           (________\      11.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Physikalische Simulationen sind eine wichtige Methode, um reale Phänomene in 
 # der Wissenschaft und Technik nachzustellen. Mit Python können wir einfache 
 # Simulationen aufbauen, um Bewegungen, Kräfte und Energie zu modellieren.
 # Dieses Kapitel erklärt die grundlegenden Schritte für Simulationen und zeigt, 
 # wie das Euler-Verfahren für den freien Fall angewendet wird.
-
-# Quelle: https://www.physics.umd.edu/hep/drew/numerical_integration/index.html
 
 
 # _______________________________________

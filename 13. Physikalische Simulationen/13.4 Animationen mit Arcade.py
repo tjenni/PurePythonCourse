@@ -1,12 +1,13 @@
-#              ________________________________________________
-#       ______|                                                |_____
-#       \     |         13.4 ANIMATIONEN MIT ARCADE            |    /
-#        )    |________________________________________________|   (
-#       /________)                                         (________\      7.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ________________________________________
+#       ______|                                        |_____
+#       \     |      13.4 ANIMATIONEN MIT ARCADE       |    /
+#        )    |________________________________________|   (
+#       /________)                                 (________\      11.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
 # In diesem Kapitel erweitern wir die physikalischen Simulationen aus dem
 # vorherigen Abschnitt und erstellen Animationen mit der Arcade-Bibliothek.
+# Der Einfachheit halber, gehen wir wieder zurück zum Euler-Cromer-Verfahren. 
 # Arcade eignet sich ideal zur grafischen Darstellung von Objekten und 
 # zur Implementierung interaktiver Animationen.
 
@@ -47,31 +48,90 @@ import numpy as np
 # physikalischen Körper. 
 
 class Body:
-    def __init__(self, mass, position, velocity, radius = 1.0, color=arcade.color.BLUE):
-        self.mass = mass  # Masse in kg
-        
-        self.position = np.array(position, dtype=float)  # in m
-        self.velocity = np.array(velocity, dtype=float)  # in m/s
-        self.acceleration = np.array([0.0, 0.0])         # in m/s^2
-        self.force = np.array([0.0, 0.0])                # in N
-        
+    def __init__(self, position=[0.0, 0.0], velocity=[0.0, 0.0], mass=1.0, radius = 1.0, color=arcade.color.BLUE):
+        self.position = position.copy()
+        self.velocity = velocity.copy()
+        self.mass = mass
+
         self.color = color
-        self.radius = radius                             # in m
-
-
-    def clear_force(self):
-        self.force = np.array([0.0, 0.0])
-
-
-    def add_force(self, force):
-        self.force += np.array(force, dtype=float)
-
-
-    def update(self, dt):
-        self.acceleration = self.force / self.mass
-        self.velocity += self.acceleration * dt
-        self.position += self.velocity * dt
+        self.radius = radius  
         
+    def update(self, position, velocity):
+        self.position = position
+        self.velocity = velocity
+
+
+
+
+
+class World:
+    
+    # Erdbeschleunigung
+    g = 9.81  # m/s^2
+    
+    def __init__(self):
+        self.positions = []
+        self.velocities = []
+        self.masses = []
+        
+        self.bodies = []
+        
+        self.time = 0
+        
+    
+    # Hinzufügen eines Körpers zur Welt
+    def add_body(self, body):
+        self.bodies.append(body)
+        
+        # Kopiere die Daten des Körpers in die Weltarrays
+        self.positions.append(body.position.copy())
+        self.velocities.append(body.velocity.copy())
+        self.masses.append(body.mass)
+        
+
+    # Berechne die Gravitationskraft zwischen zwei Massen.
+    def gravity(self):
+        return np.array([0.0, -World.g])
+
+    
+    # Berechne die Kräfte, welche auf die Körper wirken.
+    def calculate_forces(self, positions, velocities, masses):
+        forces = np.zeros_like(positions)
+
+        for i in range(len(masses)):
+            # Erdanziehungskraft
+            forces[i] = masses[i] * self.gravity()
+
+            # füge hier weitere Kräfte hinzu
+            # ...
+
+        return forces
+    
+    
+    # Euler-Cromer-Update zur Berechnung des nächsten Zeitschritts
+    def update_ec(self, dt):
+        
+        # Kräfte beim Start des Zeitschritts berechnen
+        forces = self.calculate_forces(self.positions, self.velocities, self.masses)
+        
+        self.velocities += dt * forces / self.masses
+        self.positions += dt * self.velocities
+        
+        for i, body in enumerate(self.bodies):
+            body.update(self.positions[i], self.velocities[i])
+        
+        self.time += dt
+        
+
+    def init_simulation(self):
+        # Kopiere die Körperdaten in numpy-Arrays für die Berechnung
+        self.positions = np.array(self.positions)
+        self.velocities = np.array(self.velocities)
+        self.masses = np.array(self.masses)
+        
+        self.time = 0
+
+
 
 
 # Diese Klasse wird die Animation steuern und das Fenster 
@@ -88,21 +148,19 @@ class AnimationWindow(arcade.Window):
         self.scale = scale                       
         
         # Der Ursprung des Koordinatensystems ist in der Mitte des Fensters
-        self.center = [width // 2, height // 2]  
-        
-        # Zeit in s
-        self.time = 0         
+        self.center = [width // 2, height // 2]      
         
         # Liste für die Berechnung des gleitendenden Durchschnitt für FPS
         self.fps_history = [0] * 60    
         
-        # Initialisiere ein Body-Objekt
-        mass = 1.0          # Masse in kg
-        initial_position = [0, 5]   # Position in m
-        initial_velocity = [1, 0]   # Geschwindigkeit in m/s
-        radius = 0.5        # Radius in m
+        # initialisiere das World-Objekt
+        self.world = World()
+        
+        # erstelle ein Body-Objekt
+        body = Body([0.0, 5.0], [1.0, 0.0], mass=1.0, radius=0.5)
+        self.world.add_body(body)
 
-        self.body = Body(mass, initial_position, initial_velocity, radius)
+        self.world.init_simulation()
         
     
     # Umrechnung von Meter zu Pixel
@@ -123,13 +181,13 @@ class AnimationWindow(arcade.Window):
         x3, y3 = self.meter_to_pixel(4.5,-4.5)
         x4, y4 = self.meter_to_pixel(4.5,5)
         
-        arcade.draw_line(x1, y1, x2, y2, arcade.color.BLACK)
-        arcade.draw_line(x2, y2, x3, y3, arcade.color.BLACK)
-        arcade.draw_line(x3, y3, x4, y4, arcade.color.BLACK)
+        arcade.draw_line(x1, y1, x2, y2, arcade.color.BLACK, 2)
+        arcade.draw_line(x2, y2, x3, y3, arcade.color.BLACK, 2)
+        arcade.draw_line(x3, y3, x4, y4, arcade.color.BLACK, 2)
         
 
         # zeige die Zeit und die FPS an
-        time = round(self.time, 1)
+        time = round(self.world.time, 1)
         fps = round( sum(self.fps_history) / len(self.fps_history), 1)
         
         text = f"t = {time} s / FPS = {fps}"
@@ -138,53 +196,44 @@ class AnimationWindow(arcade.Window):
         arcade.draw_text(text , x5, y5, arcade.color.BLACK)
         
 
-        # zeichne den Ball
-        x_pixel, y_pixel = self.meter_to_pixel(self.body.position[0], self.body.position[1])
-        r_pixel = self.body.radius * self.scale
+        # zeichne die Bälle
+        for body in self.world.bodies:
+            x_pixel, y_pixel = self.meter_to_pixel(body.position[0], body.position[1])
+            r_pixel = body.radius * self.scale
         
-        arcade.draw_circle_filled(x_pixel, y_pixel, r_pixel, self.body.color)
+            arcade.draw_circle_filled(x_pixel, y_pixel, r_pixel, body.color)
     
 
     # Berechnung des nächsten Zeitschritts
     def on_update(self, dt):
-
-        self.time += dt         # Zeit erhöhen
         
         # FPS am Ende der Liste hinzufügen und am Anfang entfernen.
         # Das erlaubt die Berechnung eines gleitenden Durchschnitts.
         self.fps_history.append(1.0 / dt)               
         self.fps_history.pop(0)
         
-
-        # Berechne Kräfte
-        self.body.clear_force()
+        # Berechne einen Euler-Cromer-Schritt
+        self.world.update_ec(dt)
         
-        # Schwerkraft in N
-        F_G = np.array([0.0, -self.body.mass * 9.81]) 
-        self.body.add_force(F_G)
-        
-
-        # Boden
-        if self.body.position[1]  < -4:
-            self.body.position[1] = -4
-            self.body.velocity[1] = -self.body.velocity[1]
+        # check boundary-conditions for all bodies
+        for i, body in enumerate(self.world.bodies):
             
+            # Boden
+            if self.world.positions[i][1]  < -4:
+                self.world.positions[i][1] = -4
+                self.world.velocities[i][1] *= -1
+                
+            # Wand rechts 
+            if self.world.positions[i][0] > 4:
+                self.world.positions[i][0] = 4
+                self.world.velocities[i][0] *= -1
 
-        # Wand rechts 
-        if self.body.position[0] > 4:
-            self.body.position[0] = 4
-            self.body.velocity[0] = -self.body.velocity[0]
-
-        # Wand links 
-        elif self.body.position[0] < -4:
-            self.body.position[0] = -4
-            self.body.velocity[0] = -self.body.velocity[0]
+            # Wand links 
+            elif self.world.positions[i][0] < -4:
+                self.world.positions[i][0] = -4
+                self.world.velocities[i][0] *= -1
+                
         
-        # Euler-Cromer-Zeitschritt 
-        self.body.update(dt)
-
-
-
 if __name__ == "__main__":
     # Fenstergröße und Skalierung anpassen
     window = AnimationWindow(800, 600, "Physikalische Animation", scale=50)
@@ -306,6 +355,7 @@ if __name__ == "__main__":
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 
 
