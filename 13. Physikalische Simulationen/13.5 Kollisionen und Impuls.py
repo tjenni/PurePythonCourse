@@ -44,7 +44,7 @@ import numpy as np
 # sorgt für das Fenster und die Simulation der Kollisionen.
 
 class Body:
-    def __init__(self, mass, position, velocity, radius=1.0, color=arcade.color.BLUE):
+    def __init__(self, position, velocity, mass=1.0, radius=1.0, color=arcade.color.BLUE):
         self.mass = mass
         self.position = np.array(position, dtype=float)
         self.velocity = np.array(velocity, dtype=float)
@@ -54,7 +54,7 @@ class Body:
     def clear_force(self):
         self.force = np.array([0.0, 0.0])
 
-    def apply_force(self, force):
+    def add_force(self, force):
         self.force += np.array(force, dtype=float)
 
     def update(self, dt):
@@ -101,11 +101,6 @@ class Interaction:
 
 
 
-
-
-
-
-
 class AnimationWindow(arcade.Window):
     def __init__(self, width, height, title, scale):
         super().__init__(width, height, title)
@@ -117,11 +112,17 @@ class AnimationWindow(arcade.Window):
         self.bodies = []
         self.interactions = []
 
+        self.time = 0  
+
+        # Liste für die Berechnung des gleitendenden Durchschnitt für FPS
+        self.fps_history = [0] * 60  
+
+
         # Erstellen von zwei sich bewegenden Kugeln für die Kollision
-        ball1 = Body(1.0, [-2, 0.1], [2, 0], radius=0.5, color=arcade.color.RED)
+        ball1 = Body([-2, 0.1], [2, 0], mass=1.0, radius=0.5, color=arcade.color.RED)
         self.bodies.append(ball1)
         
-        ball2 = Body(1.0, [2, 0], [-2, 0], radius=0.5, color=arcade.color.BLUE)
+        ball2 = Body([2, 0], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
         self.bodies.append(ball2)
 
 
@@ -134,8 +135,28 @@ class AnimationWindow(arcade.Window):
         pixel_y = self.center[1] + y * self.scale
         return pixel_x, pixel_y
 
+
     def on_draw(self):
         arcade.start_render()
+
+        # zeichne Box
+        x1, y1 = self.meter_to_pixel(-2.5,-2.5)
+        x2, y2 = self.meter_to_pixel(2.5,2.5)
+        
+        w = (x2-x1)
+        h = (y2-y1)
+
+        arcade.draw_rectangle_outline(x2-w//2, y2-h//2, w, h, arcade.color.BLACK, 2)
+
+
+        # zeige die Zeit und die FPS an
+        time = round(self.time, 1)
+        fps = round( sum(self.fps_history) / len(self.fps_history), 1)
+        
+        text = f"t = {time} s / FPS = {fps}"
+        
+        x3, y3 = self.meter_to_pixel(-2.6,2.6)
+        arcade.draw_text(text , x3, y3, arcade.color.BLACK)
 
         # Zeichnen der Objekte
         for body in self.bodies:
@@ -145,7 +166,12 @@ class AnimationWindow(arcade.Window):
             arcade.draw_circle_filled(x, y, radius, body.color)
 
 
-    def on_update(self, delta_time):
+    def on_update(self, dt):
+
+        # Berechnung eines gleitenden Durchschnitts der FPS.
+        self.fps_history.append(1.0 / dt)               
+        self.fps_history.pop(0)
+
         # Bewegung der Objekte
         for body in self.bodies:
             body.clear_force()
@@ -177,7 +203,10 @@ class AnimationWindow(arcade.Window):
 
         # Aktualisiere die Position der Kugeln
         for body in self.bodies:
-            body.update(delta_time)
+            body.update(dt)
+
+        # Zeit erhöhen
+        self.time += dt  
 
 
 if __name__ == "__main__":
@@ -257,4 +286,6 @@ if __name__ == "__main__":
 # |___|_|\_|___/|___|
 #                
 # -=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=-=x=-=x=-=x=-=-=
+
+
 

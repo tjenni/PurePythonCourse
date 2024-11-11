@@ -117,6 +117,11 @@ class AnimationWindow(arcade.Window):
         
         self.bodies = []
         self.interactions = []
+
+        self.time = 0
+
+        # Liste für die Berechnung des gleitendenden Durchschnitt für FPS
+        self.fps_history = [0] * 60  
         
         
         for i in range(10):
@@ -142,6 +147,25 @@ class AnimationWindow(arcade.Window):
     def on_draw(self):
         arcade.start_render()
 
+        # zeichne Box
+        x1, y1 = self.meter_to_pixel(-2.1,-2.1)
+        x2, y2 = self.meter_to_pixel(2.1,2.1)
+        
+        w = (x2-x1)
+        h = (y2-y1)
+
+        arcade.draw_rectangle_outline(x2-w//2, y2-h//2, w, h, arcade.color.BLACK, 2)
+
+
+        # zeige die Zeit und die FPS an
+        time = round(self.time, 1)
+        fps = round( sum(self.fps_history) / len(self.fps_history), 1)
+        
+        text = f"t = {time} s / FPS = {fps}"
+        
+        x3, y3 = self.meter_to_pixel(-2.6,2.6)
+        arcade.draw_text(text , x3, y3, arcade.color.BLACK)
+
         # Zeichnen der Objekte
         for body in self.bodies:
             x, y = self.meter_to_pixel(body.position[0], body.position[1])
@@ -150,7 +174,12 @@ class AnimationWindow(arcade.Window):
             arcade.draw_circle_filled(x, y, radius, body.color)
 
 
-    def on_update(self, delta_time):
+    def on_update(self, dt):
+
+        # Berechnung eines gleitenden Durchschnitts der FPS.
+        self.fps_history.append(1.0 / dt)               
+        self.fps_history.pop(0)
+
         # Bewegung der Objekte
         for body in self.bodies:
             body.clear_force()
@@ -182,7 +211,10 @@ class AnimationWindow(arcade.Window):
 
         # Aktualisiere die Position der Kugeln
         for body in self.bodies:
-            body.update(delta_time)
+            body.update(dt)
+
+        # Zeit erhöhen
+        self.time += dt  
 
 
 if __name__ == "__main__":

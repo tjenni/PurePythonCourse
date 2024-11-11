@@ -38,12 +38,11 @@ import matplotlib.pyplot as plt
 # und ermöglicht es, Kräfte zu berechnen und anzuwenden.
 
 class Body:
-    def __init__(self, mass, position, velocity):
-        self.mass = mass                                 # in kg
+    def __init__(self, position, velocity, mass):                                
         self.position = np.array(position, dtype=float)  # in m
         self.velocity = np.array(velocity, dtype=float)  # in m/s
-        self.acceleration = np.array([0.0, 0.0])         # in m/s^2 
         self.force = np.array([0.0, 0.0])                # in N
+        self.mass = mass                                 # in kg
 
     # Setze die Kraft auf null
     def clear_force(self):
@@ -55,12 +54,12 @@ class Body:
 
     # Berechnen einen Zeitschritt mit dem Euler-Cromer-Verfahren    
     def update(self, dt):
-        self.acceleration = self.force / self.mass
-        self.velocity += self.acceleration * dt
+        acceleration = self.force / self.mass
+        self.velocity += acceleration * dt
         self.position += self.velocity * dt
 
 
-
+    
 
 # ________________________________
 #                                /
@@ -87,7 +86,7 @@ times = np.arange(0, t_end, dt)
 positions_1 = []       
 
 # erstelle ein `Body`-Objekt
-body = Body(mass, initial_position, initial_velocity)
+body = Body(initial_position, initial_velocity, mass)
 
 
 # Simulation des freien Falls
