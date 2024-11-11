@@ -1,8 +1,8 @@
-#              _________________________________________________
-#       ______|                                                 |_____
-#       \     |  13.1 EINFÜHRUNG IN PHYSIKALISCHE SIMULATIONEN  |    /
-#        )    |_________________________________________________|   (
-#       /________)                                          (________\      7.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              _____________________________
+#       ______|                             |_____
+#       \     |  13.1 DAS EULER-VERFAHREN   |    /
+#        )    |_____________________________|   (
+#       /________)                      (________\      11.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Physikalische Simulationen sind eine wichtige Methode, um reale Phänomene in 
 # der Wissenschaft und Technik nachzustellen. Mit Python können wir einfache 
@@ -10,7 +10,7 @@
 # Dieses Kapitel erklärt die grundlegenden Schritte für Simulationen und zeigt, 
 # wie das Euler-Verfahren für den freien Fall angewendet wird.
 
-
+# Quelle: https://www.physics.umd.edu/hep/drew/numerical_integration/index.html
 
 
 # _______________________________________
@@ -41,8 +41,8 @@
 #   Simulationen laufen in kleinen Zeitschritten, um Veränderungen genau abzubilden.
 #  
 # - Kräfte und Bewegung:
-#   Veränderungen in der Position entstehen durch Kräfte wie Schwerkraft 
-#   oder Widerstand.
+#   Veränderungen in der Position entstehen durch Kräfte wie zum Beispiel die 
+#   Schwerkraft oder der Luftwiderstand.
 #  
 # - Energie und Impuls:
 #   Diese Grössen werden oft verwendet, um zu beschreiben, wie sich Systeme verhalten.
@@ -82,12 +82,11 @@
 # mathematischen Beschreibung der Natur sind. 
 
 # Beim Euler-Verfahren wird die Zeit in diskrete Zeitschritte zerlegt. 
-
 # Am Anfang hat ein Körper einen eine Anfangsgeschwindigekeit und
 # einen Anfangsort. 
 # 
-# v[0] = v_0
-# s[0] = s_0
+#      v[0] = v_0
+#      s[0] = s_0
 
 # Nun wird Zeitschritte für Zeitschritte in die Zukunft gerechnet. 
 
@@ -108,10 +107,10 @@
 
 
 
-# _____________________________________________
-#                                             /
-# Beispiel: Freier Fall mit Euler-Verfahren  (
-# ____________________________________________\
+# ___________________________________
+#                                   /
+# Freier Fall mit Euler-Verfahren  (
+# __________________________________\
 
 # In diesem Beispiel wird der freie Fall eines Körpers aus 100 m 
 # Höhe simuliert. Dabei wird die Lösung des Euler-Verfahrens
@@ -120,66 +119,84 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 # Parameter für den freien Fall
-g = 9.81  # Erdbeschleunigung in m/s^2
+g = 9.81   # Erdbeschleunigung in m/s^2
+
+m = 1.0    # Masse in kg
 
 y_0 = 100  # Anfangshöhe in m
-v_0 = 0  # Anfangsgeschwindigkeit in m/s
+v_0 = 0    # Anfangsgeschwindigkeit in m/s
 
-dt = 0.2  # Zeitschritt in s
+dt = 0.2   # Zeitschritt in s
 t_end = 5  # Endzeit in s
 
 
-# Listen für die Zeiten, Höhe, Geschwindigkeit und exakte Höhe
-t = np.arange(0, t_end, dt)
+# Listen erzeugen für die Darstellung mit matplotlib
+t = np.arange(0, t_end, dt) # alle Zeiten
 
-y = np.zeros(len(t))
-v = np.zeros(len(t))
+y = np.zeros(len(t)) # alle Höhen
+v = np.zeros(len(t)) # alle Geschwindigkeiten
 
-y_exact = np.zeros(len(t))
+y_exact = np.zeros(len(t)) # alle exakten Höhen
+E = np.zeros(len(t)) # alle Energien
 
 
-# Anfangswerte setzen
+# Setze Anfangswerte
 y[0] = y_0
-y_exact[0] = y_0
 v[0] = v_0
+y_exact[0] = y_0
+
+# berechne die Gesamtenergie des Körpers
+E[0] = m * g * y[0] + 0.5 * m * v[0]**2
 
 
+# Berechnung der Bewegung mit dem Euler-Verfahren
 for i in range(1, len(t)):
-    # Berechnung der Bewegung mit dem Euler-Verfahren
-    v[i] = v[i - 1] - g * dt
-    y[i] = y[i - 1] + v[i - 1] * dt
 
-    # Exakte Höhe berechnen
+    a = -g # Beschleunigung für den freien Fall
+
+    # berechne einen Euler-Schritt
+    v[i] = v[i-1] + a * dt
+    y[i] = y[i-1] + v[i-1] * dt
+
+    # exakte Höhe berechnen
     y_exact[i] = y_0 + v_0 * t[i] - 0.5 * g * t[i]**2
 
+    # berechne die Gesamtenergie des Körpers
+    E[i] = m * g * y[i] + 0.5 * m * v[i]**2
 
-errors = y - y_exact
 
-# Visualisierung der Bewegung und des Fehlers
+# Visualisierung der Bewegung und der Energie
 plt.subplot(2,1,1)
 plt.plot(t, y, label="Euler")
 plt.plot(t, y_exact, label="exakte Lösung", linestyle="dashed")
-plt.ylabel("Höhe (m)")
-plt.title("Freier Fall")
+plt.ylabel("Höhe [m]")
+plt.title("Freier Fall mit dem Euler-Verfahren")
 plt.legend()
 
 plt.subplot(2,1,2)
-plt.plot(t, errors, label="Fehler")
-plt.xlabel("Zeit (s)")
-plt.ylabel("Fehler (m)")
+plt.plot(t, E)
+plt.xlabel("Zeit [s]")
+plt.ylabel("Energie [J]")
 
 plt.show()
 
 
 
 
-# __________________________________________
-#                                          /
-# Fehleranalyse im Zeitschrittverfahren   (
-# _________________________________________\
+# __________________________________
+#                                  /
+# Fehleranalyse Euler-Verfahren   (
+# _________________________________\
 
-# Die Genauigkeit des Euler-Verfahrens hängt stark von der Grösse des Zeitschritts `dt` ab:
+# Das Euler-Verfahren liefert beim freien Fall immer eine zu grosse Höhe.
+# Wie zu sehen ist, wächst die Abweichung zur exakten Lösung mit der Zeit an. 
+# Das Euler-Verfahren verletzt die Energieerhaltung, wie man im unteren Diagramm
+# sehen kann. 
+
+# In den Übungsaufgaben unten wird sich zeigen, dass die Genauigkeit des Euler-
+# Verfahrens stark von der Grösse des Zeitschritts `dt` abhängt:
 #
 # - Bei kleineren Werten von `dt` wird die Berechnung präziser, da die Annäherung 
 #   enger an der exakten Lösung liegt.
@@ -187,10 +204,7 @@ plt.show()
 # - Grössere Werte von `dt` führen zu grösseren Abweichungen (numerischer Fehler), 
 #   da das Euler-Verfahren die Veränderungen nur näherungsweise modelliert.
 
-# Das Euler-Verfahren liefert beim freien Fall immer eine zu grosse Höhe.
-# Wie zu sehen ist, wächst der Fehler mit der Zeit. Je kleiner `dt`, desto 
-# geringer der Fehler. Beachte, dass das der Fehler beim Euler-Verfahren für 
-# lange Simulationszeiten immer grösser wird.
+
 
 
 
@@ -204,8 +218,8 @@ plt.show()
 #   Simulationen machen es möglich, physikalische Konzepte in der Programmierung umzusetzen.
 #
 # - Euler-Verfahren: 
-#   Ermöglicht die Berechnung von Bewegung in Zeitschritten und ist ideal für 
-#   kontinuierliche Veränderungen wie den freien Fall.
+#   Ermöglicht die Berechnung von Bewegung in Zeitschritten. Das Verfahren 
+#   verletzt den Energieerhaltungssatz.
 #
 # - Module: `numpy` und `matplotlib` helfen bei Berechnungen und Visualisierungen.
 
@@ -335,8 +349,8 @@ for idx, dt in enumerate(dt):
     # Plotten des Fehlers
     plt.plot(t, abs_error, label=f'dt = {dt}', color=colors[idx])
 
-plt.xlabel("Zeit in s")
-plt.ylabel("Absoluter Fehler in m")
+plt.xlabel("Zeit [s]")
+plt.ylabel("Absoluter Fehler [m]")
 plt.title("Einfluss des Zeitschritts dt auf den Fehler der Simulation")
 plt.legend()
 plt.grid()
@@ -386,16 +400,16 @@ for i in range(1, len(t)):
 
 # Plot der Höhe und Geschwindigkeit
 plt.subplot(2, 1, 1)
-plt.plot(t, y, label="Höhe (m)")
-plt.xlabel("Zeit (s)")
-plt.ylabel("Höhe (m)")
+plt.plot(t, y)
+plt.xlabel("Zeit [s]")
+plt.ylabel("Höhe [m]")
 plt.title("Freier Fall aus 200 m Höhe")
 plt.legend()
 
 plt.subplot(2, 1, 2)
-plt.plot(t, v, label="Geschwindigkeit (m/s)", color="orange")
-plt.xlabel("Zeit (s)")
-plt.ylabel("Geschwindigkeit (m/s)")
+plt.plot(t, v, color="orange")
+plt.xlabel("Zeit [s]")
+plt.ylabel("Geschwindigkeit [m/s]")
 plt.legend()
 plt.tight_layout()
 plt.show()
@@ -462,8 +476,8 @@ euler(t, y_3, v_3)
 plt.plot(t, y_1, label="v_0 = 0 m/s", linestyle="--")
 plt.plot(t, y_2, label="v_0 = 20 m/s (aufwärts)")
 plt.plot(t, y_3, label="v_0 = -20 m/s (abwärts)")
-plt.xlabel("Zeit (s)")
-plt.ylabel("Höhe (m)")
+plt.xlabel("Zeit [s]")
+plt.ylabel("Höhe [m]")
 plt.title("Freier Fall mit unterschiedlicher Anfangsgeschwindigkeit")
 plt.legend()
 plt.show()

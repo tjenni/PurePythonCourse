@@ -1,129 +1,140 @@
-#              ____________________________________
-#       ______|                                    |_____
-#       \     |  13.2 Das Euler-Cromer Verfahren   |    /
-#        )    |____________________________________|   (
-#       /________)                             (________\      7.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              _______________________________________________
+#       ______|                                               |_____
+#       \     |         13.2 DAS EULER-CROMER-VERFAHREN       |    /
+#        )    |_______________________________________________|   (
+#       /________)                                       (________\      11.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-# Die Kinematik ist der Teil der Physik, der Bewegungen ohne Rücksicht auf die 
-# verursachenden Kräfte untersucht. In diesem Kapitel lernen wir, einfache 
-# Bewegungen wie gleichförmige und beschleunigte Bewegungen mithilfe des 
-# Euler-Cromer-Verfahrens zu simulieren.
+# Das Euler-Cromer-Verfahren ist eine Abwandlung des Euler-Verfahrens. 
+# Es wird besonders für physikalische Simulationen genutzt, bei denen die 
+# Energieerhaltung wichtig ist, wie bei Schwingungen und Kreisbewegungen.
+
+# Im Unterschied zum klassischen Euler-Verfahren wird im Euler-Cromer-Verfahren 
+# zur Berechnung des neuen Ortes die Geschwindigkeit des aktuellen Zeitschrittes 
+# verwendet und nicht die des vorherigen. Dadurch kann das Verfahren in einigen 
+# Fällen eine stabilere und genauere Lösung liefern.
 
 
+# _____________________________
+#                             /
+# Das Euler-Cromer-Verfahren (
+# ____________________________\
 
-
-# ______________________________
-#                              /
-# Das Euler-Cromer-Verfahren  (
-# _____________________________\
-
-# Das Euler-Cromer-Verfahren ist fast identisch mit dem Euler-Verfahren.
-# Der Unterschied ist, dass man bei der Ortsberechnung die schon 
-# bereits berechnete Geschwindigkeit verwendet anstatt diejenige vom
-# letzten Zeitschritt. 
-
-# Am Anfang hat ein Körper einen eine Anfangsgeschwindigekeit und
-# einen Anfangsort. 
+# Wir beginnen mit einem Objekt, das eine Anfangsgeschwindigkeit und 
+# eine Anfangsposition hat:
 # 
-# v[0] = v_0
-# s[0] = s_0
+#      v[0] = v_0
+#      s[0] = s_0
+#
+# Das Euler-Cromer-Verfahren berechnet dann Zeitschritt für Zeitschritt die 
+# neue Geschwindigkeit und Position. Die Schritte sind wie folgt:
 
-# Nun wird Zeitschritte für Zeitschritte in die Zukunft gerechnet. 
-
-# 1. Berechne die Geschwindigkeit zum i-ten Zeitschritt aus 
-#    der vorherigen Geschwindigkeit beim Zeitschritt i-1 
-#    und der Beschleunigung. 
+# 1. Berechne die Geschwindigkeit im i-ten Zeitschritt durch die vorherige 
+#    Geschwindigkeit und die aktuelle Beschleunigung a:
 #
 #      v[i] = v[i-1] + a * dt
 #
-# 2. Berechne den Ort zum i-ten Zeitschritt aus dem vorherigen 
-#    Ort Zeitschritt i-1 und der unter 1. berechneten Geschwindigkeit 
-#    zum Zeitpunkt i. 
+# 2. Berechne die Position im i-ten Zeitschritt mithilfe der aktuellen 
+#    Geschwindigkeit v[i]:
 #
 #      s[i] = s[i-1] + v[i] * dt
-# 
-# 3. Wiederhole die Schritte 1. und 2. solange, bis die gewünschte
-#    Endzeit erreicht ist. 
+#
+# 3. Wiederhole diese Schritte bis zur gewünschten Endzeit.
 
 
 
 
-# __________________________________________
-#                                          /
-# Freier Fall mit Euler-Cromer-Verfahren  (
-# _________________________________________\
+# ______________________________________________
+#                                              /
+# Freier Fall mit dem Euler-Cromer-Verfahren  (
+# _____________________________________________\
 
-# In diesem Beispiel wird, wie im letzten Kapitel, der freie Fall 
-# eines Körper aus 100 m Höhe simuliert. Dabei wird die Lösung des 
-# Euler-Cromer-Verfahrens mit der exakten analytischen Lösung verglichen. 
-
+# Im folgenden Beispiel simulieren wir den freien Fall eines Objekts aus einer 
+# Höhe von 100 Metern. Die berechnete Lösung wird mit der exakten Lösung verglichen, 
+# um die Genauigkeit des Euler-Cromer-Verfahrens zu illustrieren.
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 # Parameter für den freien Fall
-y_0 = 100  # Anfangshöhe in Metern
-v_0 = 0  # Anfangsgeschwindigkeit in m/s
-g = 9.81  # Erdbeschleunigung in m/s^2
-t_end = 5  # Endzeit in Sekunden
-dt = 0.2  # Zeitschritt in Sekunden
+g = 9.81    # Erdbeschleunigung in m/s²
+m = 1.0     # Masse in kg
 
-# Listen für Zeit, Höhe, exakte Höhe und Geschwindigkeit
+y_0 = 100   # Anfangshöhe in Metern
+v_0 = 0     # Anfangsgeschwindigkeit in m/s
+
+dt = 0.2    # Zeitschritt in Sekunden
+t_end = 5   # Endzeit in Sekunden
+
+# Arrays für Zeit, Höhe, exakte Höhe, Geschwindigkeit und Energie
 t = np.arange(0, t_end, dt)
-
 y = np.zeros(len(t))
 v = np.zeros(len(t))
-
 y_exact = np.zeros(len(t))
+E = np.zeros(len(t))
 
-# Anfangswerte setzen
+# Setze Anfangswerte
 y[0] = y_0
-y_exact[0] = y_0
 v[0] = v_0
+y_exact[0] = y_0
+E[0] = m * g * y[0] + 0.5 * m * v[0]**2
 
-
-# Berechnung der Bewegung mit dem Euler-Verfahren
+# Berechnung der Bewegung mit dem Euler-Cromer-Verfahren
 for i in range(1, len(t)):
-    # Geschwindigkeit und Höhe im nächsten Zeitschritt berechnen
-    v[i] = v[i - 1] - g * dt
-    y[i] = y[i - 1] + v[i] * dt
+    # Beschleunigung im freien Fall
+    a = -g
 
-    # exakte Höhe berechnen
+    # Update der Geschwindigkeit und Position
+    v[i] = v[i-1] + a * dt
+    y[i] = y[i-1] + v[i] * dt
+
+    # Exakte Lösung zur Verifikation
     y_exact[i] = y_0 + v_0 * t[i] - 0.5 * g * t[i]**2
 
+    # Berechnung der Gesamtenergie
+    E[i] = m * g * y[i] + 0.5 * m * v[i]**2
 
-errors = y - y_exact
+# Visualisierung der Bewegung und der Energie
+plt.figure(figsize=(10, 6))
 
-# Visualisierung der Bewegung und des Fehlers
-plt.subplot(2,1,1)
+# Höhe über Zeit
+plt.subplot(2, 1, 1)
 plt.plot(t, y, label="Euler-Cromer")
-plt.plot(t, y_exact, label="exakte Lösung", linestyle="dashed")
-plt.ylabel("Höhe (m)")
-plt.title("Freier Fall")
+plt.plot(t, y_exact, label="Exakte Lösung", linestyle="dashed")
+plt.ylabel("Höhe [m]")
+plt.title("Freier Fall mit dem Euler-Cromer-Verfahren")
 plt.legend()
 
-plt.subplot(2,1,2)
-plt.plot(t, errors, label="Fehler")
-plt.xlabel("Zeit (s)")
-plt.ylabel("Fehler (m)")
+# Energie über Zeit
+plt.subplot(2, 1, 2)
+plt.plot(t, E, label="Gesamtenergie")
+plt.xlabel("Zeit [s]")
+plt.ylabel("Energie [J]")
+plt.legend()
 
+plt.tight_layout()
 plt.show()
 
 
+# ___________________________________________
+#                                           /
+# Fehleranalyse des Euler-Cromer-Verfahrens (
+# ___________________________________________\
 
+# Beim freien Fall führt das Euler-Cromer-Verfahren typischerweise zu einer 
+# Unterschätzung der Höhe. Der Fehler summiert sich im Laufe der Zeit, da das 
+# Verfahren nur eine Näherung ist. Dies zeigt sich im wachsenden Unterschied 
+# zwischen der numerischen und der exakten Lösung.
 
-# __________________
-#                  /
-# Fehleranalyse   (
-# _________________\
+# Die Gesamtenergie bleibt jedoch tendenziell stabiler als beim klassischen 
+# Euler-Verfahren, da das Euler-Cromer-Verfahren in der Regel Energie abzieht 
+# (in konservativen Systemen wie Pendeln führt dies zu einem stabileren Verhalten).
 
-# Wie beim Euler-Verfahren, hängt die Genauigkeit des Euler-Cromer-Verfahrens
-# stark von der Grösse des Zeitschritts `dt` ab:
-
-# Im Unterschied zum Euler-Verfahren, liefert das Euler-Cromer-Verfahren
-# beim freien Fall immer eine zu kleine Höhe. Alles andere bleibt gleich.
-# Es gibt ebenfalls einen kumulativen Fehler für lange Simulationszeiten
-# und man kann den Fehler reduzieren, wenn man den Zeitschritt `dt` keliner macht. 
+# - Zeitschrittgröße `dt`: Je kleiner `dt` ist, desto genauer ist die Berechnung. 
+#   Ein kleiner Zeitschritt führt zu einer besseren Annäherung an die exakte Lösung, 
+#   da der numerische Fehler verringert wird.
+#
+# - Zeitschrittanpassung: Für hohe Genauigkeit und stabile Simulationen empfiehlt 
+#   es sich, den Zeitschritt so klein wie möglich zu wählen, um die Fehlersummation zu minimieren.
 
 
 
@@ -134,13 +145,18 @@ plt.show()
 # __________________\
 
 # - Euler-Cromer-Verfahren: 
-#   Stabilere Methode für numerische Simulationen.
+#   Liefert für Bewegungen mit konstanter Beschleunigung eine stabile numerische Lösung.
+# 
+# - Vorteil: Im Vergleich zum klassischen Euler-Verfahren ist das Euler-Cromer-Verfahren 
+#   besser geeignet, die Energie in konservativen Systemen zu bewahren.
 #
-# - Gleichförmige Bewegung: 
-#   Das Objekt bewegt sich mit konstanter Geschwindigkeit.
-#
-# - Gleichmässig beschleunigte Bewegung: 
-#   Die Geschwindigkeit wächst linear mit der Zeit.
+# - Module: `numpy` und `matplotlib` unterstützen die Berechnungen und die Visualisierung 
+#   der Simulation.
+
+# Das Euler-Cromer-Verfahren ist ein Einstieg in die numerische Physik und 
+# bildet eine Grundlage für fortgeschrittenere Verfahren wie Runge-Kutta. 
+# Es erlaubt eine realistische Simulation physikalischer Prozesse und eignet 
+# sich für einfache Bewegungen mit Kräften.
 
 
 
@@ -156,9 +172,15 @@ plt.show()
 # Aufgabe 1  /
 # __________/
 #
-# Simuliere eine gleichmässig verzögerte Bewegung mit einer anfänglichen 
-# Geschwindigkeit von 20 m/s und einer konstanten Verzögerung von -2 m/s². 
-# Stelle die Strecke und die Geschwindigkeit über die Zeit dar.
+# Simuliere einen Ball, der unter dem Einfluss von Schwerkraft und einer
+# Luftwiderstandskraft fällt. Die Luftwiderstandskraft ist proportional zur
+# Geschwindigkeit und kann beschrieben werden als `F_reibung = -k * v`, wobei
+# `k` eine Reibungskonstante ist. 
+#
+# Wähle einen geeigneten Wert für `k` und zeichne den Verlauf der Höhe und
+# Geschwindigkeit über die Zeit. Beobachte, ob sich eine Endgeschwindigkeit
+# einstellt.
+
 
 # Füge hier deine Lösung ein.
 
@@ -170,15 +192,28 @@ plt.show()
 # Aufgabe 2  /
 # __________/
 #
-# Erstelle eine Simulation einer zweidimensionalen Bewegung mit konstanter Geschwindigkeit
-# in x-Richtung (5 m/s) und konstanter Beschleunigung in y-Richtung (-9.81 m/s²).
-# Zeige die Bewegung als Trajektorie.
+# Simuliere die Bewegung eines Objekts, das in einer harmonischen Schwingung
+# verläuft. Die Rückstellkraft wird durch `F_feder = -k_feder * y` beschrieben,
+# wobei `k_feder` die Federkonstante ist. 
+#
+# Wähle eine Anfangsauslenkung und eine Anfangsgeschwindigkeit und zeige den
+# Verlauf der Position und der Energie des Objekts über die Zeit. Vergleiche,
+# ob die Gesamtenergie während der Simulation annähernd erhalten bleibt.
+
 
 # Füge hier deine Lösung ein.
 
 
 
 
+
+
+
+#      (`/\          Jetzt kannst du den Fall einer 
+#      `=\/\         Feder simulieren. 
+#       `=\/\
+#        `=\/
+#  ejm      \
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -197,62 +232,71 @@ plt.show()
 # |_____\___/|___/\__,_|_| |_|\__, |\___|_| |_|
 #   
 
+
 # ___________
 #            \
 # Aufgabe 1  /
 # __________/
 #
-# Simuliere eine gleichmässig verzögerte Bewegung mit einer anfänglichen 
-# Geschwindigkeit von 20 m/s und einer konstanten Verzögerung von -2 m/s². 
-# Stelle die Strecke und die Geschwindigkeit über die Zeit dar.
+# Simuliere einen Ball, der unter dem Einfluss von Schwerkraft und einer
+# Luftwiderstandskraft fällt. Die Luftwiderstandskraft ist proportional zur
+# Geschwindigkeit und kann beschrieben werden als `F_reibung = -k * v`, wobei
+# `k` eine Reibungskonstante ist. 
+#
+# Wähle einen geeigneten Wert für `k` und zeichne den Verlauf der Höhe und
+# Geschwindigkeit über die Zeit. Beobachte, ob sich eine Endgeschwindigkeit
+# einstellt.
 
 '''
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Parameter für die verzögerte Bewegung
-v_0 = 20  # Anfangsgeschwindigkeit in m/s
-a = -2    # konstante Verzögerung in m/s²
-t_end = 15  # Endzeit in Sekunden
-dt = 0.1  # Zeitschritt in Sekunden
+# Parameter für den freien Fall mit Luftwiderstand
+g = 9.81   # Erdbeschleunigung in m/s^2
+m = 1.0    # Masse in kg
 
-# Listen für Zeit, Geschwindigkeit und Strecke
+y_0 = 100  # Anfangshöhe in m
+v_0 = 0    # Anfangsgeschwindigkeit in m/s
+
+dt = 0.2   # Zeitschritt in s
+t_end = 10  # Endzeit in s
+k = 0.5    # Reibungskonstante
+
+# Listen für Zeit, Höhe, Geschwindigkeit
 t = np.arange(0, t_end, dt)
+y = np.zeros(len(t))
 v = np.zeros(len(t))
-s_values = np.zeros(len(t))
 
-# Anfangswerte setzen
+# Setze Anfangswerte
+y[0] = y_0
 v[0] = v_0
-s_values[0] = 0
 
 # Berechnung der Bewegung mit dem Euler-Cromer-Verfahren
 for i in range(1, len(t)):
-    # Geschwindigkeit und Strecke im nächsten Zeitschritt berechnen
-    v[i] = v[i - 1] + a * dt
-    s_values[i] = s_values[i - 1] + v[i] * dt
+    # Berechnung der Luftwiderstandskraft und resultierender Beschleunigung
+    F_grav = -m * g
+    F_reib = -k * v[i-1]
+    a = (F_grav + F_reib) / m
 
-    # Geschwindigkeit soll nicht negativ werden
-    if v[i] < 0:
-        v[i] = 0
-        s_values[i] = s_values[i - 1]
+    # Euler-Cromer Schritt
+    v[i] = v[i-1] + a * dt
+    y[i] = y[i-1] + v[i] * dt
 
-
-# Visualisierung
+# Visualisierung der Höhe und Geschwindigkeit über die Zeit
 plt.subplot(2, 1, 1)
-plt.plot(t, s_values, label="Strecke")
-plt.ylabel("Strecke in m")
-plt.title("Gleichmässig verzögerte Bewegung")
-plt.grid()
+plt.plot(t, y)
+plt.ylabel("Höhe [m]")
+plt.title("Freier Fall mit Luftwiderstand")
+plt.legend()
 
 plt.subplot(2, 1, 2)
-plt.plot(t, v, label="Geschwindigkeit", color="orange")
-plt.xlabel("Zeit in s")
-plt.ylabel("Geschwindigkeit in m/s")
-plt.grid()
-plt.tight_layout()
+plt.plot(t, v, color="orange")
+plt.xlabel("Zeit [s]")
+plt.ylabel("Geschwindigkeit [m/s]")
+plt.legend()
+
 plt.show()
 '''
-
 
 
 
@@ -261,67 +305,68 @@ plt.show()
 # Aufgabe 2  /
 # __________/
 #
-# Erstelle eine Simulation einer zweidimensionalen Bewegung mit konstanter Geschwindigkeit
-# in x-Richtung (5 m/s) und konstanter Beschleunigung in y-Richtung (-9.81 m/s²).
-# Zeige die Bewegung als Trajektorie.
-
+# Simuliere die Bewegung eines Objekts, das in einer harmonischen Schwingung
+# verläuft. Die Rückstellkraft wird durch `F_feder = -k_feder * y` beschrieben,
+# wobei `k_feder` die Federkonstante ist. 
+#
+# Wähle eine Anfangsauslenkung und eine Anfangsgeschwindigkeit und zeige den
+# Verlauf der Position und der Energie des Objekts über die Zeit. Vergleiche,
+# ob die Gesamtenergie während der Simulation annähernd erhalten bleibt.
 
 '''
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Parameter für die 2D-Bewegung
+# Parameter für harmonische Schwingung
+m = 1.0      # Masse in kg
+k_feder = 2.0  # Federkonstante in N/m
+x_0 = 1.0    # Anfangsauslenkung in m
+v_0 = 0      # Anfangsgeschwindigkeit in m/s
+dt = 0.05    # Zeitschritt in s
+t_end = 20   # Endzeit in s
 
-ax = 0       # es gibt keine Beschleunigung in x-Richtung
-ay = -9.81   # konstante Beschleunigung in y-Richtung (Schwerkraft) in m/s²
-
-vx_0 = 5       # konstante Geschwindigkeit in x-Richtung in m/s
-vy_0 = 2     # Anfangsgeschwindigkeit in y-Richtung in m/s
-
-t_end = 2     # Endzeit in Sekunden
-dt = 0.01     # Zeitschritt in Sekunden
-
-# Listen für die Zeit und Positionen in x- und y-Richtung
+# Listen für Zeit, Auslenkung, Geschwindigkeit und Energie
 t = np.arange(0, t_end, dt)
-x_values = np.zeros(len(t))
-vx_values = np.zeros(len(t))
-y = np.zeros(len(t))
-vy = np.zeros(len(t))
+x = np.zeros(len(t))
+v = np.zeros(len(t))
+E = np.zeros(len(t))
 
-# Anfangswerte setzen
-x_values[0] = 1
-vx_values[0] = vx_0
+# Setze Anfangswerte
+x[0] = x_0
+v[0] = v_0
+E[0] = 0.5 * m * v[0]**2 + 0.5 * k_feder * x[0]**2
 
-y[0] = 1
-vy[0] = vy_0
-
-# Berechnung der Bewegung mit dem Euler-Cromer-Verfahren
+# Berechnung der harmonischen Schwingung mit dem Euler-Cromer-Verfahren
 for i in range(1, len(t)):
-    # x-Richtung
-    vx_values[i] = vx_values[i - 1] + ax * dt
-    x_values[i] = x_values[i - 1] + vx_values[i] * dt
-    
-    # y-Richtung
-    vy[i] = vy[i - 1] + ay * dt
-    y[i] = y[i - 1] + vy[i] * dt
+    # Berechnung der Beschleunigung (F_feder = -k * x)
+    a = -k_feder * x[i-1] / m
 
-    # Bewegung soll enden, wenn das Objekt den Boden erreicht (y < 0)
-    if y[i] < 0:
-        y[i] = 0
-        x_values[i] = x_values[i-1]
-        
+    # Euler-Cromer Schritt
+    v[i] = v[i-1] + a * dt
+    x[i] = x[i-1] + v[i] * dt
 
-# Visualisierung der Trajektorie
-plt.plot(x_values, y, label="Trajektorie")
-plt.xlabel("x in m")
-plt.ylabel("y in m")
-plt.title("Schiefer Wurf")
-plt.grid()
+    # Berechnung der Gesamtenergie
+    E[i] = 0.5 * m * v[i]**2 + 0.5 * k_feder * x[i]**2
+
+# Visualisierung der Auslenkung und Energie über die Zeit
+plt.subplot(2, 1, 1)
+plt.plot(t, x, color="purple")
+plt.ylabel("Position [m]")
+plt.title("Harmonische Schwingung mit Federkraft")
+plt.legend()
+
+plt.subplot(2, 1, 2)
+plt.plot(t, E, color="green")
+plt.xlabel("Zeit [s]")
+plt.ylabel("Energie [J]")
+plt.legend()
+
 plt.show()
 '''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 
 
