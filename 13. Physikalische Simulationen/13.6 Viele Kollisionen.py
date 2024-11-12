@@ -1,33 +1,10 @@
-#              ________________________________________________
-#       ______|                                                |_____
-#       \     |         13.6 VIELE KOLLISIONEN             |    /
-#        )    |________________________________________________|   (
-#       /________)                                         (________\      7.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              _________________________________
+#       ______|                                 |_____
+#       \     |     13.6 VIELE KOLLISIONEN      |    /
+#        )    |_________________________________|   (
+#       /________)                          (________\      12.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
-# In diesem Kapitel lernen wir, wie man Kollisionen zwischen Objekten simuliert 
-# und den Impuls bewahrt. Kollisionen sind ein zentraler Bestandteil physikalischer 
-# Simulationen und Animationen in Spielen. Wir erfahren, wie man eine Kollision 
-# erkennt und den Impuls nach dem Prinzip der Impulserhaltung berechnet.
-
-
-# __________________________________________
-#                                          /
-# Grundkonzepte: Impuls und Kollisionen   (
-# _________________________________________\
-
-# - **Impuls**:
-#   Der Impuls \( p \) eines Objekts ist das Produkt seiner Masse und Geschwindigkeit:
-#   \[
-#   p = m \times v
-#   \]
-#   Bei einer Kollision zweier Objekte bleibt der Gesamtimpuls des Systems erhalten.
-#
-# - **Impulserhaltungsgesetz**:
-#   Das Impulserhaltungsgesetz besagt, dass in einem geschlossenen System, in dem keine äußeren Kräfte wirken, der Gesamtimpuls vor und nach der Kollision gleich bleibt.
-
-# - **Arten von Kollisionen**:
-#   Wir betrachten hier elastische Kollisionen, bei denen sowohl Impuls als auch kinetische Energie erhalten bleiben.
 
 
 import arcade
@@ -35,14 +12,6 @@ import numpy as np
 import random
 
 
-# _________________________________
-#                                 /
-# Klassenstruktur für die Kollision(
-# _________________________________\
-
-# Die `Body`-Klasse enthält Methoden zur Kollisionserkennung und 
-# Impulsberechnung. Eine zusätzliche `AnimationWindow`-Klasse 
-# sorgt für das Fenster und die Simulation der Kollisionen.
 
 class Body:
     def __init__(self, mass, position, velocity, radius=1.0, color=arcade.color.BLUE):
@@ -98,13 +67,6 @@ class Interaction:
 
         if self.check_collision():
             self.resolve_collision()
-
-
-
-
-
-
-
 
 
 class AnimationWindow(arcade.Window):
@@ -221,77 +183,5 @@ if __name__ == "__main__":
     window = AnimationWindow(800, 600, "Kollision und Impuls", scale=100)
     arcade.run()
 
-
-
-# ____________________________
-#                            /
-# Wichtige Konzepte          (
-# ____________________________\
-
-# **Kollisionserkennung**:
-# Die Methode `check_collision` überprüft den Abstand zwischen zwei Objekten und 
-# bestimmt, ob sie kollidieren. Die Kollision wird erkannt, wenn die Entfernung 
-# zwischen ihren Mittelpunkten kleiner oder gleich der Summe ihrer Radien ist.
-
-# **Impulserhaltung**:
-# Die Methode `resolve_collision` berechnet die neue Geschwindigkeit beider Objekte 
-# unter Berücksichtigung des Impulserhaltungsgesetzes. Dies stellt sicher, dass 
-# die Objekte nach einer Kollision in korrekter Richtung abprallen.
-
-
-# ____________________________
-#                            /
-# Übungsaufgaben            (
-# ____________________________\
-
-
-# ___________
-#            \
-# Aufgabe 1  /
-# __________/
-#
-# Erstelle eine Simulation mit drei Bällen, die zufällig im Raum positioniert 
-# sind und aufeinander zufliegen. Erhöhe die Schwierigkeit, indem du die 
-# Geschwindigkeit und Richtung jedes Balls variierst.
-
-
-# Füge hier deine Lösung ein.
-
-
-
-# ___________
-#            \
-# Aufgabe 2  /
-# __________/
-#
-# Modifiziere die Kollisionen der Objekte, sodass eine Energieverlustregel 
-# simuliert wird. Das bedeutet, dass bei jeder Kollision 10 % der Energie 
-# verloren gehen und die Geschwindigkeit entsprechend angepasst wird.
-
-
-# Füge hier deine Lösung ein.
-
-
-
-# ___________
-#            \
-# Aufgabe 3  /
-# __________/
-#
-# Erstelle eine Simulation mit Wänden. Lasse die Objekte abprallen, wenn 
-# sie die Fenstergrenzen erreichen, und überprüfe die Impulserhaltung 
-# bei jeder Kollision mit der Wand.
-
-
-# Füge hier deine Lösung ein.
-
-
-
-#  ___ _  _ ___  ___ 
-# | __| \| |   \| __|
-# | _|| .` | |) | _| 
-# |___|_|\_|___/|___|
-#                
-# -=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=-=x=-=x=-=x=-=-=
 
 
