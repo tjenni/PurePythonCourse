@@ -67,7 +67,7 @@ class Body:
         self.force += np.array(force, dtype=float)
 
 
-    def update(self, dt):
+    def update_ec(self, dt):
         self.acceleration = self.force / self.mass
         self.velocity += self.acceleration * dt
         self.position += self.velocity * dt
@@ -90,6 +90,9 @@ class AnimationWindow(arcade.Window):
         # Der Ursprung des Koordinatensystems ist in der Mitte des Fensters
         self.center = [width // 2, height // 2]  
         
+        # Liste für alle Körper, welche simuliert ewrden sollen. 
+        self.bodies = []
+
         # Zeit in s
         self.time = 0         
         
@@ -97,7 +100,8 @@ class AnimationWindow(arcade.Window):
         self.fps_history = [0] * 60    
         
         # Initialisiere ein Body-Objekt
-        self.body = Body([0.0, 5.0], [1.0, 0.0], mass=1.0, radius=0.5)
+        body = Body([0.0, 5.0], [2.0, 0.0], mass=1.0, radius=0.5)
+        self.bodies.append(body)
         
     
     # Umrechnung von Meter zu Pixel
@@ -132,12 +136,12 @@ class AnimationWindow(arcade.Window):
         x5, y5 = self.meter_to_pixel(-7,5.5)
         arcade.draw_text(text , x5, y5, arcade.color.BLACK)
         
-
-        # zeichne den Ball
-        x_pixel, y_pixel = self.meter_to_pixel(self.body.position[0], self.body.position[1])
-        r_pixel = self.body.radius * self.scale
+        # zeichne alle Objekte
+        for body in self.bodies:
+            x_pixel, y_pixel = self.meter_to_pixel(body.position[0], body.position[1])
+            r_pixel = body.radius * self.scale
         
-        arcade.draw_circle_filled(x_pixel, y_pixel, r_pixel, self.body.color)
+            arcade.draw_circle_filled(x_pixel, y_pixel, r_pixel, body.color)
     
 
     # Berechnung des nächsten Zeitschritts
@@ -148,30 +152,40 @@ class AnimationWindow(arcade.Window):
         self.fps_history.append(1.0 / dt)               
         self.fps_history.pop(0)
         
-        # Berechne Kräfte
-        self.body.clear_force()
-        
-        # Erdanziehungskraft
-        F_G = np.array([0.0, -self.body.mass * 9.81]) 
-        self.body.add_force(F_G)
-        
-        # Boden
-        if self.body.position[1]  < -4:
-            self.body.position[1] = -4
-            self.body.velocity[1] *= -1
+        # Setze die Kräfte zurück
+        for body in self.bodies:
+            body.clear_force()
 
-        # Wand rechts 
-        if self.body.position[0] > 4:
-            self.body.position[0] = 4
-            self.body.velocity[0] *= -1
 
-        # Wand links 
-        elif self.body.position[0] < -4:
-            self.body.position[0] = -4
-            self.body.velocity[0] *= -1
+        # Berechne die Kräfte und aktualisiere die Positionen und 
+        # Geschwindigkeiten der Objekte
+        for body in self.bodies:
+
+            # Erdanziehungskraft
+            F_G = np.array([0.0, -body.mass * 9.81]) 
+            body.add_force(F_G)
+
+            # Euler-Cromer-Zeitschritt 
+            body.update_ec(dt)
         
-        # Euler-Cromer-Zeitschritt 
-        self.body.update(dt)
+
+        # Überprüfe Kollisionen mit den Wänden
+        for body in self.bodies:
+            # Boden
+            if body.position[1]  < -4:
+                body.position[1] = -4
+                body.velocity[1] *= -1
+
+            # Wand rechts 
+            if body.position[0] > 4:
+                body.position[0] = 4
+                body.velocity[0] *= -1
+
+            # Wand links 
+            elif body.position[0] < -4:
+                body.position[0] = -4
+                body.velocity[0] *= -1
+            
         
         # Zeit erhöhen
         self.time += dt         

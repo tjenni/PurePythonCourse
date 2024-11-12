@@ -69,12 +69,7 @@ class Body:
 # Ein einfaches Beispiel für die `Body`-Klasse ist ein fallendes Objekt
 # unter der Wirkung der Schwerkraft ohne Luftwiderstand.
 
-g = 9.81                     # Erdbeschleunigung in m/s^2
-
-mass = 1.0                   # in kg
-initial_position = [0, 100]  # in m
-initial_velocity = [0, 0]    # in m/s
-
+g = 9.81        # Erdbeschleunigung in m/s^2
 
 dt = 0.01       # Zeitschritt in s
 t_end = 5.0     # Endzeit der Simulation in s
@@ -86,6 +81,10 @@ times = np.arange(0, t_end, dt)
 positions_1 = []       
 
 # erstelle ein `Body`-Objekt
+mass = 1.0                   # in kg
+initial_position = [0, 100]  # in m
+initial_velocity = [0, 0]    # in m/s
+
 body = Body(initial_position, initial_velocity, mass)
 
 

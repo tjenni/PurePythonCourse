@@ -131,13 +131,13 @@ t_end = 5  # Endzeit in s
 
 
 # Listen erzeugen für die Darstellung mit matplotlib
-t = np.arange(0, t_end, dt) # alle Zeiten
+t = np.arange(0, t_end, dt) # Liste mit den Zeiten erzeugen
 
-y = np.zeros(len(t)) # alle Höhen
-v = np.zeros(len(t)) # alle Geschwindigkeiten
+y = np.zeros(len(t)) # Liste für alle Höhen
+v = np.zeros(len(t)) # Liste für alle Geschwindigkeiten
 
-y_exact = np.zeros(len(t)) # alle exakten Höhen
-E = np.zeros(len(t)) # alle Energien
+y_exact = np.zeros(len(t)) # Liste für alle exakten Höhen
+E = np.zeros(len(t)) # Liste für alle Energien
 
 
 # Setze Anfangswerte
@@ -145,8 +145,11 @@ y[0] = y_0
 v[0] = v_0
 y_exact[0] = y_0
 
-# berechne die Gesamtenergie des Körpers
-E[0] = m * g * y[0] + 0.5 * m * v[0]**2
+# berechne die Gesamtenergie des Körpers mit der Formel
+#
+#   E = E_pot + E_kin = m * g * h  +  (1/2) * m * v^2
+#
+E[0] = m*g*y[0] + 0.5*m*v[0]**2
 
 
 # Berechnung der Bewegung mit dem Euler-Verfahren
@@ -162,7 +165,7 @@ for i in range(1, len(t)):
     y_exact[i] = y_0 + v_0 * t[i] - 0.5 * g * t[i]**2
 
     # berechne die Gesamtenergie des Körpers
-    E[i] = m * g * y[i] + 0.5 * m * v[i]**2
+    E[i] = m*g*y[i] + 0.5*m*v[i]**2
 
 
 # Visualisierung der Bewegung und der Energie

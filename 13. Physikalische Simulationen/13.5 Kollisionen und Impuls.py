@@ -57,7 +57,7 @@ class Body:
     def add_force(self, force):
         self.force += np.array(force, dtype=float)
 
-    def update(self, dt):
+    def update_ec(self, dt):
         acceleration = self.force / self.mass
         self.velocity += acceleration * dt
         self.position += self.velocity * dt
@@ -69,13 +69,14 @@ class Interaction:
         self.bodyA = bodyA
         self.bodyB = bodyB
 
+    # Prüfe, ob zwei Objekte kollidieren.
     def check_collision(self):
-        """Prüfe, ob zwei Objekte kollidieren."""
+        
         distance = np.linalg.norm(self.bodyA.position - self.bodyB.position)
         return distance <= (self.bodyA.radius + self.bodyB.radius)
     
+    # Berechne die Geschwindigkeit nach der Kollision mit einem anderen Objekt.
     def resolve_collision(self):
-        """Berechne die Geschwindigkeit nach der Kollision mit einem anderen Objekt."""
         normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
         relative_velocity = self.bodyA.velocity - self.bodyB.velocity
         velocity_along_normal = np.dot(relative_velocity, normal)
@@ -94,7 +95,6 @@ class Interaction:
 
 
     def update(self):
-
         if self.check_collision():
             self.resolve_collision()
 
@@ -112,11 +112,10 @@ class AnimationWindow(arcade.Window):
         self.bodies = []
         self.interactions = []
 
-        self.time = 0  
+        self.time = 0
 
         # Liste für die Berechnung des gleitendenden Durchschnitt für FPS
         self.fps_history = [0] * 60  
-
 
         # Erstellen von zwei sich bewegenden Kugeln für die Kollision
         ball1 = Body([-2, 0.1], [2, 0], mass=1.0, radius=0.5, color=arcade.color.RED)
@@ -124,7 +123,6 @@ class AnimationWindow(arcade.Window):
         
         ball2 = Body([2, 0], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
         self.bodies.append(ball2)
-
 
         int12 = Interaction(ball1, ball2)
         self.interactions.append(int12)
@@ -158,7 +156,7 @@ class AnimationWindow(arcade.Window):
         x3, y3 = self.meter_to_pixel(-2.6,2.6)
         arcade.draw_text(text , x3, y3, arcade.color.BLACK)
 
-        # Zeichnen der Objekte
+        # zeichne alle Objekte
         for body in self.bodies:
             x, y = self.meter_to_pixel(body.position[0], body.position[1])
             radius = body.radius * self.scale
@@ -172,13 +170,17 @@ class AnimationWindow(arcade.Window):
         self.fps_history.append(1.0 / dt)               
         self.fps_history.pop(0)
 
-        # Bewegung der Objekte
+        # Setze die Kräfte zurück
         for body in self.bodies:
             body.clear_force()
         
-        # Kollisionserkennung und -lösung
+        # Kollision zwischen den Objekten
         for interacion in self.interactions:
             interacion.update()
+
+        # Aktualisiere die Positionen und Geschwindigkeiten der Objekte
+        for body in self.bodies:
+            body.update_ec(dt)
         
         # Überprüfe Kollisionen mit den Wänden
         for body in self.bodies:
@@ -191,20 +193,15 @@ class AnimationWindow(arcade.Window):
                 body.position[1] = 2
                 body.velocity[1] = -body.velocity[1]
                 
-            # Wand rechts 
+            # Wand rechts
             if body.position[0] > 2:
                 body.position[0] = 2
                 body.velocity[0] = -body.velocity[0]
-            # Wand rechts 
+            # Wand links 
             elif body.position[0] < -2:
                 body.position[0] = -2
                 body.velocity[0] = -body.velocity[0]
             
-
-        # Aktualisiere die Position der Kugeln
-        for body in self.bodies:
-            body.update(dt)
-
         # Zeit erhöhen
         self.time += dt  
 

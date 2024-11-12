@@ -58,7 +58,7 @@ class Body:
     def apply_force(self, force):
         self.force += np.array(force, dtype=float)
 
-    def update(self, dt):
+    def update_ec(self, dt):
         acceleration = self.force / self.mass
         self.velocity += acceleration * dt
         self.position += self.velocity * dt
@@ -180,13 +180,17 @@ class AnimationWindow(arcade.Window):
         self.fps_history.append(1.0 / dt)               
         self.fps_history.pop(0)
 
-        # Bewegung der Objekte
+        # Setze die Kräfte zurück
         for body in self.bodies:
             body.clear_force()
         
-        # Kollisionserkennung und -lösung
+        # Kollision zwischen den Objekten
         for interacion in self.interactions:
             interacion.update()
+
+        # Aktualisiere die Positionen und Geschwindigkeiten der Objekte
+        for body in self.bodies:
+            body.update_ec(dt)
         
         # Überprüfe Kollisionen mit den Wänden
         for body in self.bodies:
@@ -203,15 +207,10 @@ class AnimationWindow(arcade.Window):
             if body.position[0] > 2:
                 body.position[0] = 2
                 body.velocity[0] = -body.velocity[0]
-            # Wand rechts 
+            # Wand links 
             elif body.position[0] < -2:
                 body.position[0] = -2
                 body.velocity[0] = -body.velocity[0]
-            
-
-        # Aktualisiere die Position der Kugeln
-        for body in self.bodies:
-            body.update(dt)
 
         # Zeit erhöhen
         self.time += dt  
