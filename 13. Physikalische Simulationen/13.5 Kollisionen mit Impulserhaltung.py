@@ -38,7 +38,6 @@
 import arcade
 import arcade.gui 
 import numpy as np
-import time
 
 
 # _________________________________
