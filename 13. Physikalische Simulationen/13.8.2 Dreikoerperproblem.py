@@ -1,6 +1,6 @@
 #              ____________________________________
 #       ______|                                    |_____
-#       \     |     13.9 DAS DREIKÖRPERPROBLEM     |    /
+#       \     |   13.8.2 DAS DREIKÖRPERPROBLEM     |    /
 #        )    |____________________________________|   (
 #       /________)                             (________\      11.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 

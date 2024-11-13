@@ -1,6 +1,6 @@
 #              ____________________________________
 #       ______|                                    |_____
-#       \     |     13.8 DAS ZWEIKÖRPERPROBLEM     |    /
+#       \     |   13.8.1 DAS ZWEIKÖRPERPROBLEM     |    /
 #        )    |____________________________________|   (
 #       /________)                             (________\      11.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 

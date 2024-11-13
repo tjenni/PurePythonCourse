@@ -1,44 +1,45 @@
 #              ________________________________________________
 #       ______|                                                |_____
-#       \     |         13.4 ANIMATIONEN MIT ARCADE            |    /
+#       \     |      13.5 KOLLISIONEN MIT IMPULSERHALTUNG      |    /
 #        )    |________________________________________________|   (
 #       /________)                                         (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
-# In diesem Kapitel erweitern wir die physikalischen Simulationen aus dem
-# vorherigen Abschnitt und erstellen Animationen mit der Arcade-Bibliothek.
-# Der Vorteil von Arcade ist, dass die grafische Darstellung sehr schnell 
-# abläuft. Daher ist Arcade ideal für die Darstellung von Objekten und 
-# zur Implementierung interaktiver Animationen.
+# In diesem Kapitel lernen wir, wie man Kollisionen zwischen Objekten simuliert 
+# und den Impuls bewahrt. Kollisionen sind ein zentraler Bestandteil physikalischer 
+# Simulationen und Animationen in Spielen. Wir erfahren, wie man eine Kollision 
+# erkennt und den Impuls nach dem Prinzip der Impulserhaltung berechnet.
 
 
-# __________________________________________
-#                                          /
-# Grundkonzepte der Animation mit Arcade  (
-# _________________________________________\
+# ___________________________________________________
+#                                                   /
+# Grundkonzepte: Kollisionen mit Impulserhaltung   (
+# __________________________________________________\
 
-# Die grundlegenden Schritte zur Erstellung einer Animation mit Arcade sind:
+# - Impuls:
+#   Der Impuls p eines Objekts ist das Produkt seiner Masse und Geschwindigkeit:
+#   
+#        p = m * v
+#   
+#   Bei einer Kollision zweier Objekte bleibt der Gesamtimpuls des Systems erhalten.
 #
-# 1. Initialisiere das Fenster `arcade.Window`.
-#
-# 2. Zeichne die Objekte in der `on_draw`-Methode.
-#
-# 3. Aktualisiere die Position und Bewegung der Körper in jedem Frame 
-#    mithilfe der `on_update`-Methode.
+# - Impulserhaltungsgesetz:
+#   Das Impulserhaltungsgesetz besagt, dass in einem geschlossenen System, in 
+#   dem keine äusseren Kräfte wirken, der Gesamtimpuls vor und nach der Kollision 
+#   gleich bleibt.
+
+# - Arten von Kollisionen:
+#   Wir betrachten hier elastische Kollisionen, bei denen sowohl Impuls als auch 
+#   kinetische Energie erhalten bleiben.
 
 
-# ___________________________
-#                           /
-# Installation von Arcade  (
-# __________________________\
 
-# Installiere die Arcade-Bibliothek in Thonny, falls du sie noch nicht 
-# installiert hast.
 
 import arcade
 import arcade.gui 
 import numpy as np
 import time
+
 
 # _________________________________
 #                                 /
@@ -79,6 +80,43 @@ class Body:
         
 
 
+# Die Klasse `Interaction` verwaltet die Kollisionserkennung und -berechnung 
+# zwischen zwei Körpern.
+class Interaction:
+    def __init__(self, bodyA, bodyB, color=arcade.color.BLUE):
+        self.bodyA = bodyA
+        self.bodyB = bodyB
+
+    def check_collision(self):
+        # Prüft, ob zwei Körper kollidieren.
+        distance = np.linalg.norm(self.bodyA.position - self.bodyB.position)
+        return distance <= (self.bodyA.radius + self.bodyB.radius)
+    
+    def resolve_collision(self):
+        # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
+        normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
+        relative_velocity = self.bodyA.velocity - self.bodyB.velocity
+        velocity_along_normal = np.dot(relative_velocity, normal)
+
+        # Berechnet nur, wenn die Körper aufeinander zu bewegen
+        if velocity_along_normal < 0:
+            return
+
+        # Impulsberechnung
+        impulse = (2 * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
+        impulse_vector = impulse * normal
+
+        # Aktualisiert die Geschwindigkeit der beiden Körper
+        self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
+        self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
+
+    def update(self):
+        # Überprüft und berechnet die Kollision, falls nötig
+        if self.check_collision():
+            self.resolve_collision()
+            
+            
+            
 # Die Klasse `AnimationWindow` steuert die grafische Darstellung und die Simulation 
 # der Partikelbewegungen.
 class AnimationWindow(arcade.Window):
@@ -100,6 +138,9 @@ class AnimationWindow(arcade.Window):
         
         # Liste für alle zu simulierenden Körper
         self.bodies = []
+        
+        # Liste für alle Interaktionen zwischen den Körpern
+        self.interactions = []  
 
         # Simulationszeit in Sekunden
         self.time = 0
@@ -146,9 +187,15 @@ class AnimationWindow(arcade.Window):
                 child=v_box) 
         )
 
-        # Initialisiere einen Körper zur Simulation
-        body = Body([0.0, 4.0], [4.0, 0.0], mass=1.0, radius=0.5)
-        self.bodies.append(body)
+        # Initialisiere zwei Körper
+        ball1 = Body([-2, 1.1], [2, 0], mass=1.0, radius=0.5, color=arcade.color.RED)
+        self.bodies.append(ball1)
+        
+        ball2 = Body([2, 1], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
+        self.bodies.append(ball2)
+
+        int12 = Interaction(ball1, ball2)
+        self.interactions.append(int12)
 
     
     # Passt die Ursprungsposition bei Fenstergrößenänderung an
@@ -219,7 +266,12 @@ class AnimationWindow(arcade.Window):
         # Setzt die Kräfte aller Körper auf null
         for body in self.bodies:
             body.clear_force()
-
+        
+        
+        # Aktualisiert die Kollisionen
+        for interacion in self.interactions:
+            interacion.update()
+            
         # Berechnet die Kräfte und aktualisiert die Bewegungen der Objekte
         for body in self.bodies:
             F_G = np.array([0.0, -body.mass * 9.81])  # Schwerkraft
@@ -255,55 +307,22 @@ if __name__ == "__main__":
 
 
 
-# _____________________
-#                     /
-# Wichtige Konzepte  (
-# ____________________\
-
-# Skalierungsfaktor
-# Der Skalierungsfaktor `scale` ist entscheidend, um physikalische Grössen (in Metern) 
-# in Pixel umzuwandeln. Ein scale von 50 bedeutet, dass 1 Meter physikalische Distanz 
-# 50 Pixel im Fenster entspricht. Diese Umrechnung sorgt dafür, dass die Simulation 
-# unabhängig von der Fenstergrösse sinnvoll dargestellt wird.
-
-# Koordinatensystem
-# Das Koordinatensystem wird so gewählt, dass das Zentrum des Fensters der Ursprung 
-# (0,0) der Simulation ist. Dadurch können wir die physikalische Position der Objekte 
-# in Bezug auf den Ursprung des Fensters flexibel steuern.
-
-# Zeit und Zeitschritt
-# Arcade läuft standardmässig mit einem Zeitschritt (delta_time) von 1/60 Sekunden 
-# pro Frame. Dies simuliert die Zeit für jeden Frame und sorgt für eine flüssige 
-# Animation. Der Parameter self.dt im Code definiert diesen Zeitschritt und beeinflusst 
-# die Aktualisierung der Objektposition.
-
-# Wände und Kollisionen
-# Kollisionen mit den Wänden und dem Boden werden in der on_update()-Methode 
-# durch eine Anpassung der Position und eine Umkehrung der Geschwindigkeit des 
-# Objekts modelliert. Dies sorgt dafür, dass das Objekt bei einer Kollision „abprallt“.
 
 
+# ____________________________
+#                            /
+# Wichtige Konzepte          (
+# ____________________________\
 
+# Kollisionserkennung:
+# Die Methode `check_collision` überprüft den Abstand zwischen zwei Objekten und 
+# bestimmt, ob sie kollidieren. Die Kollision wird erkannt, wenn die Entfernung 
+# zwischen ihren Mittelpunkten kleiner oder gleich der Summe ihrer Radien ist.
 
-# ___________________
-#                   /
-# Zusammenfassung  (
-# __________________\
-
-# Vorteile dieser Animation mit Arcade:
-# 
-# Flexible Skalierung
-# Die Möglichkeit, physikalische Einheiten in eine visuelle Darstellung zu übersetzen.
-# 
-# Zentrumsverschiebung
-# Ermöglicht, das Koordinatensystem flexibel im Fenster zu positionieren.
-# 
-# Realistische Zeitsteuerung:
-# Durch den konstanten Zeitschritt von delta_time bleibt die Bewegung konsistent 
-# und kontrollierbar.
-
-# Mit diesen Erweiterungen wird die Simulation intuitiver und ermöglicht es, 
-# physikalische Prozesse mit Arcade einfach und effektiv zu visualisieren.
+# Impulserhaltung:
+# Die Methode `resolve_collision` berechnet die neue Geschwindigkeit beider Objekte 
+# unter Berücksichtigung des Impulserhaltungsgesetzes. Dies stellt sicher, dass 
+# die Objekte nach einer Kollision in korrekter Richtung abprallen.
 
 
 
@@ -311,7 +330,7 @@ if __name__ == "__main__":
 # ____________________________
 #                            /
 # Übungsaufgaben            (
-# ___________________________\
+# ____________________________\
 
 
 # ___________
@@ -319,12 +338,12 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Verändere das Programm so, dass der Ball sich unter dem Einfluss
-# der Schwerkraft und einer Reibungskraft bewegt. Verwende eine geeignete 
-# Reibungskonstante, damit der Ball zur Ruhe kommt.
+# Füge zur Simulation einen dritten Ball hinzu. Denke daran, auch die Wechsel-
+# wirkungen hinzuzufügen. Teste die Simulation.
 
 
 # Füge hier deine Lösung ein.
+
 
 
 
@@ -333,32 +352,29 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-# Verändere das Programm so, dass eine Schwingungsanimation entsteht. 
-# Lass dazu eine Federkraft in Abhängigkeit von der Auslenkung auf den Ball
-# wirken. Stelle sicher, dass der Ball in der Ruhelage stoppt, wenn keine Kraft 
-# mehr auf ihn wirkt.
+# Modifiziere die Kollisionen der Objekte, sodass eine Energieverlustregel 
+# simuliert wird. Das bedeutet, dass bei jeder Kollision 10 % der Energie 
+# verloren gehen und die Geschwindigkeit entsprechend angepasst wird.
 
 
 # Füge hier deine Lösung ein.
 
 
 
-
-#                                        |
-#                             ___________I____________
-#                            ( _____________________ ()
-#                          _.-'|                    ||
-#                      _.-'   ||    Nun kannst      ||
-#     ______       _.-'       ||                    ||
-#    |      |_ _.-'           ||        du          ||
-#    |      |_|_              ||                    ||
-#    |______|   `-._          ||    Animationen     ||
-#       /\          `-._      ||                    ||
-#      /  \             `-._  ||     erstellen!     ||
-#     /    \                `-.I____________________||
-#    /      \                 ------------------------
-#   /________\___________________/________________\______
-#   
+#            _...----.._
+#         ,:':::::.     `>.
+#       ,' |:::::;'     |:::.
+#      /    `'::'       :::::\
+#     /         _____     `::;\
+#    :         /:::::\      `  :      Das sieht nun schon so aus wie
+#    | ,.     /::SSt::\        |      beim Fussball. :-)
+#    |;:::.   `::::::;'        |
+#    ::::::     `::;'      ,.  ;
+#     \:::'              ,::::/
+#      \                 \:::/
+#       `.     ,:.        :;'
+#         `-.::::::..  _.''
+#            ```----'''
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -383,17 +399,22 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Verändere das Programm so, dass der Ball sich unter dem Einfluss
-# der Schwerkraft und einer Reibungskraft bewegt. Verwende eine geeignete 
-# Reibungskonstante, damit der Ball zur Ruhe kommt.
+# Füge zur Simulation einen dritten Ball hinzu. Denke daran, auch die Wechsel-
+# wirkungen hinzuzufügen. Teste die Simulation.
 
 
 '''
-            # füge den folgenden Code auf Zeile 225 hinzu. 
-            k = 0.1
-            F_R = -k*body.velocity
-            body.add_force(F_R)
+        # Füge den folgenden Code bei Zeile 198 ein.
+        ball3 = Body([0, 1], [-1, 0], mass=1.0, radius=0.5, color=arcade.color.GREEN)
+        self.bodies.append(ball3)
+        
+        int13 = Interaction(ball1, ball3)
+        self.interactions.append(int13)
+        
+        int23 = Interaction(ball2, ball3)
+        self.interactions.append(int23)
 '''
+
 
 
 
@@ -402,26 +423,34 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-# Verändere das Programm so, dass eine Schwingungsanimation entsteht. 
-# Lass dazu eine Federkraft in Abhängigkeit von der Auslenkung auf den Ball
-# wirken. Stelle sicher, dass der Ball in der Ruhelage stoppt, wenn keine Kraft 
-# mehr auf ihn wirkt.
+# Modifiziere die Kollisionen der Objekte, sodass eine Energieverlustregel 
+# simuliert wird. Das bedeutet, dass bei jeder Kollision 10 % der Energie 
+# verloren gehen und die Geschwindigkeit entsprechend angepasst wird.
 
 
 '''
-            # Ändere die Anfangsbedingungen für den Körper in Zeile 148 auf
-            body = Body([0.0, 2.0], [0.0, 0.0], mass=1.0, radius=0.5)
+    # Die Funktion auf Zeile 95 muss wie folgt angepasst werden.
+    def resolve_collision(self, restitution=0.9):
+        # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
+        normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
+        relative_velocity = self.bodyA.velocity - self.bodyB.velocity
+        velocity_along_normal = np.dot(relative_velocity, normal)
 
+        # Berechnet nur, wenn die Körper aufeinander zu bewegen
+        if velocity_along_normal < 0:
+            return
 
-            # Ersetzte die Schwerkraft auf den Zeilen 223,224 durch die 
-            # folgende Federkraft.
-            D = 1
-            F_F = -D*body.position  
-            body.add_force(F_F)
+        # Impulsberechnung
+        impulse = ( (1 + restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
+        impulse_vector = impulse * normal
+
+        # Aktualisiert die Geschwindigkeit der beiden Körper
+        self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
+        self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
 
 '''
+
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-
 
 
