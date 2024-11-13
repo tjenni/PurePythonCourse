@@ -328,8 +328,8 @@ class AnimationWindow(arcade.Window):
         for body in self.bodies:
             body.update_ec(dt)  # Aktualisiert Position und Geschwindigkeit
         
-        # Überprüft und verarbeitet Kollisionen mit dem Boden
         for body in self.bodies:
+            # Überprüft und verarbeitet Kollisionen mit dem Boden
             if body.position[1] < -4 + body.radius:
                 body.position[1] = -4 + body.radius
                 body.velocity[1] *= -1
@@ -357,7 +357,7 @@ class AnimationWindow(arcade.Window):
 
 if __name__ == "__main__":
     # Initialisiert das Fenster für die Simulation
-    window = AnimationWindow(800, 600, "Flummi")
+    window = AnimationWindow(800, 600, "Ideales Gas")
 
     # starte die Simulation
     arcade.run()
@@ -430,7 +430,6 @@ if __name__ == "__main__":
 # Verwende den "Heizen"- und "Kühlen"-Button und analysiere, wie sich die 
 # Geschwindigkeit der Partikel und die Gesamtenergie verändern. Kannst du 
 # einen Zusammenhang mit der thermischen Energie herstellen?
-
 
 
 # Füge hier deine Lösung ein.

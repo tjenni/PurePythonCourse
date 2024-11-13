@@ -1,61 +1,46 @@
-#              ________________________________________________
-#       ______|                                                |_____
-#       \     |      13.5 KOLLISIONEN MIT IMPULSERHALTUNG      |    /
-#        )    |________________________________________________|   (
-#       /________)                                         (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ___________________________________________
+#       ______|                                           |_____
+#       \     |        13.7 COULOMB-KRAFT                 |    /
+#        )    |___________________________________________|   (
+#       /________)                                   (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
-# In diesem Kapitel lernen wir, wie man Kollisionen zwischen Objekten simuliert 
-# und den Impuls bewahrt. Kollisionen sind ein zentraler Bestandteil physikalischer 
-# Simulationen und Animationen in Spielen. Wir erfahren, wie man eine Kollision 
-# erkennt und den Impuls nach dem Prinzip der Impulserhaltung berechnet.
+# In diesem Kapitel erweitern wir unsere Simulation, um die Coulomb-Kraft zwischen
+# geladenen Partikeln zu simulieren. Die Coulomb-Kraft beschreibt die elektrostatische 
+# Anziehung oder Abstoßung zwischen zwei Ladungen und ist proportional zum Produkt 
+# der Ladungen und umgekehrt proportional zum Quadrat ihres Abstands.
 
 
-# ___________________________________________________
-#                                                   /
-# Grundkonzepte: Kollisionen mit Impulserhaltung   (
-# __________________________________________________\
+# __________________________________
+#                                  /
+# Grundkonzepte: Coulomb-Kraft    (
+# _________________________________\
 
-# - Impuls:
-#   Der Impuls p eines Objekts ist das Produkt seiner Masse und Geschwindigkeit:
+# - Coulomb-Kraft:
+#   Die Coulomb-Kraft F zwischen zwei Ladungen q1 und q2 im Abstand r wird beschrieben durch:
 #   
-#        p = m * v
+#        F = k * q1 * q2 / r^2
 #   
-#   Bei einer Kollision zweier Objekte bleibt der Gesamtimpuls des Systems erhalten.
+#   wobei k die Coulomb-Konstante ist und in Luft oder Vakuum den Wert k ≈ 8.99e9 Nm²/C² hat.
 #
-# - Impulserhaltungsgesetz:
-#   Das Impulserhaltungsgesetz besagt, dass in einem geschlossenen System, in 
-#   dem keine äusseren Kräfte wirken, der Gesamtimpuls vor und nach der Kollision 
-#   gleich bleibt.
-
-# - Arten von Kollisionen:
-#   Wir betrachten hier elastische Kollisionen, bei denen sowohl Impuls als auch 
-#   kinetische Energie erhalten bleiben.
-
-
+# - Geladene Teilchen:
+#   Teilchen in der Simulation erhalten eine Ladung, die entweder positiv oder negativ sein kann.
+#   Je nach Vorzeichen der Ladungen werden sie sich anziehen oder abstoßen.
 
 
 import arcade
 import arcade.gui 
 import numpy as np
-import time
 
-
-# _________________________________
-#                                 /
-# Klassenstruktur für Animation  (
-# ________________________________\
-
-# Die Klasse `Body` modelliert ein physikalisches Objekt in der Simulation, 
-# das durch seine Position, Geschwindigkeit und Masse beschrieben wird.
 
 class Body:
-    def __init__(self, position, velocity, mass=1.0, radius=1.0, color=arcade.color.BLUE):
+    def __init__(self, position, velocity, mass=1.0, charge=1.0, radius=1.0, color=arcade.color.BLUE):
         self.mass = mass                                 # Masse in kg
         self.position = np.array(position, dtype=float)  # Position in m
         self.velocity = np.array(velocity, dtype=float)  # Geschwindigkeit in m/s
         self.acceleration = np.array([0.0, 0.0])         # Beschleunigung in m/s^2
         self.force = np.array([0.0, 0.0])                # Resultierende Kraft in N
+        self.charge = charge                             # Elektrische Ladung in Coulomb (C)
         self.radius = radius                             # Radius des Körpers in m
         self.color = color                               # Farbe für die Darstellung
 
@@ -83,16 +68,20 @@ class Body:
 # Die Klasse `Interaction` verwaltet die Kollisionserkennung und -berechnung 
 # zwischen zwei Körpern.
 class Interaction:
+    # Die Coulomb-Konstante k in Nm²/C²
+    K = 8.99e9
+    
     def __init__(self, bodyA, bodyB, color=arcade.color.BLUE):
         self.bodyA = bodyA
         self.bodyB = bodyB
-
+        
     def check_collision(self):
         # Prüft, ob zwei Körper kollidieren.
         distance = np.linalg.norm(self.bodyA.position - self.bodyB.position)
         return distance <= (self.bodyA.radius + self.bodyB.radius)
+        
     
-    def resolve_collision(self):
+    def resolve_collision(self, restitution=0.9):
         # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
         normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
         relative_velocity = self.bodyA.velocity - self.bodyB.velocity
@@ -103,17 +92,38 @@ class Interaction:
             return
 
         # Impulsberechnung
-        impulse = (2 * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
+        impulse = ((1 + restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
         impulse_vector = impulse * normal
 
         # Aktualisiert die Geschwindigkeit der beiden Körper
         self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
         self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
+        
+        
+    def calculate_coulomb_force(self):
+        # Berechnet die Coulomb-Kraft zwischen zwei geladenen Teilchen.
+        r_vector = self.bodyA.position - self.bodyB.position
+        distance = np.linalg.norm(r_vector)
+        
+        if distance < self.bodyA.radius + self.bodyB.radius:
+            return np.array([0.0, 0.0])  # Vermeidet unphysikalisch große Kräfte bei sehr kleinem Abstand
 
+        force_magnitude = Interaction.K * self.bodyA.charge * self.bodyB.charge / distance**2
+        force_direction = r_vector / distance  # Einheitsvektor in Richtung des Abstandsvektors
+        
+        # Berechne die Coulomb-Kraft in Richtung des Einheitsvektors
+        return force_magnitude * force_direction
+
+
+    # Wendet die Coulomb-Kraft auf beide Körper an
     def update(self):
-        # Überprüft und berechnet die Kollision, falls nötig
+        force = self.calculate_coulomb_force()
+        self.bodyA.add_force(force)
+        self.bodyB.add_force(-force)  # Newtons drittes Gesetz (actio = reactio)
+        
         if self.check_collision():
             self.resolve_collision()
+
             
             
             
@@ -188,10 +198,10 @@ class AnimationWindow(arcade.Window):
         )
 
         # Initialisiere zwei Körper
-        ball1 = Body([-2, 1.1], [2, 0], mass=1.0, radius=0.5, color=arcade.color.RED)
+        ball1 = Body([-2, 1.1], [0, 2], mass=1.0, charge=1e-4, radius=0.5, color=arcade.color.RED)
         self.bodies.append(ball1)
         
-        ball2 = Body([2, 1], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
+        ball2 = Body([2.1, 1], [0, -1], mass=1.0, charge=-1e-4, radius=0.5, color=arcade.color.BLUE)
         self.bodies.append(ball2)
 
         int12 = Interaction(ball1, ball2)
@@ -228,14 +238,12 @@ class AnimationWindow(arcade.Window):
         self.uimanager.draw() 
         
         # Wände und Bodenlinien der Box
-        points = []
-        points.append(self.meter_to_pixel(-4.5, 5))
-        points.append(self.meter_to_pixel(-4.5, -4.5))
-        points.append(self.meter_to_pixel(4.5, -4.5))
-        points.append(self.meter_to_pixel(4.5, 5))
-        
-        arcade.draw_line_strip(points, arcade.color.BLACK, 2)
-        
+        x1, y1 = self.meter_to_pixel(-4,-4)
+        x2, y2 = self.meter_to_pixel(4,4)
+        w = (x2-x1)
+        h = (y2-y1)
+        arcade.draw_rectangle_outline(x2-w//2, y2-h//2, w, h, arcade.color.BLACK, 2)
+
         # Zeigt die Simulationszeit an
         time = round(self.time, 1)
         x, y = self.meter_to_pixel(-9, 3)
@@ -274,23 +282,24 @@ class AnimationWindow(arcade.Window):
             
         # Berechnet die Kräfte und aktualisiert die Bewegungen der Objekte
         for body in self.bodies:
-            F_G = np.array([0.0, -body.mass * 9.81])  # Schwerkraft
-            body.add_force(F_G)
-
             body.update_ec(dt)  # Aktualisiert Position und Geschwindigkeit
         
-        # Überprüft und verarbeitet Kollisionen mit dem Boden
+        
         for body in self.bodies:
-            if body.position[1] < -4.5 + body.radius:
-                body.position[1] = -4.5 + body.radius
+            # Überprüft und verarbeitet Kollisionen mit dem Boden
+            if body.position[1] < -4 + body.radius:
+                body.position[1] = -4 + body.radius
+                body.velocity[1] *= -1
+            elif body.position[1] > 4 - body.radius:
+                body.position[1] = 4 - body.radius
                 body.velocity[1] *= -1
                 
             # Überprüft die Kollisionen mit den Seitenwänden
-            if body.position[0] > 4.5 - body.radius:
-                body.position[0] = 4.5 - body.radius
+            if body.position[0] < -4 + body.radius:
+                body.position[0] = -4 + body.radius
                 body.velocity[0] *= -1
-            elif body.position[0] < -4.5 + body.radius:
-                body.position[0] = -4.5 + body.radius
+            elif body.position[0] > 4 - body.radius:
+                body.position[0] = 4 - body.radius
                 body.velocity[0] *= -1
             
         # Erhöht die Simulationszeit
@@ -300,29 +309,24 @@ class AnimationWindow(arcade.Window):
 
 if __name__ == "__main__":
     # Initialisiert das Fenster für die Simulation
-    window = AnimationWindow(800, 600, "Zwei Flummis")
+    window = AnimationWindow(800, 600, "Geladene Kugeln")
 
     # starte die Simulation
     arcade.run()
 
 
 
-
-
 # ____________________________
 #                            /
-# Wichtige Konzepte          (
+# Zusammenfassung            (
 # ____________________________\
 
-# Kollisionserkennung:
-# Die Methode `check_collision` überprüft den Abstand zwischen zwei Objekten und 
-# bestimmt, ob sie kollidieren. Die Kollision wird erkannt, wenn die Entfernung 
-# zwischen ihren Mittelpunkten kleiner oder gleich der Summe ihrer Radien ist.
+# Die Coulomb-Kraft zwischen geladenen Teilchen kann dazu führen, dass sie sich 
+# entweder abstoßen oder anziehen, je nachdem, ob ihre Ladungen gleich oder 
+# entgegengesetzt sind. Diese Simulation ermöglicht es, die Effekte der 
+# elektrostatischen Wechselwirkungen zu beobachten und die Bewegung von geladenen 
+# Teilchen nachzuvollziehen.
 
-# Impulserhaltung:
-# Die Methode `resolve_collision` berechnet die neue Geschwindigkeit beider Objekte 
-# unter Berücksichtigung des Impulserhaltungsgesetzes. Dies stellt sicher, dass 
-# die Objekte nach einer Kollision in korrekter Richtung abprallen.
 
 
 
@@ -330,7 +334,7 @@ if __name__ == "__main__":
 # ____________________________
 #                            /
 # Übungsaufgaben            (
-# ____________________________\
+# ___________________________\
 
 
 # ___________
@@ -338,8 +342,10 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Füge zur Simulation einen dritten Ball hinzu. Denke daran, auch die Wechsel-
-# wirkungen hinzuzufügen. Teste die Simulation.
+# Experimentiere mit verschiedenen Ladungswerten und analysiere, wie die 
+# unterschiedlichen Polaritäten und Ladungsstärken die Bewegungen und Interaktionen 
+# beeinflussen. Passe die Elastizität `restitution` bei der `Interaction`-Klasse
+# an um ein gebundenes System (Molekül) zu erhalten. 
 
 
 # Füge hier deine Lösung ein.
@@ -352,29 +358,15 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-# Modifiziere die Kollisionen der Objekte, sodass eine Energieverlustregel 
-# simuliert wird. Das bedeutet, dass bei jeder Kollision 10 % der Energie 
-# verloren gehen und die Geschwindigkeit entsprechend angepasst wird.
+# Füge zur Simulation einen dritten geladenen Teil hinzu und beobachte, wie sich die Kräfte 
+# zwischen den Teilchen verändern. Wie beeinflusst die zusätzliche Ladung die Dynamik des Systems?
 
 
 # Füge hier deine Lösung ein.
 
 
 
-#            _...----.._
-#         ,:':::::.     `>.
-#       ,' |:::::;'     |:::.
-#      /    `'::'       :::::\
-#     /         _____     `::;\
-#    :         /:::::\      `  :      Das sieht nun schon so aus wie
-#    | ,.     /::SSt::\        |      beim Fussball. :-)
-#    |;:::.   `::::::;'        |
-#    ::::::     `::;'      ,.  ;
-#     \:::'              ,::::/
-#      \                 \:::/
-#       `.     ,:.        :;'
-#         `-.::::::..  _.''
-#            ```----'''
+
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -399,20 +391,42 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Füge zur Simulation einen dritten Ball hinzu. Denke daran, auch die Wechsel-
-# wirkungen hinzuzufügen. Teste die Simulation.
-
+# Experimentiere mit verschiedenen Ladungswerten und analysiere, wie die 
+# unterschiedlichen Polaritäten und Ladungsstärken die Bewegungen und Interaktionen 
+# beeinflussen. Passe die Elastizität `restitution` bei der `Interaction`-Klasse
+# an um ein gebundenes System (Molekül) zu erhalten. 
 
 '''
-        # Füge den folgenden Code bei Zeile 198 ein.
-        ball3 = Body([0, 1], [-1, 0], mass=1.0, radius=0.5, color=arcade.color.GREEN)
-        self.bodies.append(ball3)
-        
-        int13 = Interaction(ball1, ball3)
-        self.interactions.append(int13)
-        
-        int23 = Interaction(ball2, ball3)
-        self.interactions.append(int23)
+# Um mit unterschiedlichen Ladungswerten und der Elastizität zu experimentieren 
+# und ein gebundenes System zu schaffen, können wir den restitution-Parameter 
+# anpassen und die Ladungen variieren. Die Implementierung erfolgt durch Hinzufügen 
+# von Ladungs- und Elastizitätswerten in der Interaction-Klasse.
+
+# Anpassung der Ladungen und Elastizität in der Hauptklasse `AnimationWindow`
+
+# Füge folgenden Code in der __init__-Methode hinzu, um unterschiedliche Ladungen zu testen.
+# Beispiel für positive und negative Ladungen für ein mögliches Molekül:
+
+particle1 = Body([-2, 1], [0, 1.5], mass=1.0, charge=1e-6, radius=0.5, color=arcade.color.RED)
+self.bodies.append(particle1)
+
+particle2 = Body([2, -1], [0, -1.5], mass=1.0, charge=-1e-6, radius=0.5, color=arcade.color.BLUE)
+self.bodies.append(particle2)
+
+# Hinzufügen der Interaktion mit verringerter Elastizität (restitution) für eine 
+# gebundene Bewegung.
+
+int12 = Interaction(particle1, particle2)
+self.interactions.append(int12)
+
+# Setzen Sie die Elastizität in der `resolve_collision`-Methode auf einen kleineren 
+# Wert wie `restitution=0.8`, um die Geschwindigkeit bei jedem Stoß etwas zu 
+# reduzieren. Dadurch bleiben die Teilchen näher beieinander und bilden eine Bindung.
+
+# Der Effekt wird durch Verringerung der restitution-Werte verstärkt, was eine Art 
+# „Molekülbindung“ erzeugen kann, indem die kinetische Energie im Stoß etwas verloren 
+# geht und die Teilchen daher länger in der Nähe bleiben.
+
 '''
 
 
@@ -423,34 +437,42 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-# Modifiziere die Kollisionen der Objekte, sodass eine Energieverlustregel 
-# simuliert wird. Das bedeutet, dass bei jeder Kollision 10 % der Energie 
-# verloren gehen und die Geschwindigkeit entsprechend angepasst wird.
+# Füge zur Simulation einen dritten geladenen Teil hinzu und beobachte, wie sich die Kräfte 
+# zwischen den Teilchen verändern. Wie beeinflusst die zusätzliche Ladung die Dynamik des Systems?
 
 
 '''
-    # Die Funktion auf Zeile 95 muss wie folgt angepasst werden.
-    def resolve_collision(self, restitution=0.9):
-        # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
-        normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
-        relative_velocity = self.bodyA.velocity - self.bodyB.velocity
-        velocity_along_normal = np.dot(relative_velocity, normal)
+# Hier fügen wir ein drittes geladenes Teilchen hinzu und beobachten, wie es die Kräfte 
+# und Bewegungen beeinflusst.
 
-        # Berechnet nur, wenn die Körper aufeinander zu bewegen
-        if velocity_along_normal < 0:
-            return
+# In der __init__-Methode einen dritten geladenen Körper hinzufügen:
 
-        # Impulsberechnung
-        impulse = ( (1 + restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
-        impulse_vector = impulse * normal
+particle3 = Body([0, -2], [1, 0.5], mass=1.0, charge=1e-6, radius=0.5, color=arcade.color.GREEN)
+self.bodies.append(particle3)
 
-        # Aktualisiert die Geschwindigkeit der beiden Körper
-        self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
-        self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
+# Fügen Sie die entsprechenden Interaktionen hinzu, um Coulomb-Kräfte zwischen allen Teilchen zu berücksichtigen:
+
+int13 = Interaction(particle1, particle3)
+int23 = Interaction(particle2, particle3)
+
+self.interactions.append(int13)
+self.interactions.append(int23)
+
+# Durch Hinzufügen eines dritten Körpers mit positiver Ladung können wir beobachten, 
+# wie sich das System dynamisch verändert. Wenn beispielsweise particle1 und 
+# particle3 beide positiv geladen sind, wird sich particle3 von particle1 abstoßen, 
+# während es gleichzeitig von particle2 angezogen wird, falls particle2 negativ 
+# geladen ist. Dadurch entstehen komplexere Bahnkurven, die die Dynamik des Systems 
+# weiter veranschaulichen.
+
+# In der Simulation können Sie beobachten, wie das zusätzliche Teilchen die Balance 
+# des Systems beeinflusst und das System gegebenenfalls zu stabilen oder instabilen 
+# Bahnen führt, abhängig von den Ladungen und Abständen der Teilchen.
 
 '''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 

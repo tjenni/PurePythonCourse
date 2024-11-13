@@ -1,61 +1,51 @@
-#              ________________________________________________
-#       ______|                                                |_____
-#       \     |      13.5 KOLLISIONEN MIT IMPULSERHALTUNG      |    /
-#        )    |________________________________________________|   (
-#       /________)                                         (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ___________________________________
+#       ______|                                   |_____
+#       \     |     13.8 GRAVITATIONSKRAFT        |    /
+#        )    |___________________________________|   (
+#       /________)                            (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
-# In diesem Kapitel lernen wir, wie man Kollisionen zwischen Objekten simuliert 
-# und den Impuls bewahrt. Kollisionen sind ein zentraler Bestandteil physikalischer 
-# Simulationen und Animationen in Spielen. Wir erfahren, wie man eine Kollision 
-# erkennt und den Impuls nach dem Prinzip der Impulserhaltung berechnet.
+# In diesem Kapitel erweitern wir unsere Simulation, um die Gravitationskräfte zwischen
+# Himmelskörpern zu simulieren und die Bahnen von Planeten zu berechnen. Die Gravitationskraft
+# zwischen zwei Massen führt zu einer Anziehung, die proportional zum Produkt der Massen und 
+# umgekehrt proportional zum Quadrat ihres Abstands ist. Diese Simulation illustriert die 
+# Bewegung der Planeten um die Sonne und die Anziehungskraft, die sie aufeinander ausüben.
 
 
-# ___________________________________________________
-#                                                   /
-# Grundkonzepte: Kollisionen mit Impulserhaltung   (
-# __________________________________________________\
+# _____________________________________
+#                                     /
+# Grundkonzepte: Gravitationskraft   (
+# ____________________________________\
 
-# - Impuls:
-#   Der Impuls p eines Objekts ist das Produkt seiner Masse und Geschwindigkeit:
+# - Gravitationskraft:
+#   Die Gravitationskraft \( F \) zwischen zwei Massen \( m_1 \) und \( m_2 \) im Abstand \( r \) 
+#   wird beschrieben durch:
 #   
-#        p = m * v
+#        F = G * (m1 * m2) / r^2
 #   
-#   Bei einer Kollision zweier Objekte bleibt der Gesamtimpuls des Systems erhalten.
+#   wobei G die Gravitationskonstante ist und in Luft oder Vakuum den Wert
+#   6.674 * 10^-11 (Nm}^2/kg^2 hat.
 #
-# - Impulserhaltungsgesetz:
-#   Das Impulserhaltungsgesetz besagt, dass in einem geschlossenen System, in 
-#   dem keine äusseren Kräfte wirken, der Gesamtimpuls vor und nach der Kollision 
-#   gleich bleibt.
-
-# - Arten von Kollisionen:
-#   Wir betrachten hier elastische Kollisionen, bei denen sowohl Impuls als auch 
-#   kinetische Energie erhalten bleiben.
-
+# - Himmelskörper:
+#   Die Planeten in der Simulation erhalten eine Masse und eine Anfangsgeschwindigkeit,
+#   die ihre Bewegung im Gravitationsfeld steuert. Diese Kräfte führen zu elliptischen Bahnen 
+#   oder stabilen Orbits je nach Anfangsbedingungen der Bewegung.
 
 
 
 import arcade
 import arcade.gui 
 import numpy as np
-import time
 
-
-# _________________________________
-#                                 /
-# Klassenstruktur für Animation  (
-# ________________________________\
-
-# Die Klasse `Body` modelliert ein physikalisches Objekt in der Simulation, 
-# das durch seine Position, Geschwindigkeit und Masse beschrieben wird.
 
 class Body:
-    def __init__(self, position, velocity, mass=1.0, radius=1.0, color=arcade.color.BLUE):
+    def __init__(self, position, velocity, mass=1.0, charge=1.0, radius=1.0, color=arcade.color.BLUE):
         self.mass = mass                                 # Masse in kg
         self.position = np.array(position, dtype=float)  # Position in m
         self.velocity = np.array(velocity, dtype=float)  # Geschwindigkeit in m/s
         self.acceleration = np.array([0.0, 0.0])         # Beschleunigung in m/s^2
         self.force = np.array([0.0, 0.0])                # Resultierende Kraft in N
+        self.charge = charge                             # Elektrische Ladung in Coulomb (C)
         self.radius = radius                             # Radius des Körpers in m
         self.color = color                               # Farbe für die Darstellung
 
@@ -83,16 +73,20 @@ class Body:
 # Die Klasse `Interaction` verwaltet die Kollisionserkennung und -berechnung 
 # zwischen zwei Körpern.
 class Interaction:
+    # Die Gravitationskonstante G in Nm²/kg²
+    G = 6.67430e-11
+    
     def __init__(self, bodyA, bodyB, color=arcade.color.BLUE):
         self.bodyA = bodyA
         self.bodyB = bodyB
-
+        
     def check_collision(self):
         # Prüft, ob zwei Körper kollidieren.
         distance = np.linalg.norm(self.bodyA.position - self.bodyB.position)
         return distance <= (self.bodyA.radius + self.bodyB.radius)
+        
     
-    def resolve_collision(self):
+    def resolve_collision(self, restitution=0.9):
         # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
         normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
         relative_velocity = self.bodyA.velocity - self.bodyB.velocity
@@ -103,17 +97,37 @@ class Interaction:
             return
 
         # Impulsberechnung
-        impulse = (2 * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
+        impulse = ((1 + restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
         impulse_vector = impulse * normal
 
         # Aktualisiert die Geschwindigkeit der beiden Körper
         self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
         self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
+        
+        
+    def calculate_gravitational_force(self):
+        # Berechnet die Gravitationskraft zwischen zwei Massen.
+        r_vector = self.bodyB.position - self.bodyA.position
+        distance = np.linalg.norm(r_vector)
+        
+        if distance < self.bodyA.radius + self.bodyB.radius:
+            return np.array([0.0, 0.0])  # Vermeidet unphysikalisch große Kräfte bei sehr kleinem Abstand
 
+        force_magnitude = Interaction.G * self.bodyA.mass * self.bodyB.mass / distance**2
+        force_direction = r_vector / distance  # Einheitsvektor in Richtung des Abstandsvektors
+        
+        return force_magnitude * force_direction
+
+
+    # Wendet die Coulomb-Kraft auf beide Körper an
     def update(self):
-        # Überprüft und berechnet die Kollision, falls nötig
+        force = self.calculate_gravitational_force()
+        self.bodyA.add_force(force)
+        self.bodyB.add_force(-force)  # Newtons drittes Gesetz (actio = reactio)
+        
         if self.check_collision():
             self.resolve_collision()
+
             
             
             
@@ -131,7 +145,7 @@ class AnimationWindow(arcade.Window):
         self.set_min_size(width, height)
         
         # Skalierungsfaktor in Pixel/Meter für die Darstellung
-        self.scale = 50                       
+        self.scale = 1e-9                   
         
         # Ursprung des Koordinatensystems in die Mitte des Fensters setzen
         self.center = [width // 2 + 100, height // 2]  
@@ -187,15 +201,14 @@ class AnimationWindow(arcade.Window):
                 child=v_box) 
         )
 
-        # Initialisiere zwei Körper
-        ball1 = Body([-2, 1.1], [2, 0], mass=1.0, radius=0.5, color=arcade.color.RED)
-        self.bodies.append(ball1)
+        # Initialisiere zwei Himmelskörper, z.B. Sonne und Planet
+        sun = Body([0, 0], [0, 0], mass=1.989e30, radius=1e9, color=arcade.color.RED)
+        planet = Body([1.5e11, 0], [0, 2.98e4], mass=5.972e24, radius=1e8, color=arcade.color.BLUE)
         
-        ball2 = Body([2, 1], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
-        self.bodies.append(ball2)
+        self.bodies.extend([sun, planet])
+        
+        self.interactions.append(Interaction(sun, planet))
 
-        int12 = Interaction(ball1, ball2)
-        self.interactions.append(int12)
 
     
     # Passt die Ursprungsposition bei Fenstergrößenänderung an
@@ -227,29 +240,21 @@ class AnimationWindow(arcade.Window):
         # Zeichnet die Benutzeroberfläche
         self.uimanager.draw() 
         
-        # Wände und Bodenlinien der Box
-        points = []
-        points.append(self.meter_to_pixel(-4.5, 5))
-        points.append(self.meter_to_pixel(-4.5, -4.5))
-        points.append(self.meter_to_pixel(4.5, -4.5))
-        points.append(self.meter_to_pixel(4.5, 5))
-        
-        arcade.draw_line_strip(points, arcade.color.BLACK, 2)
-        
         # Zeigt die Simulationszeit an
         time = round(self.time, 1)
-        x, y = self.meter_to_pixel(-9, 3)
+        x, y = (-450 + self.center[0], 150 + self.center[1])
         arcade.draw_text(f"t = {time} s", x, y, arcade.color.BLACK)
         
         # Zeigt die FPS an
         fps = round(sum(self.fps_history) / len(self.fps_history), 1)
-        x, y = self.meter_to_pixel(-9, 2.5)
+        x, y = (-450 + self.center[0], 100 + self.center[1])
         arcade.draw_text(f"FPS = {fps}", x, y, arcade.color.BLACK)
         
         # Zeichnet alle Körper in der Szene
         for body in self.bodies:
             x, y = self.meter_to_pixel(body.position[0], body.position[1])
             r = body.radius * self.scale
+            r = max(5,r)
             arcade.draw_circle_filled(x, y, r, body.color)
 
 
@@ -263,6 +268,8 @@ class AnimationWindow(arcade.Window):
         self.fps_history.append(1.0/dt)               
         self.fps_history.pop(0)
         
+        dt = 5*3600
+        
         # Setzt die Kräfte aller Körper auf null
         for body in self.bodies:
             body.clear_force()
@@ -274,24 +281,8 @@ class AnimationWindow(arcade.Window):
             
         # Berechnet die Kräfte und aktualisiert die Bewegungen der Objekte
         for body in self.bodies:
-            F_G = np.array([0.0, -body.mass * 9.81])  # Schwerkraft
-            body.add_force(F_G)
-
             body.update_ec(dt)  # Aktualisiert Position und Geschwindigkeit
         
-        # Überprüft und verarbeitet Kollisionen mit dem Boden
-        for body in self.bodies:
-            if body.position[1] < -4.5 + body.radius:
-                body.position[1] = -4.5 + body.radius
-                body.velocity[1] *= -1
-                
-            # Überprüft die Kollisionen mit den Seitenwänden
-            if body.position[0] > 4.5 - body.radius:
-                body.position[0] = 4.5 - body.radius
-                body.velocity[0] *= -1
-            elif body.position[0] < -4.5 + body.radius:
-                body.position[0] = -4.5 + body.radius
-                body.velocity[0] *= -1
             
         # Erhöht die Simulationszeit
         self.time += dt  
@@ -300,7 +291,7 @@ class AnimationWindow(arcade.Window):
 
 if __name__ == "__main__":
     # Initialisiert das Fenster für die Simulation
-    window = AnimationWindow(800, 600, "Zwei Flummis")
+    window = AnimationWindow(800, 600, "Stern und Planet")
 
     # starte die Simulation
     arcade.run()
@@ -309,20 +300,11 @@ if __name__ == "__main__":
 
 
 
+
 # ____________________________
 #                            /
-# Wichtige Konzepte          (
+# Zusammenfassung            (
 # ____________________________\
-
-# Kollisionserkennung:
-# Die Methode `check_collision` überprüft den Abstand zwischen zwei Objekten und 
-# bestimmt, ob sie kollidieren. Die Kollision wird erkannt, wenn die Entfernung 
-# zwischen ihren Mittelpunkten kleiner oder gleich der Summe ihrer Radien ist.
-
-# Impulserhaltung:
-# Die Methode `resolve_collision` berechnet die neue Geschwindigkeit beider Objekte 
-# unter Berücksichtigung des Impulserhaltungsgesetzes. Dies stellt sicher, dass 
-# die Objekte nach einer Kollision in korrekter Richtung abprallen.
 
 
 
@@ -330,7 +312,7 @@ if __name__ == "__main__":
 # ____________________________
 #                            /
 # Übungsaufgaben            (
-# ____________________________\
+# ___________________________\
 
 
 # ___________
@@ -338,8 +320,6 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Füge zur Simulation einen dritten Ball hinzu. Denke daran, auch die Wechsel-
-# wirkungen hinzuzufügen. Teste die Simulation.
 
 
 # Füge hier deine Lösung ein.
@@ -352,29 +332,13 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-# Modifiziere die Kollisionen der Objekte, sodass eine Energieverlustregel 
-# simuliert wird. Das bedeutet, dass bei jeder Kollision 10 % der Energie 
-# verloren gehen und die Geschwindigkeit entsprechend angepasst wird.
 
 
 # Füge hier deine Lösung ein.
 
 
 
-#            _...----.._
-#         ,:':::::.     `>.
-#       ,' |:::::;'     |:::.
-#      /    `'::'       :::::\
-#     /         _____     `::;\
-#    :         /:::::\      `  :      Das sieht nun schon so aus wie
-#    | ,.     /::SSt::\        |      beim Fussball. :-)
-#    |;:::.   `::::::;'        |
-#    ::::::     `::;'      ,.  ;
-#     \:::'              ,::::/
-#      \                 \:::/
-#       `.     ,:.        :;'
-#         `-.::::::..  _.''
-#            ```----'''
+
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -394,63 +358,8 @@ if __name__ == "__main__":
 #   
 
 
-# ___________
-#            \
-# Aufgabe 1  /
-# __________/
-#
-# Füge zur Simulation einen dritten Ball hinzu. Denke daran, auch die Wechsel-
-# wirkungen hinzuzufügen. Teste die Simulation.
-
-
-'''
-        # Füge den folgenden Code bei Zeile 198 ein.
-        ball3 = Body([0, 1], [-1, 0], mass=1.0, radius=0.5, color=arcade.color.GREEN)
-        self.bodies.append(ball3)
-        
-        int13 = Interaction(ball1, ball3)
-        self.interactions.append(int13)
-        
-        int23 = Interaction(ball2, ball3)
-        self.interactions.append(int23)
-'''
-
-
-
-
-# ___________
-#            \
-# Aufgabe 2  /
-# __________/
-#
-# Modifiziere die Kollisionen der Objekte, sodass eine Energieverlustregel 
-# simuliert wird. Das bedeutet, dass bei jeder Kollision 10 % der Energie 
-# verloren gehen und die Geschwindigkeit entsprechend angepasst wird.
-
-
-'''
-    # Die Funktion auf Zeile 95 muss wie folgt angepasst werden.
-    def resolve_collision(self, restitution=0.9):
-        # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
-        normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
-        relative_velocity = self.bodyA.velocity - self.bodyB.velocity
-        velocity_along_normal = np.dot(relative_velocity, normal)
-
-        # Berechnet nur, wenn die Körper aufeinander zu bewegen
-        if velocity_along_normal < 0:
-            return
-
-        # Impulsberechnung
-        impulse = ( (1 + restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
-        impulse_vector = impulse * normal
-
-        # Aktualisiert die Geschwindigkeit der beiden Körper
-        self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
-        self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
-
-'''
-
-
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
+
 
 

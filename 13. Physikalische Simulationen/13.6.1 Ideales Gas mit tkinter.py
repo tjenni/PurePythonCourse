@@ -106,7 +106,7 @@ class Interaction:
 class SimulationApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Simulation Ideales Gas")
+        self.root.title("Ideales Gas")
         
         # Canvas für die Darstellung der Teilchen
         self.canvas = tk.Canvas(root, width=300, height=300, bg="white")
