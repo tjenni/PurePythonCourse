@@ -4,6 +4,30 @@
 #        )    |__________________________________|   (
 #       /________)                           (________\      14.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
+# Ein elastischer Körper ist ein physikalisches Modell, das durch innere Kräfte 
+# und Dämpfungen miteinander verbunden ist. Durch diese elastischen Verbindungen 
+# können sich die Objekte verformen und dann zurück in ihre Ausgangsform schwingen, 
+# ähnlich wie bei einem Netzwerk aus Federn. In dieser Simulation verwenden wir Federn, 
+# um die Wechselwirkungen und Spannungen zwischen den Körpern zu modellieren. 
+# Diese Strukturen ermöglichen komplexe dynamische Bewegungen und erlauben die 
+# Simulation von Elastizität und Schwingungen in einem flexiblen Körper.
+
+# ___________________________________________________
+#                                                   /
+# Grundkonzepte: Elastizität und Dämpfung           (
+# __________________________________________________\
+
+# - Elastizität:
+#   Die elastische Kraft basiert auf dem Hookeschen Gesetz, das eine proportionale 
+#   Beziehung zwischen der Auslenkung eines Körpers und der Rückstellkraft beschreibt.
+#   Die Federn in diesem Modell simulieren diese elastische Wirkung, um Spannungen 
+#   zwischen den verbundenen Körpern zu erzeugen.
+
+# - Dämpfung:
+#   Eine Dämpfungskraft ist in das Modell integriert, um die Schwingungen zu kontrollieren
+#   und instabile oder unendliche Schwingungen zu vermeiden. Diese Dämpfung wirkt entgegen 
+#   der Bewegungsrichtung und reduziert die Amplitude der Schwingungen mit der Zeit.
+
 
 
 import arcade
@@ -367,10 +391,12 @@ if __name__ == "__main__":
 #                           /
 # Zusammenfassung          (
 # __________________________\
-#
-# Das Doppelpendel zeigt chaotisches Verhalten durch die Interaktion von zwei Massen,
-# die über Federn verbunden sind. Die Bewegung hängt stark von der Anfangsposition und
-# den Systemparametern ab, was zu komplexen, oft unvorhersehbaren Bewegungen führt.
+
+# Zusammenfassend modelliert dieses Kapitel elastische Körper und zeigt, wie Federn 
+# und Dämpfungskräfte zur Simulation von Spannungen und Deformationen zwischen 
+# miteinander verbundenen Körpern eingesetzt werden können. Dies erlaubt die 
+# Simulation von elastischen Eigenschaften und die Erforschung dynamischer 
+# Schwingungen in Systemen, die unter äußeren Einflüssen stehen.
 
 
 
@@ -385,9 +411,11 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Experimentiere mit verschiedenen Anfangspositionen, Federkonstanten und Längen, 
-# um die Bewegung des Doppelpendels zu beeinflussen. Beobachte, wie sich die 
-# Stabilität und das Verhalten der Bewegung verändern.
+# Experimentiere mit verschiedenen Federkonstanten und Dämpfungseinstellungen für die 
+# elastischen Verbindungen. Beobachte, wie sich die Stabilität und Schwingungen der 
+# elastischen Körper bei unterschiedlichen Werten für die Federkonstante k und die 
+# Dämpfung ändern. Stelle die Werte so ein, dass die Bewegung stabil bleibt.
+
 
 # Füge hier deine Lösung ein.
 
@@ -399,6 +427,13 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
+# Erstelle ein Rechteck aus vier elastischen Körpern, die über Federn 
+# miteinander verbunden sind. Experimentiere mit verschiedenen Anfangs-
+# geschwindigkeiten und beobachte, wie sich das Rechteck sich verhält. 
+# Analysiere, wie sich das Rechteck deformiert und sich die Schwingungen 
+# verhalten.
+
+# Füge hier deine Lösung ein.
 
 
 
@@ -445,19 +480,58 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
+# Experimentiere mit verschiedenen Federkonstanten und Dämpfungseinstellungen für die 
+# elastischen Verbindungen. Beobachte, wie sich die Stabilität und Schwingungen der 
+# elastischen Körper bei unterschiedlichen Werten für die Federkonstante k und die 
+# Dämpfung ändern. Stelle die Werte so ein, dass die Bewegung stabil bleibt.
 
+'''
+        # Initialisiere die Körper und Wechselwirkungen
+        body1 = Body([-1, -1], [0, 5], mass=1.0, radius=0.2, color=arcade.color.RED)
+        body2 = Body([0, 1], [0, 5], mass=1.0, radius=0.2, color=arcade.color.GREEN)
+        body3 = Body([1, -1], [-5, 0], mass=1.0, radius=0.2, color=arcade.color.BLUE)
+        
+        self.bodies.extend([body1, body2, body3])
+        
+        spring12 = Spring(body1, body2, k=4.0, damping=0.98)
+        spring13 = Spring(body1, body3, k=4.0, damping=0.98)
+        spring23 = Spring(body2, body3, k=4.0, damping=0.98)
+
+        self.interactions.extend([spring12, spring13, spring23])
+'''
 
 # ___________
 #            \
 # Aufgabe 2  /
 # __________/
 #
+#
+# Erstelle ein Rechteck aus vier elastischen Körpern, die über Federn 
+# miteinander verbunden sind. Experimentiere mit verschiedenen Anfangs-
+# geschwindigkeiten und beobachte, wie sich das Rechteck sich verhält. 
+# Analysiere, wie sich das Rechteck deformiert und sich die Schwingungen 
+# verhalten.
 
+'''
+        # Initialisiere die Körper und Wechselwirkungen
+        body1 = Body([-1, 1], [-2, -1], mass=1.0, radius=0.2, color=arcade.color.RED)
+        body2 = Body([1, 1], [-2, -1], mass=1.0, radius=0.2, color=arcade.color.BLUE)
+        body3 = Body([-1, -1], [1, 1], mass=1.0, radius=0.2, color=arcade.color.GREEN)
+        body4 = Body([1, -1], [-1, -1], mass=1.0, radius=0.2, color=arcade.color.ORANGE)
+        
+        self.bodies.extend([body1, body2, body3, body4])
+        
+        # Füge die elastischen Verbindungen zwischen den Körpern hinzu, um das Rechteck zu bilden
+        spring12 = Spring(body1, body2, k=50.0, damping=0.9)
+        spring13 = Spring(body1, body3, k=50.0, damping=0.9)
+        spring24 = Spring(body2, body4, k=50.0, damping=0.9)
+        spring34 = Spring(body3, body4, k=50.0, damping=0.9)
 
+        # Verbindungen entlang der Diagonalen für zusätzliche Stabilität
+        spring14 = Spring(body1, body4, k=50.0, damping=0.9)
+        spring23 = Spring(body2, body3, k=50.0, damping=0.9)
+'''
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-
-
-
 
 

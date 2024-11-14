@@ -1,15 +1,36 @@
-#              __________________________________
-#       ______|                                  |_____
+#              _________________________
+#       ______|                         |_____
 #       \     |    13.8.3 SEILWELLE     |    /
-#        )    |__________________________________|   (
-#       /________)                           (________\      14.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#        )    |_________________________|   (
+#       /________)                  (________\      14.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
+# In diesem Kapitel modellieren wir die Ausbreitung einer Welle entlang eines Seils.
+# Die einzelnen Körper, die das Seil bilden, sind über Federn miteinander verbunden.
+# Indem ein Ende des Seils periodisch bewegt wird, entsteht eine Wellenbewegung,
+# die sich entlang des Seils ausbreitet. Das System zeigt die Eigenschaften
+# einer mechanischen Welle, wie Überlagerung, Dämpfung und Reflexion an den Enden.
 
 
 import arcade
 import arcade.gui 
 import numpy as np
 import math
+
+
+# Rechteckige Wellenbewegung
+def square_wave(t, frequenz=1):
+    return 1 if (int(t * frequenz) % 2 == 0) else -1
+
+# Dreieckige Wellenbewegung
+def triangle_wave(t, frequenz=1):
+    period = 1 / frequenz
+    t = t % period
+    return 4 * abs((t / period) - 0.5) - 1
+
+# Sinus Wellenbewegung
+def sinus_wave(t, frequenz=1):
+    return math.sin(2*math.pi*frequenz*t)
+
 
 
 # Die Klasse `Body` modelliert ein physikalisches Objekt in der Simulation, 
@@ -186,8 +207,6 @@ class AnimationWindow(arcade.Window):
         # FPS-Berechnung mit gleitendem Durchschnitt
         self.fps_history = [0] * 30
         
-        self.frame = 0
-        
         # UI-Manager zur Steuerung der Benutzeroberfläche (Buttons)
         self.uimanager = arcade.gui.UIManager() 
         self.uimanager.enable() 
@@ -332,7 +351,7 @@ class AnimationWindow(arcade.Window):
             body.update_ec(dt)  # Aktualisiert Position und Geschwindigkeit
             
         # move last body in periodic order
-        self.bodies[-1].position[1] = math.sin(2*self.time)
+        self.bodies[-1].position[1] = sinus_wave(self.time, frequenz=0.5)
         
         # Überprüft und verarbeitet Kollisionen mit dem Boden
         for body in self.bodies:
@@ -354,9 +373,6 @@ class AnimationWindow(arcade.Window):
             
         # Erhöht die Simulationszeit
         self.time += dt
-        
-        # erhöhre die Framenummer
-        self.frame += 1
 
 
 
@@ -370,15 +386,15 @@ if __name__ == "__main__":
 
 
 
-
 # ___________________________
 #                           /
 # Zusammenfassung          (
 # __________________________\
 #
-# Das Doppelpendel zeigt chaotisches Verhalten durch die Interaktion von zwei Massen,
-# die über Federn verbunden sind. Die Bewegung hängt stark von der Anfangsposition und
-# den Systemparametern ab, was zu komplexen, oft unvorhersehbaren Bewegungen führt.
+# Die Simulation der Seilwelle zeigt, wie sich Wellen entlang eines elastischen Seils 
+# fortpflanzen, indem Kräfte zwischen benachbarten Körpern wirken. Die Welle breitet sich 
+# von einem fixierten Ende bis zum anderen aus und spiegelt dabei die Eigenschaften von 
+# Wellen in der realen Welt wider, wie Reflexion, Ausbreitungsgeschwindigkeit und Amplitudendämpfung.
 
 
 
@@ -393,9 +409,9 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Experimentiere mit verschiedenen Anfangspositionen, Federkonstanten und Längen, 
-# um die Bewegung des Doppelpendels zu beeinflussen. Beobachte, wie sich die 
-# Stabilität und das Verhalten der Bewegung verändern.
+# Verändere die Federkonstante `k` und die Dämpfung für die Verbindungen zwischen 
+# den Körpern im Seil. Beobachte, wie sich die Ausbreitungsgeschwindigkeit und die 
+# Amplitude der Welle durch Änderungen dieser Parameter beeinflussen lassen.
 
 # Füge hier deine Lösung ein.
 
@@ -407,6 +423,11 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
+# Experimentiere mit verschiedenen Bewegungsmustern am fixierten Ende des Seils.
+# Erstelle zum Beispiel eine rechteckige oder dreieckige Wellenform und analysiere,
+# wie sich diese Wellenform entlang des Seils ausbreitet und an den Enden reflektiert wird.
+
+# Füge hier deine Lösung ein.
 
 
 
@@ -440,6 +461,37 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
+# Verändere die Federkonstante `k` und die Dämpfung für die Verbindungen zwischen 
+# den Körpern im Seil. Beobachte, wie sich die Ausbreitungsgeschwindigkeit und die 
+# Amplitude der Welle durch Änderungen dieser Parameter beeinflussen lassen.
+
+'''
+# Um die Federkonstante `k` und die Dämpfung anzupassen, ändere die Werte 
+# direkt in den Initialisierungen der `Spring`-Objekte in der Klasse `AnimationWindow`.
+        
+        # Zeile 246
+        
+        # Initialisiere die Körper und Wechselwirkungen
+        last_body = None
+        for i in range(-14,15,1):
+            body = Body([i/4, 0], [0, 0], mass=0.1, radius=0.1, fixed_x=True, color=arcade.color.RED)
+            
+            if last_body is not None:
+                spring = Spring(last_body, body, k=60.0, damping=0.5)
+                self.interactions.append(spring)
+                
+            self.bodies.append(body)
+            last_body = body
+            
+# Beobachte die Effekte:
+# - Ein höherer Wert für `k` erhöht die Wellenfortpflanzungsgeschwindigkeit.
+#
+# - Eine geringere Dämpfung führt zu größeren Amplituden und weniger Energieverlust
+#   pro Schwingungszyklus, was dazu führt, dass die Welle sich weiter ausbreitet.
+#
+'''
+
+
 
 
 # ___________
@@ -447,13 +499,30 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
+# Experimentiere mit verschiedenen Bewegungsmustern am fixierten Ende des Seils.
+# Erstelle zum Beispiel eine rechteckige oder dreieckige Wellenform und analysiere,
+# wie sich diese Wellenform entlang des Seils ausbreitet und an den Enden reflektiert wird.
 
+'''
+# Ersetze die Bewegung in Zeile 354 mit 
+
+    self.bodies[-1].position[1] = square_wave(self.time, frequenz=0.5)
+    
+# oder
+
+    self.bodies[-1].position[1] = triangle_wave(self.time, frequenz=0.5)
+
+# Beobachtungen:
+# - Die rechteckige Welle erzeugt schnelle Wechsel in der Auslenkung,
+#   was schärfere Wellenfronten entlang des Seils zur Folge hat.
+#
+# - Die dreieckige Welle verläuft langsamer, was zu einer glatteren 
+#   Wellenbewegung entlang des Seils führt.
+#
+# - Analysiere, wie die Wellen an den Rändern reflektiert werden und
+#   wie sich die Form der Wellenfront nach der Reflexion verändert.
+'''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-
-
-
-
-
 

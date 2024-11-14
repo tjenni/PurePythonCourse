@@ -18,10 +18,10 @@
 # ____________________________________\
 
 # - Gravitationskraft:
-#   Die Gravitationskraft \( F \) zwischen zwei Massen \( m_1 \) und \( m_2 \) im Abstand \( r \) 
+#   Die Gravitationskraft F_G zwischen zwei Massen m_1 und m_2 im Abstand r
 #   wird beschrieben durch:
 #   
-#        F = G * (m1 * m2) / r^2
+#        F_G = G * (m1 * m2) / r^2
 #   
 #   wobei G die Gravitationskonstante ist und in Luft oder Vakuum den Wert
 #   6.674 * 10^-11 (Nm}^2/kg^2 hat.
@@ -192,6 +192,9 @@ class AnimationWindow(arcade.Window):
         self.fps_history = [0] * 30
         self.frame = 0
         
+        # Maximale Anzahl Tracepunkte
+        self.max_trace = 100
+        
         # UI-Manager zur Steuerung der Benutzeroberfläche (Buttons)
         self.uimanager = arcade.gui.UIManager() 
         self.uimanager.enable() 
@@ -227,7 +230,7 @@ class AnimationWindow(arcade.Window):
                 align_y=210,
                 child=v_box) 
         )
-
+        
         # Initialisiere zwei Himmelskörper, z.B. Sonne und Planet
         sun = Body([0, 0], [0, 0], mass=1.989e30, radius=1e9, color=arcade.color.RED)
         planet = Body([1.5e11, 0], [0, 2.98e4], mass=5.972e24, radius=1e8, color=arcade.color.BLUE)
@@ -236,6 +239,7 @@ class AnimationWindow(arcade.Window):
         
         gravity_sun_planet = Gravity(sun, planet)
         self.interactions.extend([gravity_sun_planet])
+
 
 
     
@@ -284,7 +288,7 @@ class AnimationWindow(arcade.Window):
             # zeichne Körper
             if self.frame % 10 == 0:
                 body.trace.append(body.position.copy())
-                if len(body.trace) > 100:
+                if len(body.trace) > self.max_trace:
                     body.trace.pop(0)
             
             # zeichne die Spur
@@ -340,12 +344,17 @@ if __name__ == "__main__":
 
 
 
-
-
 # ____________________________
 #                            /
-# Zusammenfassung            (
-# ____________________________\
+# Zusammenfassung           (
+# ___________________________\
+#
+# In diesem Kapitel haben wir die Gravitationskraft simuliert, die zwischen zwei Massen wirkt 
+# und sie anzieht. Die Gravitationskraft ist proportional zum Produkt der Massen und umgekehrt 
+# proportional zum Quadrat ihres Abstands. Diese Simulation zeigt, wie Himmelskörper wie 
+# Planeten sich in einer stabilen Umlaufbahn um die Sonne bewegen können. Die resultierenden 
+# Bahnen hängen von den Anfangsgeschwindigkeiten und den Anfangspositionen ab und illustrieren 
+# das Verhalten und die Bewegung von Objekten in einem Gravitationsfeld.
 
 
 
@@ -361,7 +370,10 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-
+# Füge der Simulation mehrere Planeten hinzu, die um die Sonne kreisen. 
+# Experimentiere mit verschiedenen Massen, Anfangsgeschwindigkeiten und 
+# Abständen zur Sonne und beobachte, wie sich die Umlaufbahnen ändern. 
+# Stelle dabei sicher, dass die Planeten stabil in ihren Bahnen bleiben.
 
 # Füge hier deine Lösung ein.
 
@@ -373,9 +385,34 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
+#
+# Erzeuge ein Doppelsternsystem mit zwei Sternen, die sich um ihren gemeinsamen
+# Schwerpunkt bewegen. Berechne die Anfangsgeschwindigkeiten, sodass beide Sterne 
+# in einem stabilen Orbit bleiben. Beobachte, wie sich die Bahn der beiden Sterne 
+# unter dem Einfluss ihrer gegenseitigen Gravitation verhält.
 
+# - Merkur: 
+#     - Position (x): 5.79e10 m
+#     - Geschwindigkeit (y): 4.79e4 m/s
+#     - Masse: 3.30e23 kg
+#
+# - Venus:
+#     - Position (x): 1.082e11 m
+#     - Geschwindigkeit (y): 3.50e4 m/s
+#     - Masse: 4.87e24 kg
+#
+# - Erde (ist bereits vorhanden, aber zur Orientierung):
+#     - Position (x): 1.496e11 m
+#     - Geschwindigkeit (y): 2.978e4 m/s
+#     - Masse: 5.97e24 kg
+#
+# - Mars:
+#     - Position (x): 2.279e11 m
+#     - Geschwindigkeit (y): 2.41e4 m/s
+#     - Masse: 6.42e23 kg
 
 # Füge hier deine Lösung ein.
+
 
 
 
@@ -386,6 +423,7 @@ if __name__ == "__main__":
 #    '::....MMMMM88&&&&&&....::'
 #       `''''MMMMM88&&&&''''`
 #       jgs   'MMM8&&&'
+#
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -405,10 +443,93 @@ if __name__ == "__main__":
 #   
 
 
+# ___________
+#            \
+# Aufgabe 1  /
+# __________/
+#
+# Füge der Simulation mehrere Planeten hinzu, die um die Sonne kreisen. 
+# Experimentiere mit verschiedenen Massen, Anfangsgeschwindigkeiten und 
+# Abständen zur Sonne und beobachte, wie sich die Umlaufbahnen ändern. 
+# Stelle dabei sicher, dass die Planeten stabil in ihren Bahnen bleiben.
+
+# - Merkur: 
+#     - Position (x): 5.79e10 m
+#     - Geschwindigkeit (y): 4.79e4 m/s
+#     - Masse: 3.30e23 kg
+#
+# - Venus:
+#     - Position (x): 1.082e11 m
+#     - Geschwindigkeit (y): 3.50e4 m/s
+#     - Masse: 4.87e24 kg
+#
+# - Erde (ist bereits vorhanden, aber zur Orientierung):
+#     - Position (x): 1.496e11 m
+#     - Geschwindigkeit (y): 2.978e4 m/s
+#     - Masse: 5.97e24 kg
+#
+# - Mars:
+#     - Position (x): 2.279e11 m
+#     - Geschwindigkeit (y): 2.41e4 m/s
+#     - Masse: 6.42e23 kg
+
+'''
+# Wir erstellen mehrere Planeten mit unterschiedlichen Massen, Entfernungen und
+# Anfangsgeschwindigkeiten, die um die Sonne kreisen.
+
+        
+        sun = Body([0, 0], [0, 0], mass=1.989e30, radius=1e9, color=arcade.color.RED)
+
+        earth = Body([1.5e11, 0], [0, 2.98e4], mass=5.972e24, radius=1e8, color=arcade.color.BLUE)
+        mars = Body([2.27e11, 0], [0, 2.41e4], mass=6.39e23, radius=5e7, color=arcade.color.RED)
+        venus = Body([1.08e11, 0], [0, 3.50e4], mass=4.87e24, radius=8e7, color=arcade.color.ORANGE)
+        mercury = Body([5.79e10, 0], [0, 4.79e4], mass=3.3e23, radius=4e7, color=arcade.color.GRAY)    
+
+        bodies = [sun, earth, mars, venus, mercury]
+        self.bodies.extend(bodies)
+        
+        # Füge die Gravitationsinteraktionen für alle Planeten und die Sonne hinzu
+        interactions = []
+        for i in range(1, len(bodies)):
+            interactions.append(Gravity(sun, bodies[i]))
+
+        self.interactions.extend(interactions)
+        
+        self.max_trace = 30
+'''
+
+
+
+
+# ___________
+#            \
+# Aufgabe 2  /
+# __________/
+#
+#
+# Erzeuge ein Doppelsternsystem mit zwei Sternen, die sich um ihren gemeinsamen
+# Schwerpunkt bewegen. Berechne die Anfangsgeschwindigkeiten, sodass beide Sterne 
+# in einem stabilen Orbit bleiben. Beobachte, wie sich die Bahn der beiden Sterne 
+# unter dem Einfluss ihrer gegenseitigen Gravitation verhält.
+
+'''
+# Wir erstellen ein Doppelsternsystem, bei dem die beiden Sterne sich um den gemeinsamen
+# Schwerpunkt bewegen. Die Anfangsgeschwindigkeiten werden so berechnet, dass sie sich 
+# stabil umkreisen.
+
+        star1 = Body([-8e10, 0], [0, 1e4], mass=2.0e30, radius=1.2e9, color=arcade.color.BLUE)
+        star2 = Body([8e10, 0], [0, -1e4], mass=2.0e30, radius=1.2e9, color=arcade.color.RED)
+
+        # Füge die Gravitationsinteraktion zwischen den beiden Sternen hinzu
+        gravity12 = Gravity(star1, star2)
+
+        # Zur Simulation hinzufügen
+        self.bodies.extend([star1, star2])
+        self.interactions.append(gravity12)
+'''
+
+
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-
-
-
 
 
 
