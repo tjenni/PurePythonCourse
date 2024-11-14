@@ -42,7 +42,7 @@ first_color = colors[0]
 print("Erste Farbe:", first_color)
 
 # Versucht man, ein Element zu ändern, führt das zu einem Fehler:
-# farben[0] = "Gelb"  # Das führt zu einem Fehler!
+# colors[0] = "Gelb"  # Das führt zu einem Fehler!
 
 
 
@@ -76,7 +76,7 @@ print("y:", y)
 # Element nacheinander zuzugreifen.
 
 for color in colors:
-    print("Farbe:", farbe)
+    print("Farbe:", color)
 
 
 

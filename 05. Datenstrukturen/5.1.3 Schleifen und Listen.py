@@ -56,8 +56,8 @@ for index, fruit in enumerate(fruits):
 # wir einen Zähler, um den Index jedes Elements zu kontrollieren.
 
 index = 0
-while index < len(fruechte):
-    print(f"Element bei Index {index}:", fruechte[index])
+while index < len(fruits):
+    print(f"Element bei Index {index}:", fruits[index])
     index += 1
 
 

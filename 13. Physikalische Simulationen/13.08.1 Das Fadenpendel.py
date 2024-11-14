@@ -1,32 +1,39 @@
-#              _____________________________________________
-#       ______|                                             |_____
-#       \     |             13.7 DAS FADENPENDEL            |    /
-#        )    |_____________________________________________|   (
-#       /________)                                     (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ___________________________________
+#       ______|                                   |_____
+#       \     |      13.8.1 DAS FADENPENDEL       |    /
+#        )    |___________________________________|   (
+#       /________)                            (________\      14.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # In diesem Kapitel erweitern wir unsere Simulation, um die Bewegung eines 
 # Fadenpendels zu simulieren. Das Fadenpendel besteht aus einem Punktkörper, 
-# der an einem festen Punkt mit einem masselosen Seil aufgehängt ist.
-# Die Rückstellkraft ist proportional zur Auslenkung und zeigt in Richtung 
-# der Ruhelage. Diese Kraft ergibt sich durch die Schwerkraft.
+# der an einem festen Punkt mit einem masselosen Seil aufgehängt ist. Die Bewegung
+# des Pendels wird durch die Schwerkraft und eine Spannungskraft im Seil bestimmt.
 
-# ___________________________________________________
-#                                                   /
-# Grundkonzepte: Das Fadenpendel                    (
-# __________________________________________________\
-
+# _________________
+#                 /
+# Umsetzung      (
+# ________________\
+#
 # - Seilkraft und Schwerkraft:
-#   Das Fadenpendel schwingt unter dem Einfluss der Schwerkraft. Die Seilkraft hält den
-#   Pendelkörper auf einem festen Radius von der Aufhängung.
+#   Das Fadenpendel schwingt unter dem Einfluss der Schwerkraft. Die Seilkraft 
+#   hält den Pendelkörper auf einem festen Radius zur Aufhängung und wirkt so,
+#   dass der Pendelkörper im Kreis schwingt.
 #   
 #   Es gilt: 
 #   
-#        F_g = m * g
-#        F_seil = - F_g * cos(θ) * r
+#        F_G = m * g
+#        F_Faden = - F_G * cos(θ) * r
 #   
-#   wobei g die Erdbeschleunigung ist und θ der Winkel zwischen dem Seil und der
-#   Senkrechten ist. 
+#   wobei g die Erdbeschleunigung ist und θ der Winkel zwischen dem 
+#   Faden und der Senkrechten ist. 
 
+# - Die Klasse `Body` wird um die Eigenschaft `fixed` erweitert. Ein `fixed`-Körper
+#   bleibt an einer festen Position. Die Aufhängung des Fadenpendels ist ein 
+#   `fixed`-Körper.
+# 
+# - Die Seilkraft wird durch eine hohe Federkonstante simuliert, sodass der 
+#   Faden nahezu starr bleibt. Eine Dämpfungskraft reduziert das Schwingen des Pendels,
+#   um Stabilität in der Simulation zu gewährleisten.
 
 
 
@@ -35,10 +42,8 @@ import arcade.gui
 import numpy as np
 
 
-
 # Die Klasse `Body` modelliert ein physikalisches Objekt in der Simulation, 
 # das durch seine Position, Geschwindigkeit und Masse beschrieben wird.
-
 class Body:
     def __init__(self, position, velocity, mass=1.0, radius=1.0, fixed=False, color=arcade.color.BLUE):
         self.mass = mass                                 # Masse in kg
@@ -96,8 +101,6 @@ class Interaction:
         self.color = color # Farbe für die Darstellung
 
             
-
-            
     def calculate_spring_force(self):
         # Berechnet die Federkraft nach dem Hookeschen Gesetz.
         r_vector = self.bodyB.position - self.bodyA.position
@@ -108,7 +111,7 @@ class Interaction:
         force_magnitude = -self.k * extension 
         force_direction = r_vector / distance  # Einheitsvektor in Richtung des Abstandsvektors
         
-        # Dämpfungskraft proportional zur Geschwindigkeit, entgegengesetzt zur Bewegungsrichtung
+        # Dämpfungskraft parallel zur Federkraft
         v_rel = self.bodyB.velocity - self.bodyA.velocity
         force_magnitude += -self.restitution * np.dot(v_rel, force_direction)
             
@@ -139,6 +142,7 @@ class Interaction:
         # Aktualisiert die Geschwindigkeit der beiden Körper
         self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
         self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
+
 
     def update(self):
         force = self.calculate_spring_force()
@@ -222,10 +226,10 @@ class AnimationWindow(arcade.Window):
         )
 
         # Initialisiere zwei Körper
-        ball1 = Body([0, 2], [2, 3], mass=1.0, radius=0.5, fixed=True, color=arcade.color.RED)
+        ball1 = Body([0, 2], [2, 3], mass=1.0, radius=0.1, fixed=True, color=arcade.color.BLACK)
         self.bodies.append(ball1)
         
-        ball2 = Body([2, 1], [-2, -1], mass=1.0, radius=0.5, color=arcade.color.BLUE)
+        ball2 = Body([2, 1], [-2, -1], mass=1.0, radius=0.3, color=arcade.color.BLUE)
         self.bodies.append(ball2)
 
         int12 = Interaction(ball1, ball2, k=100.0, restitution=0.9)
@@ -253,6 +257,7 @@ class AnimationWindow(arcade.Window):
         pixel_x = self.center[0] + x * self.scale
         pixel_y = self.center[1] + y * self.scale
         return pixel_x, pixel_y
+
 
     # Zeichnet die Szene im Fenster
     def on_draw(self):
@@ -301,8 +306,6 @@ class AnimationWindow(arcade.Window):
             arcade.draw_line(xA, yA, xB, yB , interaction.color, 2)
      
 
-
-
     # Aktualisiert die Simulation um einen Zeitschritt
     def on_update(self, dt):
         # Führe die Funktion nur aus, wenn der Status auf 1 ist.
@@ -347,7 +350,6 @@ class AnimationWindow(arcade.Window):
         self.time += dt  
 
 
-
 if __name__ == "__main__":
     # Initialisiert das Fenster für die Simulation
     window = AnimationWindow(800, 600, "Fadenpendel")
@@ -358,11 +360,16 @@ if __name__ == "__main__":
 
 
 
+# _____________________
+#                     /
+# Zusammenfassung    (
+# ____________________\
 
-# ____________________________
-#                            /
-# Wichtige Konzepte          (
-# ____________________________\
+# In diesem Kapitel haben wir das Verhalten eines Fadenpendels simuliert, das unter
+# dem Einfluss der Schwerkraft und der Seilkraft schwingt. Durch die Dämpfungskraft
+# werden die Schwingungen allmählich abgebremst, was für Stabilität sorgt. Die 
+# Verwendung einer hohen Federkonstanten für das Seil stellt sicher, dass das Pendel 
+# auf einer festen Länge bleibt.
 
 
 
@@ -370,7 +377,7 @@ if __name__ == "__main__":
 # ____________________________
 #                            /
 # Übungsaufgaben            (
-# ____________________________\
+# ___________________________\
 
 
 # ___________
@@ -378,7 +385,9 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-
+# Experimentiere mit verschiedenen Längen und Dämpfungswerten, um zu sehen, 
+# wie sich das Schwingungsverhalten ändert. Versuche auch die Federkonstante 
+# des Seils zu variieren und beobachte die Stabilität der Simulation.
 
 # Füge hier deine Lösung ein.
 
@@ -390,9 +399,12 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-
+# Füge einen weiteren schwingenden Körper an das Ende des ersten Pendels an, 
+# um ein doppeltes Pendel zu simulieren. Achte darauf, dass du die neuen 
+# Seilverbindungen korrekt hinzufügst und überprüfe die Bewegung.
 
 # Füge hier deine Lösung ein.
+
 
 
 
@@ -420,7 +432,27 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
+'''
+# Lösung:
+# 
+# Um das Schwingungsverhalten zu untersuchen, experimentiere ich mit verschiedenen 
+# Längen, Dämpfungswerten und Federkonstanten. Der Einfachheit halber setze ich die 
+# neuen Werte direkt in der Initialisierung der Klasse `Interaction` ein. 
 
+# Beispielhafte Änderungen:
+# - Erhöhe die Länge des Pendels (rest_length) auf 3.0
+# - Setze die Dämpfung auf 0.5 (restitution)
+# - Reduziere die Federkonstante k auf 50 für ein weicheres Pendel
+
+# Code zum Einfügen in die Initialisierung:
+int12 = Interaction(ball1, ball2, k=50.0, rest_length=3.0, restitution=0.5)
+self.interactions.append(int12)
+
+# Durch diese Modifikation lässt sich das Schwingungsverhalten in Bezug auf
+# die Länge, Dämpfung und Festigkeit des Seils variieren. Eine hohe Federkonstante
+# und geringe Dämpfung erhöhen die Frequenz, während eine größere Länge und
+# höhere Dämpfung zu langsameren und gedämpfteren Schwingungen führen.
+'''
 
 
 
@@ -429,11 +461,27 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
+'''
+# Lösung:
+#
+# Ein doppeltes Pendel füge ich hinzu, indem ich am Ende des ersten Pendelkörpers 
+# einen weiteren Körper und eine neue Seilverbindung anfüge. Dies ermöglicht komplexe,
+# chaotische Schwingungen.
 
+# Code zum Einfügen in die Initialisierung:
+ball3 = Body([4, 1], [1, -1], mass=1.0, radius=0.3, color=arcade.color.RED)
+self.bodies.append(ball3)
+
+# Füge eine neue Interaktion hinzu, um ball2 und ball3 zu verbinden:
+int23 = Interaction(ball2, ball3, k=100.0, rest_length=2.0, restitution=0.9)
+self.interactions.append(int23)
+
+# Dies erzeugt ein doppelt aufgehängtes Pendel. Das Zusammenspiel beider 
+# Pendelabschnitte führt zu komplexeren Bewegungsmustern, die aufgrund der
+# erhöhten Freiheitsgrade chaotisch erscheinen können. 
+'''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-
-
 
 

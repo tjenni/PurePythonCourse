@@ -1,31 +1,14 @@
-#              _____________________________________________
-#       ______|                                             |_____
-#       \     |             13.7 DAS FADENPENDEL            |    /
-#        )    |_____________________________________________|   (
-#       /________)                                     (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ___________________________________
+#       ______|                                   |_____
+#       \     |      13.8.2 DAS DOPPELPENDEL      |    /
+#        )    |___________________________________|   (
+#       /________)                            (________\      14.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-# In diesem Kapitel erweitern wir unsere Simulation, um die Bewegung eines 
-# Fadenpendels zu simulieren. Das Fadenpendel besteht aus einem Punktkörper, 
-# der an einem festen Punkt mit einem masselosen Seil aufgehängt ist.
-# Die Rückstellkraft ist proportional zur Auslenkung und zeigt in Richtung 
-# der Ruhelage. Diese Kraft ergibt sich durch die Schwerkraft.
-
-# ___________________________________________________
-#                                                   /
-# Grundkonzepte: Das Fadenpendel                    (
-# __________________________________________________\
-
-# - Seilkraft und Schwerkraft:
-#   Das Fadenpendel schwingt unter dem Einfluss der Schwerkraft. Die Seilkraft hält den
-#   Pendelkörper auf einem festen Radius von der Aufhängung.
-#   
-#   Es gilt: 
-#   
-#        F_g = m * g
-#        F_seil = - F_g * cos(θ) * r
-#   
-#   wobei g die Erdbeschleunigung ist und θ der Winkel zwischen dem Seil und der
-#   Senkrechten ist. 
+# Das Doppelpendel ist ein System, das aus zwei verbundenen Pendeln besteht.
+# Die Bewegung ist aufgrund der Wechselwirkungen der beiden Körper kompliziert
+# und empfindlich auf Anfangsbedingungen, was zu chaotischem Verhalten führen kann.
+# Diese Simulation visualisiert die Bewegungen der beiden Körper und zeigt die
+# Auswirkungen von Parametern wie Länge, Masse und Dämpfung.
 
 
 
@@ -46,10 +29,11 @@ class Body:
         self.velocity = np.array(velocity, dtype=float)  # Geschwindigkeit in m/s
         self.acceleration = np.array([0.0, 0.0])         # Beschleunigung in m/s^2
         self.force = np.array([0.0, 0.0])                # Resultierende Kraft in N
-        self.radius = radius                             # Radius des Körpers in m
-        self.fixed = fixed                               # Körper wird festgehalten
-        self.color = color                               # Farbe für die Darstellung
-
+        self.radius = radius    # Radius des Körpers in m
+        self.fixed = fixed      # Körper wird festgehalten
+        self.color = color      # Farbe für die Darstellung
+        self.trace = []         # Liste für die Spur
+        
 
     # Setzt die resultierende Kraft auf null
     def clear_force(self):
@@ -95,9 +79,7 @@ class Interaction:
         
         self.color = color # Farbe für die Darstellung
 
-            
-
-            
+  
     def calculate_spring_force(self):
         # Berechnet die Federkraft nach dem Hookeschen Gesetz.
         r_vector = self.bodyB.position - self.bodyA.position
@@ -116,38 +98,10 @@ class Interaction:
         return force_magnitude * force_direction
 
 
-    def check_collision(self):
-        # Prüft, ob zwei Körper kollidieren.
-        distance = np.linalg.norm(self.bodyA.position - self.bodyB.position)
-        return distance <= (self.bodyA.radius + self.bodyB.radius)
-
-
-    def resolve_collision(self):
-        # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
-        normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
-        relative_velocity = self.bodyA.velocity - self.bodyB.velocity
-        velocity_along_normal = np.dot(relative_velocity, normal)
-
-        # Berechnet nur, wenn die Körper aufeinander zu bewegen
-        if velocity_along_normal < 0:
-            return
-
-        # Impulsberechnung
-        impulse = ((1 + self.restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
-        impulse_vector = impulse * normal
-
-        # Aktualisiert die Geschwindigkeit der beiden Körper
-        self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
-        self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
-
     def update(self):
         force = self.calculate_spring_force()
         self.bodyA.add_force(-force)
         self.bodyB.add_force(force)  # Newtons drittes Gesetz (actio = reactio)
-        
-        # Überprüft und berechnet die Kollision, falls nötig
-        #if self.check_collision():
-        #    self.resolve_collision()
             
             
             
@@ -221,21 +175,17 @@ class AnimationWindow(arcade.Window):
                 child=v_box) 
         )
 
-        # Initialisiere zwei Körper
+        # Initialisiere die Körper und Wechselwirkungen
         ball1 = Body([0, 1], [0, 0], mass=0.1, radius=0.1, fixed=True, color=arcade.color.BLACK)
-        self.bodies.append(ball1)
-        
         ball2 = Body([0, 2.5], [0, 0], mass=0.2, radius=0.2, color=arcade.color.BLUE)
-        self.bodies.append(ball2)
-
         ball3 = Body([0, 4], [-2, 0], mass=0.1, radius=0.2, color=arcade.color.RED)
-        self.bodies.append(ball3)
-
+        
+        self.bodies.extend([ball1, ball2, ball3])
+        
         int12 = Interaction(ball1, ball2, k=300.0, restitution=0.98)
-        self.interactions.append(int12)
-
         int23 = Interaction(ball2, ball3, k=300.0, restitution=0.98)
-        self.interactions.append(int23)
+        
+        self.interactions.extend([int12,int23])
 
     
     # Passt die Ursprungsposition bei Fenstergrößenänderung an
@@ -259,6 +209,7 @@ class AnimationWindow(arcade.Window):
         pixel_x = self.center[0] + x * self.scale
         pixel_y = self.center[1] + y * self.scale
         return pixel_x, pixel_y
+
 
     # Zeichnet die Szene im Fenster
     def on_draw(self):
@@ -300,15 +251,24 @@ class AnimationWindow(arcade.Window):
             arcade.draw_circle_filled(x, y, r, body.color)
 
             # zeichne die Geschwindigkeit
-            #arcade.draw_line(x, y, x + 2*body.velocity[0], y + 2*body.velocity[1] , arcade.color.GREEN, 2)
+            arcade.draw_line(x, y, x + 2*body.velocity[0], y + 2*body.velocity[1] , arcade.color.GREEN, 2)
             
             # zeichne die resultierende Kraft
-            #arcade.draw_line(x, y, x + 2*body.force[0], y + 2*body.force[1] , arcade.color.BARN_RED, 2)
+            arcade.draw_line(x, y, x + 2*body.force[0], y + 2*body.force[1] , arcade.color.BARN_RED, 2)
         
-
-        
-     
-
+            # speichere die Spur ab
+            if body.fixed:
+                continue
+            
+            body.trace.append(body.position.copy())
+            if len(body.trace) > 50:
+                body.trace.pop(0)
+            
+            # zeichne die Spur
+            for pos in body.trace:
+                x1, y1 = self.meter_to_pixel(pos[0], pos[1])
+                arcade.draw_point(x1, y1, color=arcade.color.BARN_RED, size=2)
+                
 
 
     # Aktualisiert die Simulation um einen Zeitschritt
@@ -367,11 +327,14 @@ if __name__ == "__main__":
 
 
 
-# ____________________________
-#                            /
-# Wichtige Konzepte          (
-# ____________________________\
-
+# ___________________________
+#                           /
+# Zusammenfassung          (
+# __________________________\
+#
+# Das Doppelpendel zeigt chaotisches Verhalten durch die Interaktion von zwei Massen,
+# die über Federn verbunden sind. Die Bewegung hängt stark von der Anfangsposition und
+# den Systemparametern ab, was zu komplexen, oft unvorhersehbaren Bewegungen führt.
 
 
 
@@ -386,7 +349,9 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-
+# Experimentiere mit verschiedenen Anfangspositionen, Federkonstanten und Längen, 
+# um die Bewegung des Doppelpendels zu beeinflussen. Beobachte, wie sich die 
+# Stabilität und das Verhalten der Bewegung verändern.
 
 # Füge hier deine Lösung ein.
 
@@ -398,12 +363,49 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-
+# Füge in der Simulation eine Kette aus mehreren Massen hinzu, die an zwei Enden 
+# fixiert ist. Diese Kette soll aus fünf Massen bestehen, die durch Federkräfte 
+# verbunden sind. Die beiden äußeren Massen (an den Enden der Kette) sind fest 
+# fixiert und dienen als Verankerungspunkte, während die inneren Massen frei 
+# schwingen können. 
 
 # Füge hier deine Lösung ein.
 
 
 
+#              (_)
+#            _ )_( _
+#          /`_) H (_`\
+#        .' (  { }  ) '.
+#      _/ /` '-'='-' `\ \_
+#     [_.'   _,...,_   '._]
+#      |   .:"`````":.   |
+#      |__//_________\\__|
+#       | .-----------. |
+#       | |  .-"""-.  | |
+#       | | /    /  \ | |       Nun kannst du eine Uhr mit einem 
+#       | ||-   <   -|| |       Doppelpendel erstellen. 
+#       | | \    \  / | |
+#       | |[`'-...-'`]| |
+#       | | ;-.___.-; | |
+#       | | |  |||  | | |
+#       | | |  |||  | | |
+#       | | |  |||  | | |
+#       | | |  |||  | | |
+#       | | |  |||  | | |
+#       | | | _|||_ | | |
+#       | | | >===< | | |
+#       | | | |___| | | |
+#       | | |  |||  | | |
+#       | | |  ;-;  | | |
+#       | | | (   ) | | |
+#       | | |  '-'  | | |
+#       | | '-------' | |
+#  jgs _| '-----------' |_
+#     [= === === ==== == =]
+#     [__--__--___--__--__]
+#    /__-___-___-___-___-__\
+#   `"""""""""""""""""""""""`
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -428,7 +430,25 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
+# Mit diesen Einstellungen können Sie die Auswirkungen verschiedener Parameter auf 
+# die Stabilität und die chaotische Natur des Systems untersuchen. Je nach Werten 
+# können Sie eine stärkere oder schwächere Schwingung und unterschiedliche chaotische 
+# Bewegungen beobachten. Ersetze dazu zum Beispiel die Zeilen 178 bis 188 mit:
+#
+'''
+        # Initialisiere die Körper und Wechselwirkungen
+        ball1 = Body([0, 1], [0, 0], mass=0.1, radius=0.1, fixed=True, color=arcade.color.BLACK)
+        ball2 = Body([0, 2.5], [0, 0], mass=0.2, radius=0.2, color=arcade.color.BLUE)
+        ball3 = Body([0, 5], [-2, 0], mass=0.1, radius=0.2, color=arcade.color.RED)
+        
+        self.bodies.extend([ball1, ball2, ball3])
+        
+        int12 = Interaction(ball1, ball2, k=300.0, restitution=0.98)
+        int23 = Interaction(ball2, ball3, k=300.0, restitution=0.98)
+        
+        self.interactions.extend([int12,int23])
 
+'''
 
 
 
@@ -437,10 +457,38 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
+# Füge in der Simulation eine Kette aus mehreren Massen hinzu, die an zwei Enden 
+# fixiert ist. Diese Kette soll aus fünf Massen bestehen, die durch Federkräfte 
+# verbunden sind. Die beiden äußeren Massen (an den Enden der Kette) sind fest 
+# fixiert und dienen als Verankerungspunkte, während die inneren Massen frei 
+# schwingen können. 
 
+'''
+# Lösung:
+# Füge dazu weitere Body- und Interaction-Objekte hinzu, sodass eine Kette von 
+# Körpern entsteht. Ersetze die Zeilen 178 bis 188 mit:
+
+        # Initialisiere die Körper
+        ball1 = Body([-2, 1], [0, 0], mass=0.1, radius=0.1, fixed=True, color=arcade.color.BLACK)
+        ball2 = Body([-1, 1], [0, 0], mass=0.2, radius=0.2, color=arcade.color.BLUE)
+        ball3 = Body([0, 1], [0, 0], mass=0.2, radius=0.2, color=arcade.color.BLUE)
+        ball4 = Body([1, 1], [0, 0], mass=0.2, radius=0.2, color=arcade.color.BLUE)
+        ball5 = Body([2, 1], [0, 0], mass=0.1, radius=0.1, fixed=True, color=arcade.color.BLACK)
+
+        self.bodies.extend([ball1, ball2, ball3, ball4, ball5])
+
+        int12 = Interaction(ball1, ball2, k=20.0, rest_length=1.5)
+        int23 = Interaction(ball2, ball3, k=20.0, rest_length=1.5)
+        int34 = Interaction(ball3, ball4, k=20.0, rest_length=1.5)
+        int45 = Interaction(ball4, ball5, k=20.0, rest_length=1.5)
+        self.interactions.extend([int12, int23, int34, int45])
+
+'''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
+
 
 
 
