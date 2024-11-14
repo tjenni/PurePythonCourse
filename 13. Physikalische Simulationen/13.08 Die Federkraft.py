@@ -398,7 +398,11 @@ if __name__ == "__main__":
 # Füge hier deine Lösung ein.
 
 
-
+#      (`/\          Die Federkraft ist manchmal 
+#      `=\/\         auch sehr stark.
+#       `=\/\
+#        `=\/
+#  ejm      \
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 

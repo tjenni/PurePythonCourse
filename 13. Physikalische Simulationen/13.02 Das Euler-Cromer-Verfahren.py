@@ -208,12 +208,10 @@ plt.show()
 
 
 
-
-#      (`/\          Jetzt kannst du den Fall einer 
-#      `=\/\         Feder simulieren. 
-#       `=\/\
-#        `=\/
-#  ejm      \
+#                        ___
+#    o__        o__     |   |\       Auch Fussball-Simulationen
+#   /|          /\      |   |X\      gelingen mit Euler-Cromer besser.
+#   / > o        <\     |   |XX\
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 

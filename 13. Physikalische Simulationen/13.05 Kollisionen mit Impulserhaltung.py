@@ -385,7 +385,7 @@ if __name__ == "__main__":
 #       ,' |:::::;'     |:::.
 #      /    `'::'       :::::\
 #     /         _____     `::;\
-#    :         /:::::\      `  :      Das sieht nun schon so aus wie
+#    :         /:::::\      `  :      Das sieht nun so aus wie
 #    | ,.     /::SSt::\        |      beim Fussball. :-)
 #    |;:::.   `::::::;'        |
 #    ::::::     `::;'      ,.  ;

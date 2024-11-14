@@ -9,13 +9,14 @@
 import arcade
 import arcade.gui 
 import numpy as np
+import math
 
 
 # Die Klasse `Body` modelliert ein physikalisches Objekt in der Simulation, 
 # das durch seine Position, Geschwindigkeit und Masse beschrieben wird.
 
 class Body:
-    def __init__(self, position, velocity, mass=1.0, radius=1.0, fixed=False, color=arcade.color.BLUE):
+    def __init__(self, position, velocity, mass=1.0, radius=1.0, fixed=False, fixed_x=False, color=arcade.color.BLUE):
         self.mass = mass                                 # Masse in kg
         self.position = np.array(position, dtype=float)  # Position in m
         self.velocity = np.array(velocity, dtype=float)  # Geschwindigkeit in m/s
@@ -23,6 +24,7 @@ class Body:
         self.force = np.array([0.0, 0.0])                # Resultierende Kraft in N
         self.radius = radius    # Radius des Körpers in m
         self.fixed = fixed      # Körper wird festgehalten
+        self.fixed_x = fixed_x      # x-Koordinate des Körpers bleibt unverändert
         self.color = color      # Farbe für die Darstellung
         
 
@@ -47,6 +49,10 @@ class Body:
         
         self.acceleration = self.force / self.mass
         self.velocity += self.acceleration * dt
+        
+        if self.fixed_x:
+            self.velocity[0] = 0.0
+            
         self.position += self.velocity * dt
         
 
@@ -219,17 +225,18 @@ class AnimationWindow(arcade.Window):
         )
 
         # Initialisiere die Körper und Wechselwirkungen
-        body1 = Body([-2, 0], [0, 0], mass=0.5, radius=0.2, color=arcade.color.RED)
-        body2 = Body([-1, 0], [0, 0], mass=0.5, radius=0.2, color=arcade.color.GREEN)
-        body3 = Body([0, 0], [0, 1], mass=0.5, radius=0.2, color=arcade.color.BLUE)
-        
-        self.bodies.extend([body1, body2, body3])
-        
-        spring12 = Spring(body1, body2, k=40.0, damping=0.98)
-        spring23 = Spring(body2, body3, k=40.0, damping=0.98)
-
-        self.interactions.extend([spring12, spring23])
-
+        last_body = None
+        for i in range(-14,15,1):
+            body = Body([i/4, 0], [0, 0], mass=0.1, radius=0.1, fixed_x=True, color=arcade.color.RED)
+            
+            if last_body is not None:
+                spring = Spring(last_body, body, k=30.0, damping=1)
+                self.interactions.append(spring)
+                
+            self.bodies.append(body)
+            last_body = body
+            
+        last_body.fixed = True
     
     # Passt die Ursprungsposition bei Fenstergrößenänderung an
     def on_resize(self, width, height):
@@ -316,14 +323,16 @@ class AnimationWindow(arcade.Window):
         for body in self.bodies:
             body.clear_force()
         
-        
         # Aktualisiert die Kollisionen
-        for interacion in self.interactions:
-            interacion.update()
+        for interaction in self.interactions:
+            interaction.update()
             
         # Berechnet die Kräfte und aktualisiert die Bewegungen der Objekte
         for body in self.bodies:
             body.update_ec(dt)  # Aktualisiert Position und Geschwindigkeit
+            
+        # move last body in periodic order
+        self.bodies[-1].position[1] = math.sin(2*self.time)
         
         # Überprüft und verarbeitet Kollisionen mit dem Boden
         for body in self.bodies:
@@ -402,6 +411,11 @@ if __name__ == "__main__":
 
 
 
+#
+#   Wellen erzeugen macht Spass.
+#       
+#      ,(   ,(   ,(   ,(   ,(   ,(   ,(   ,(
+#   `-'  `-'  `-'  `-'  `-'  `-'  `-'  `-'  `
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 

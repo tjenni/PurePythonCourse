@@ -379,7 +379,13 @@ if __name__ == "__main__":
 
 
 
-
+#             ,MMM8&&&.
+#        _...MMMMM88&&&&..._
+#     .::'''MMMMM88&&&&&&'''::.        Nun kanst du das Sonnen-
+#    ::     MMMMM88&&&&&&     ::       system simulieren.
+#    '::....MMMMM88&&&&&&....::'
+#       `''''MMMMM88&&&&''''`
+#       jgs   'MMM8&&&'
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
