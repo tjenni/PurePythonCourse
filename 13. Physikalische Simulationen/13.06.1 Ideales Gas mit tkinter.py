@@ -70,33 +70,53 @@ class Body:
 
 
 
+# Die Klasse `Interaction` ist die Basisklasse für alle Wechselwirkungen. 
 class Interaction:
     def __init__(self, bodyA, bodyB):
         self.bodyA = bodyA
         self.bodyB = bodyB
 
+    def update(self):
+        pass
+
+
+
+# Die Klasse `Collision` verwaltet die Kollisionserkennung und -berechnung 
+# zwischen zwei Körpern.
+class Collision(Interaction):
+
+    def __init__(self, bodyA, bodyB, restitution=1.0):
+        super().__init__(bodyA, bodyB)
+        self.restitution = restitution
+
+
     def check_collision(self):
-        # Prüft, ob zwei Körper kollidieren
+        # Prüft, ob zwei Körper kollidieren.
         distance = np.linalg.norm(self.bodyA.position - self.bodyB.position)
         return distance <= (self.bodyA.radius + self.bodyB.radius)
-    
+
+
     def resolve_collision(self):
-        # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision
+        # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
         normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
         relative_velocity = self.bodyA.velocity - self.bodyB.velocity
         velocity_along_normal = np.dot(relative_velocity, normal)
 
+        # Berechnet nur, wenn die Körper aufeinander zu bewegen
         if velocity_along_normal < 0:
             return
 
-        impulse = (2 * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
+        # Impulsberechnung
+        impulse = ((1 + self.restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
         impulse_vector = impulse * normal
 
+        # Aktualisiert die Geschwindigkeit der beiden Körper
         self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
         self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
 
+
+    # Überprüft und berechnet die Kollision, falls nötig
     def update(self):
-        # Überprüft und berechnet die Kollision
         if self.check_collision():
             self.resolve_collision()
 
@@ -194,7 +214,7 @@ class SimulationApp:
         # Erstelle alle Wechselwirkungen zwischen den Teilchen.
         for i in range(len(self.bodies)):
             for j in range(i + 1, len(self.bodies)):
-                self.interactions.append(Interaction(self.bodies[i], self.bodies[j]))
+                self.interactions.append(Collision(self.bodies[i], self.bodies[j]))
         
         
         # Erstelle alle canvas Objekte für die Darstellung der Teilchen

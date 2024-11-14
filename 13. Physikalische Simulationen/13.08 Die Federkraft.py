@@ -28,7 +28,6 @@
 
 
 
-
 import arcade
 import arcade.gui 
 import numpy as np
@@ -36,7 +35,6 @@ import numpy as np
 
 # Die Klasse `Body` modelliert ein physikalisches Objekt in der Simulation, 
 # das durch seine Position, Geschwindigkeit und Masse beschrieben wird.
-
 class Body:
     def __init__(self, position, velocity, mass=1.0, radius=1.0, color=arcade.color.BLUE):
         self.mass = mass                                 # Masse in kg
@@ -68,33 +66,41 @@ class Body:
         
 
 
-# Die Klasse `Interaction` verwaltet die Kollisionserkennung und -berechnung 
-# zwischen zwei Körpern.
+# Die Klasse `Interaction` ist die Basisklasse für alle Wechselwirkungen. 
 class Interaction:
-    def __init__(self, bodyA, bodyB, k=1.0, rest_length=None, restitution=1.0, color=arcade.color.YELLOW):
+    def __init__(self, bodyA, bodyB):
         self.bodyA = bodyA
         self.bodyB = bodyB
+
+    def update(self):
+        pass
+
+
+
+# Die Klasse `Spring` simuliert eine Feder zwischen zwei Körpern. 
+class Spring(Interaction):
+
+    def __init__(self, bodyA, bodyB, k=1.0, length=None, damping=0.9, color=arcade.color.YELLOW):
+        super().__init__(bodyA, bodyB)
 
         self.k = k # Federkonstante
         
         # Ursprungslänge der Feder
-        if rest_length is None:
-            self.rest_length = np.linalg.norm(bodyA.position - bodyB.position)
+        if length is None:
+            self.length = np.linalg.norm(bodyA.position - bodyB.position)
         else:
-            self.rest_length = rest_length
+            self.length = length
         
-        self.restitution = restitution # Energieerhaltung bei Kollision
+        self.damping = damping # Dämpfungskonstante
         
-        self.color = color # Farbe für die Darstellung
+        self.color = color 
 
-            
 
-            
     def calculate_spring_force(self):
         # Berechnet die Federkraft nach dem Hookeschen Gesetz.
         r_vector = self.bodyB.position - self.bodyA.position
         distance = np.linalg.norm(r_vector)
-        extension = distance - self.rest_length  # Auslenkung der Feder
+        extension = distance - self.length  # Auslenkung der Feder
 
         # Berechnet die Federkraft basierend auf der Auslenkung
         force_magnitude = -self.k * extension
@@ -102,10 +108,26 @@ class Interaction:
 
         # Dämpfungskraft parallel zur Federkraft
         v_rel = self.bodyB.velocity - self.bodyA.velocity
-        force_magnitude += -self.restitution * np.dot(v_rel, force_direction)
+        force_magnitude += -self.damping * np.dot(v_rel, force_direction)
         
         # Berechne die Federkraft
         return force_magnitude * force_direction
+
+
+    def update(self):
+        force = self.calculate_spring_force()
+        self.bodyA.add_force(-force)
+        self.bodyB.add_force(force)
+    
+
+
+# Die Klasse `Collision` verwaltet die Kollisionserkennung und -berechnung 
+# zwischen zwei Körpern.
+class Collision(Interaction):
+
+    def __init__(self, bodyA, bodyB, restitution=1.0):
+        super().__init__(bodyA, bodyB)
+        self.restitution = restitution
 
 
     def check_collision(self):
@@ -132,17 +154,14 @@ class Interaction:
         self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
         self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
 
+
+    # Überprüft und berechnet die Kollision, falls nötig
     def update(self):
-        force = self.calculate_spring_force()
-        self.bodyA.add_force(-force)
-        self.bodyB.add_force(force)  # Newtons drittes Gesetz (actio = reactio)
-        
-        # Überprüft und berechnet die Kollision, falls nötig
         if self.check_collision():
             self.resolve_collision()
-            
-            
-            
+
+
+
 # Die Klasse `AnimationWindow` steuert die grafische Darstellung und die Simulation 
 # der Partikelbewegungen.
 class AnimationWindow(arcade.Window):
@@ -217,8 +236,8 @@ class AnimationWindow(arcade.Window):
         ball1 = Body([-2, 1.1], [2, 2], mass=1.0, radius=0.5, color=arcade.color.RED)
         ball2 = Body([2, 1], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
         self.bodies.extend([ball1,ball2])
-
-        int12 = Interaction(ball1, ball2, k=5.0)
+        
+        int12 = Spring(ball1, ball2, k=5.0)
         self.interactions.extend([int12])
 
     
@@ -291,8 +310,6 @@ class AnimationWindow(arcade.Window):
             arcade.draw_line(xA, yA, xB, yB , interaction.color, 2)
      
 
-
-
     # Aktualisiert die Simulation um einen Zeitschritt
     def on_update(self, dt):
         # Führe die Funktion nur aus, wenn der Status auf 1 ist.
@@ -344,15 +361,6 @@ if __name__ == "__main__":
 
     # starte die Simulation
     arcade.run()
-
-
-
-
-
-# ____________________________
-#                            /
-# Wichtige Konzepte          (
-# ____________________________\
 
 
 
@@ -425,7 +433,7 @@ if __name__ == "__main__":
         ball2 = Body([2, 1], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
         self.bodies.extend([ball1,ball2])
 
-        int12 = Interaction(ball1, ball2, k=500.0)
+        int12 = Spring(ball1, ball2, k=500.0)
         self.interactions.extend([int12])
 '''
 
@@ -448,12 +456,13 @@ if __name__ == "__main__":
         ball3 = Body([2, 1], [-2, 0], mass=1.0, radius=0.2, color=arcade.color.GREEN)
         self.bodies.extend([ball1,ball2, ball3])
 
-        int12 = Interaction(ball1, ball2, k=5.0)
-        int23 = Interaction(ball2, ball3, k=5.0)
+        int12 = Spring(ball1, ball2, k=5.0)
+        int23 = Spring(ball2, ball3, k=5.0)
         self.interactions.extend([int12, int23])
 '''
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 
 

@@ -147,7 +147,7 @@ class AnimationWindow(arcade.Window):
 
         # Initialisiere einen Körper zur Simulation
         body = Body([0.0, 4.0], [4.0, 0.0], mass=1.0, radius=0.5)
-        self.bodies.append(body)
+        self.bodies.extend([body])
 
     
     # Passt die Ursprungsposition bei Fenstergrößenänderung an

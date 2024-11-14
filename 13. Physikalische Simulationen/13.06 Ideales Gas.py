@@ -64,18 +64,32 @@ class Body:
         
 
 
-# Die Klasse `Interaction` verwaltet die Kollisionserkennung und -berechnung 
-# zwischen zwei Körpern.
+# Die Klasse `Interaction` ist die Basisklasse für alle Wechselwirkungen. 
 class Interaction:
-    def __init__(self, bodyA, bodyB, color=arcade.color.BLUE):
+    def __init__(self, bodyA, bodyB):
         self.bodyA = bodyA
         self.bodyB = bodyB
+
+    def update(self):
+        pass
+
+
+
+# Die Klasse `Collision` verwaltet die Kollisionserkennung und -berechnung 
+# zwischen zwei Körpern.
+class Collision(Interaction):
+
+    def __init__(self, bodyA, bodyB, restitution=1.0):
+        super().__init__(bodyA, bodyB)
+        self.restitution = restitution
+
 
     def check_collision(self):
         # Prüft, ob zwei Körper kollidieren.
         distance = np.linalg.norm(self.bodyA.position - self.bodyB.position)
         return distance <= (self.bodyA.radius + self.bodyB.radius)
-    
+
+
     def resolve_collision(self):
         # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
         normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
@@ -87,19 +101,20 @@ class Interaction:
             return
 
         # Impulsberechnung
-        impulse = (2 * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
+        impulse = ((1 + self.restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
         impulse_vector = impulse * normal
 
         # Aktualisiert die Geschwindigkeit der beiden Körper
         self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
         self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
 
+
+    # Überprüft und berechnet die Kollision, falls nötig
     def update(self):
-        # Überprüft und berechnet die Kollision, falls nötig
         if self.check_collision():
             self.resolve_collision()
-            
-            
+
+
             
 # Die Klasse `AnimationWindow` steuert die grafische Darstellung und die Simulation 
 # der Partikelbewegungen.
@@ -197,7 +212,7 @@ class AnimationWindow(arcade.Window):
                 
                 # Erstellen von Interaktionen mit bereits vorhandenen Körpern
                 for bodyB in self.bodies:
-                    interaction = Interaction(bodyA, bodyB)
+                    interaction = Collision(bodyA, bodyB)
                     self.interactions.append(interaction)
                 
                 self.bodies.append(bodyA)

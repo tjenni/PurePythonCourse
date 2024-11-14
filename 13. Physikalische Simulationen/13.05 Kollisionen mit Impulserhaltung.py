@@ -79,22 +79,32 @@ class Body:
         
 
 
-# Die Klasse `Interaction` verwaltet die Kollisionserkennung und -berechnung 
-# zwischen zwei Körpern.
+# Die Klasse `Interaction` ist die Basisklasse für alle Wechselwirkungen. 
 class Interaction:
-    def __init__(self, bodyA, bodyB, restitution=1.0, color=arcade.color.YELLOW):
+    def __init__(self, bodyA, bodyB):
         self.bodyA = bodyA
         self.bodyB = bodyB
 
-        self.restitution = restitution # Energieerhaltung bei Kollision
+    def update(self):
+        pass
 
-        self.color = color # Farbe für die Darstellung
+
+
+# Die Klasse `Collision` verwaltet die Kollisionserkennung und -berechnung 
+# zwischen zwei Körpern.
+class Collision(Interaction):
+
+    def __init__(self, bodyA, bodyB, restitution=1.0):
+        super().__init__(bodyA, bodyB)
+        self.restitution = restitution
+
 
     def check_collision(self):
         # Prüft, ob zwei Körper kollidieren.
         distance = np.linalg.norm(self.bodyA.position - self.bodyB.position)
         return distance <= (self.bodyA.radius + self.bodyB.radius)
-    
+
+
     def resolve_collision(self):
         # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
         normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
@@ -113,8 +123,9 @@ class Interaction:
         self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
         self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
 
+
+    # Überprüft und berechnet die Kollision, falls nötig
     def update(self):
-        # Überprüft und berechnet die Kollision, falls nötig
         if self.check_collision():
             self.resolve_collision()
             
@@ -192,13 +203,11 @@ class AnimationWindow(arcade.Window):
 
         # Initialisiere zwei Körper
         ball1 = Body([-2, 1.1], [2, 0], mass=1.0, radius=0.5, color=arcade.color.RED)
-        self.bodies.append(ball1)
-        
         ball2 = Body([2, 1], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
-        self.bodies.append(ball2)
+        self.bodies.extend([ball1, ball2])
 
-        int12 = Interaction(ball1, ball2)
-        self.interactions.append(int12)
+        int12 = Collision(ball1, ball2)
+        self.interactions.extend([int12])
 
     
     # Passt die Ursprungsposition bei Fenstergrößenänderung an
@@ -258,7 +267,7 @@ class AnimationWindow(arcade.Window):
             # zeichne die Geschwindigkeit
             arcade.draw_line(x, y, x + 2*body.velocity[0], y + 2*body.velocity[1] , arcade.color.GREEN, 2)
             
-            # zeichne die Kräfte
+            # zeichne die resultierende Kraft
             arcade.draw_line(x, y, x + 2*body.force[0], y + 2*body.force[1] , arcade.color.BARN_RED, 2)
         
 
@@ -414,15 +423,16 @@ if __name__ == "__main__":
 
 
 '''
-        # Füge den folgenden Code bei Zeile 198 ein.
+        # Initialisiere zwei Körper
+        ball1 = Body([-2, 1.1], [2, 0], mass=1.0, radius=0.5, color=arcade.color.RED)
+        ball2 = Body([2, 1], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
         ball3 = Body([0, 1], [-1, 0], mass=1.0, radius=0.5, color=arcade.color.GREEN)
-        self.bodies.append(ball3)
+        self.bodies.extend([ball1, ball2, ball3])
         
-        int13 = Interaction(ball1, ball3)
-        self.interactions.append(int13)
-        
-        int23 = Interaction(ball2, ball3)
-        self.interactions.append(int23)
+        int12 = Collision(ball1, ball2)
+        int13 = Collision(ball1, ball3)
+        int23 = Collision(ball2, ball3)
+        self.interactions.extend([int12,int13,int23])
 '''
 
 
@@ -439,28 +449,18 @@ if __name__ == "__main__":
 
 
 '''
-    # Die Funktion auf Zeile 95 muss wie folgt angepasst werden.
-    def resolve_collision(self, restitution=0.9):
-        # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
-        normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
-        relative_velocity = self.bodyA.velocity - self.bodyB.velocity
-        velocity_along_normal = np.dot(relative_velocity, normal)
+        # Initialisiere zwei Körper
+        ball1 = Body([-2, 1.1], [2, 0], mass=1.0, radius=0.5, color=arcade.color.RED)
+        ball2 = Body([2, 1], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
+        self.bodies.extend([ball1, ball2])
 
-        # Berechnet nur, wenn die Körper aufeinander zu bewegen
-        if velocity_along_normal < 0:
-            return
-
-        # Impulsberechnung
-        impulse = ( (1 + restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
-        impulse_vector = impulse * normal
-
-        # Aktualisiert die Geschwindigkeit der beiden Körper
-        self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
-        self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
+        int12 = Collision(ball1, ball2, restitution=0.9)
+        self.interactions.extend([int12])
 
 '''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 

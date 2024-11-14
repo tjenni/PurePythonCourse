@@ -57,41 +57,50 @@ class Body:
         self.position += self.velocity * dt
         
 
-
-# Die Klasse `Interaction` verwaltet die Kollisionserkennung und -berechnung 
-# zwischen zwei Körpern.
+# Die Klasse `Interaction` ist die Basisklasse für alle Wechselwirkungen. 
 class Interaction:
-    def __init__(self, bodyA, bodyB, k=1.0, rest_length=None, restitution=1.0, color=arcade.color.YELLOW):
+    def __init__(self, bodyA, bodyB):
         self.bodyA = bodyA
         self.bodyB = bodyB
+
+    def update(self):
+        pass
+
+
+
+# Die Klasse `Spring` simuliert eine Feder zwischen zwei Körpern. 
+class Spring(Interaction):
+
+    def __init__(self, bodyA, bodyB, k=1.0, length=None, damping=0.9, color=arcade.color.YELLOW):
+        super().__init__(bodyA, bodyB)
 
         self.k = k # Federkonstante
         
         # Ursprungslänge der Feder
-        if rest_length is None:
-            self.rest_length = np.linalg.norm(bodyA.position - bodyB.position)
+        if length is None:
+            self.length = np.linalg.norm(bodyA.position - bodyB.position)
         else:
-            self.rest_length = rest_length
+            self.length = length
         
-        self.restitution = restitution # Energieerhaltung
+        self.damping = damping # Dämpfungskonstante
         
-        self.color = color # Farbe für die Darstellung
+        self.color = color 
 
-  
+
     def calculate_spring_force(self):
         # Berechnet die Federkraft nach dem Hookeschen Gesetz.
         r_vector = self.bodyB.position - self.bodyA.position
         distance = np.linalg.norm(r_vector)
-        extension = distance - self.rest_length  # Auslenkung der Feder
+        extension = distance - self.length  # Auslenkung der Feder
 
         # Berechnet die Federkraft basierend auf der Auslenkung
-        force_magnitude = -self.k * extension 
+        force_magnitude = -self.k * extension
         force_direction = r_vector / distance  # Einheitsvektor in Richtung des Abstandsvektors
-        
-        # Dämpfungskraft proportional zur Geschwindigkeit, entgegengesetzt zur Bewegungsrichtung
+
+        # Dämpfungskraft parallel zur Federkraft
         v_rel = self.bodyB.velocity - self.bodyA.velocity
-        force_magnitude += -self.restitution * np.dot(v_rel, force_direction)
-            
+        force_magnitude += -self.damping * np.dot(v_rel, force_direction)
+        
         # Berechne die Federkraft
         return force_magnitude * force_direction
 
@@ -99,10 +108,51 @@ class Interaction:
     def update(self):
         force = self.calculate_spring_force()
         self.bodyA.add_force(-force)
-        self.bodyB.add_force(force)  # Newtons drittes Gesetz (actio = reactio)
-            
-            
-            
+        self.bodyB.add_force(force)
+    
+
+
+# Die Klasse `Collision` verwaltet die Kollisionserkennung und -berechnung 
+# zwischen zwei Körpern.
+class Collision(Interaction):
+
+    def __init__(self, bodyA, bodyB, restitution=1.0):
+        super().__init__(bodyA, bodyB)
+        self.restitution = restitution
+
+
+    def check_collision(self):
+        # Prüft, ob zwei Körper kollidieren.
+        distance = np.linalg.norm(self.bodyA.position - self.bodyB.position)
+        return distance <= (self.bodyA.radius + self.bodyB.radius)
+
+
+    def resolve_collision(self):
+        # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
+        normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
+        relative_velocity = self.bodyA.velocity - self.bodyB.velocity
+        velocity_along_normal = np.dot(relative_velocity, normal)
+
+        # Berechnet nur, wenn die Körper aufeinander zu bewegen
+        if velocity_along_normal < 0:
+            return
+
+        # Impulsberechnung
+        impulse = ((1 + self.restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
+        impulse_vector = impulse * normal
+
+        # Aktualisiert die Geschwindigkeit der beiden Körper
+        self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
+        self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
+
+
+    # Überprüft und berechnet die Kollision, falls nötig
+    def update(self):
+        if self.check_collision():
+            self.resolve_collision()
+
+
+    
 # Die Klasse `AnimationWindow` steuert die grafische Darstellung und die Simulation 
 # der Partikelbewegungen.
 class AnimationWindow(arcade.Window):
@@ -180,8 +230,8 @@ class AnimationWindow(arcade.Window):
         
         self.bodies.extend([ball1, ball2, ball3])
         
-        int12 = Interaction(ball1, ball2, k=300.0, restitution=0.98)
-        int23 = Interaction(ball2, ball3, k=300.0, restitution=0.98)
+        int12 = Spring(ball1, ball2, k=300.0, damping=0.98)
+        int23 = Spring(ball2, ball3, k=300.0, damping=0.98)
         
         self.interactions.extend([int12,int23])
 
@@ -432,11 +482,10 @@ if __name__ == "__main__":
         
         self.bodies.extend([ball1, ball2, ball3])
         
-        int12 = Interaction(ball1, ball2, k=300.0, restitution=0.98)
-        int23 = Interaction(ball2, ball3, k=300.0, restitution=0.98)
+        int12 = Spring(ball1, ball2, k=300.0, damping=0.98)
+        int23 = Spring(ball2, ball3, k=300.0, damping=0.98)
         
         self.interactions.extend([int12,int23])
-
 '''
 
 
@@ -466,20 +515,15 @@ if __name__ == "__main__":
 
         self.bodies.extend([ball1, ball2, ball3, ball4, ball5])
 
-        int12 = Interaction(ball1, ball2, k=20.0, rest_length=1.5)
-        int23 = Interaction(ball2, ball3, k=20.0, rest_length=1.5)
-        int34 = Interaction(ball3, ball4, k=20.0, rest_length=1.5)
-        int45 = Interaction(ball4, ball5, k=20.0, rest_length=1.5)
+        int12 = Spring(ball1, ball2, k=20.0, length=1.5)
+        int23 = Spring(ball2, ball3, k=20.0, length=1.5)
+        int34 = Spring(ball3, ball4, k=20.0, length=1.5)
+        int45 = Spring(ball4, ball5, k=20.0, length=1.5)
         self.interactions.extend([int12, int23, int34, int45])
 
 '''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-
-
-
-
-
 
 
