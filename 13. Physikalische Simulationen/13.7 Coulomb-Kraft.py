@@ -1,8 +1,8 @@
-#              ___________________________________________
-#       ______|                                           |_____
-#       \     |        13.7 COULOMB-KRAFT                 |    /
-#        )    |___________________________________________|   (
-#       /________)                                   (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              _________________________________
+#       ______|                                 |_____
+#       \     |       13.7 COULOMB-KRAFT        |    /
+#        )    |_________________________________|   (
+#       /________)                          (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
 # In diesem Kapitel erweitern wir unsere Simulation, um die Coulomb-Kraft zwischen
@@ -71,9 +71,14 @@ class Interaction:
     # Die Coulomb-Konstante k in Nm²/C²
     K = 8.99e9
     
-    def __init__(self, bodyA, bodyB, color=arcade.color.BLUE):
+    def __init__(self, bodyA, bodyB, restitution=1.0, color=arcade.color.YELLOW):
         self.bodyA = bodyA
         self.bodyB = bodyB
+
+        self.restitution = restitution # Energieerhaltung bei Kollision
+
+        self.color = color # Farbe für die Darstellung
+
         
     def check_collision(self):
         # Prüft, ob zwei Körper kollidieren.
@@ -81,7 +86,7 @@ class Interaction:
         return distance <= (self.bodyA.radius + self.bodyB.radius)
         
     
-    def resolve_collision(self, restitution=0.9):
+    def resolve_collision(self):
         # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
         normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
         relative_velocity = self.bodyA.velocity - self.bodyB.velocity
@@ -92,7 +97,7 @@ class Interaction:
             return
 
         # Impulsberechnung
-        impulse = ((1 + restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
+        impulse = ((1 + self.restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
         impulse_vector = impulse * normal
 
         # Aktualisiert die Geschwindigkeit der beiden Körper
@@ -259,6 +264,13 @@ class AnimationWindow(arcade.Window):
             x, y = self.meter_to_pixel(body.position[0], body.position[1])
             r = body.radius * self.scale
             arcade.draw_circle_filled(x, y, r, body.color)
+
+            # zeichne die Geschwindigkeit
+            arcade.draw_line(x, y, x + 2*body.velocity[0], y + 2*body.velocity[1] , arcade.color.GREEN, 2)
+            
+            # zeichne die resultierende Kraft
+            arcade.draw_line(x, y, x + 2*body.force[0], y + 2*body.force[1] , arcade.color.BARN_RED, 2)
+        
 
 
     # Aktualisiert die Simulation um einen Zeitschritt

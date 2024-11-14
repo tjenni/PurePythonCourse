@@ -76,9 +76,11 @@ class Interaction:
     # Die Gravitationskonstante G in Nm²/kg²
     G = 6.67430e-11
     
-    def __init__(self, bodyA, bodyB, color=arcade.color.BLUE):
+    def __init__(self, bodyA, bodyB, color=arcade.color.YELLOW):
         self.bodyA = bodyA
         self.bodyB = bodyB
+
+        self.color = color # Farbe für die Darstellung
         
     def check_collision(self):
         # Prüft, ob zwei Körper kollidieren.
@@ -256,6 +258,7 @@ class AnimationWindow(arcade.Window):
             r = body.radius * self.scale
             r = max(5,r)
             arcade.draw_circle_filled(x, y, r, body.color)
+
 
 
     # Aktualisiert die Simulation um einen Zeitschritt

@@ -203,6 +203,11 @@ class AnimationWindow(arcade.Window):
             x, y = self.meter_to_pixel(body.position[0], body.position[1])
             r = body.radius * self.scale
             arcade.draw_circle_filled(x, y, r, body.color)
+            
+            # zeichne die Geschwindigkeit
+            arcade.draw_line(x, y, x + 2*body.velocity[0], y + 2*body.velocity[1] , arcade.color.GREEN, 2)
+            
+            
 
 
     # Aktualisiert die Simulation um einen Zeitschritt
@@ -421,6 +426,7 @@ if __name__ == "__main__":
 '''
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 
 

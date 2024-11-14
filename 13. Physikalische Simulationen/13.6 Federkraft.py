@@ -1,36 +1,30 @@
-#              ________________________________________________
-#       ______|                                                |_____
-#       \     |      13.5 KOLLISIONEN MIT IMPULSERHALTUNG      |    /
-#        )    |________________________________________________|   (
-#       /________)                                         (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              _____________________________________________
+#       ______|                                             |_____
+#       \     |    13.6 FEDERKRAFT ZWISCHEN ZWEI KÖRPERN    |    /
+#        )    |_____________________________________________|   (
+#       /________)                                     (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-
-# In diesem Kapitel lernen wir, wie man Kollisionen zwischen Objekten simuliert 
-# und den Impuls bewahrt. Kollisionen sind ein zentraler Bestandteil physikalischer 
-# Simulationen und Animationen in Spielen. Wir erfahren, wie man eine Kollision 
-# erkennt und den Impuls nach dem Prinzip der Impulserhaltung berechnet.
-
+# In diesem Kapitel erweitern wir unsere Simulation, um die Federkraft zwischen
+# zwei Körpern zu modellieren. Die Federkraft entspricht dem Hookeschen Gesetz,
+# das besagt, dass die Kraft proportional zur Auslenkung von der Ruhelage ist.
 
 # ___________________________________________________
 #                                                   /
-# Grundkonzepte: Kollisionen mit Impulserhaltung   (
+# Grundkonzepte: Federkraft                         (
 # __________________________________________________\
 
-# - Impuls:
-#   Der Impuls p eines Objekts ist das Produkt seiner Masse und Geschwindigkeit:
+# - Hookesches Gesetz:
+#   Die Kraft F einer Feder, die zwei Körper verbindet, ist proportional zur 
+#   Auslenkung Δx von der Ruhelänge und wird beschrieben durch:
 #   
-#        p = m * v
+#        F = -k * Δx
 #   
-#   Bei einer Kollision zweier Objekte bleibt der Gesamtimpuls des Systems erhalten.
+#   wobei k die Federkonstante ist. Die negative Vorzeichen zeigt, dass die Kraft 
+#   stets zur Ruhelage zurückführt.
 #
-# - Impulserhaltungsgesetz:
-#   Das Impulserhaltungsgesetz besagt, dass in einem geschlossenen System, in 
-#   dem keine äusseren Kräfte wirken, der Gesamtimpuls vor und nach der Kollision 
-#   gleich bleibt.
-
-# - Arten von Kollisionen:
-#   Wir betrachten hier elastische Kollisionen, bei denen sowohl Impuls als auch 
-#   kinetische Energie erhalten bleiben.
+# - Ruhelänge der Feder:
+#   Die Federkraft wirkt nur, wenn sich die beiden Körper nicht in ihrer Ruhelage 
+#   befinden und zieht sie wieder zurück.
 
 
 
@@ -40,10 +34,6 @@ import arcade.gui
 import numpy as np
 
 
-# _________________________________
-#                                 /
-# Klassenstruktur für Animation  (
-# ________________________________\
 
 # Die Klasse `Body` modelliert ein physikalisches Objekt in der Simulation, 
 # das durch seine Position, Geschwindigkeit und Masse beschrieben wird.
@@ -82,19 +72,45 @@ class Body:
 # Die Klasse `Interaction` verwaltet die Kollisionserkennung und -berechnung 
 # zwischen zwei Körpern.
 class Interaction:
-    def __init__(self, bodyA, bodyB, restitution=1.0, color=arcade.color.YELLOW):
+    def __init__(self, bodyA, bodyB, k=1.0, rest_length=None, restitution=1.0, color=arcade.color.YELLOW):
         self.bodyA = bodyA
         self.bodyB = bodyB
 
+        self.k = k # Federkonstante
+        
+        # Ursprungslänge der Feder
+        if rest_length is None:
+            self.rest_length = np.linalg.norm(bodyA.position - bodyB.position)
+        else:
+            self.rest_length = rest_length
+        
         self.restitution = restitution # Energieerhaltung bei Kollision
-
+        
         self.color = color # Farbe für die Darstellung
+
+            
+
+            
+    def calculate_spring_force(self):
+        # Berechnet die Federkraft nach dem Hookeschen Gesetz.
+        r_vector = self.bodyB.position - self.bodyA.position
+        distance = np.linalg.norm(r_vector)
+        extension = distance - self.rest_length  # Auslenkung der Feder
+
+        # Berechnet die Federkraft basierend auf der Auslenkung
+        force_magnitude = -self.k * extension
+        force_direction = r_vector / distance  # Einheitsvektor in Richtung des Abstandsvektors
+        
+        # Berechne die Federkraft
+        return force_magnitude * force_direction
+
 
     def check_collision(self):
         # Prüft, ob zwei Körper kollidieren.
         distance = np.linalg.norm(self.bodyA.position - self.bodyB.position)
         return distance <= (self.bodyA.radius + self.bodyB.radius)
-    
+
+
     def resolve_collision(self):
         # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
         normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
@@ -114,6 +130,10 @@ class Interaction:
         self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
 
     def update(self):
+        force = self.calculate_spring_force()
+        self.bodyA.add_force(-force)
+        self.bodyB.add_force(force)  # Newtons drittes Gesetz (actio = reactio)
+        
         # Überprüft und berechnet die Kollision, falls nötig
         if self.check_collision():
             self.resolve_collision()
@@ -191,13 +211,13 @@ class AnimationWindow(arcade.Window):
         )
 
         # Initialisiere zwei Körper
-        ball1 = Body([-2, 1.1], [2, 0], mass=1.0, radius=0.5, color=arcade.color.RED)
+        ball1 = Body([-2, 1.1], [2, 2], mass=1.0, radius=0.5, color=arcade.color.RED)
         self.bodies.append(ball1)
         
         ball2 = Body([2, 1], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
         self.bodies.append(ball2)
 
-        int12 = Interaction(ball1, ball2)
+        int12 = Interaction(ball1, ball2, k=5.0)
         self.interactions.append(int12)
 
     
@@ -258,9 +278,18 @@ class AnimationWindow(arcade.Window):
             # zeichne die Geschwindigkeit
             arcade.draw_line(x, y, x + 2*body.velocity[0], y + 2*body.velocity[1] , arcade.color.GREEN, 2)
             
-            # zeichne die Kräfte
+            # zeichne die resultierende Kraft
             arcade.draw_line(x, y, x + 2*body.force[0], y + 2*body.force[1] , arcade.color.BARN_RED, 2)
         
+
+        # Zeichnet die Federn
+        for interaction in self.interactions:
+            xA, yA = self.meter_to_pixel(interaction.bodyA.position[0], interaction.bodyA.position[1])
+            xB, yB = self.meter_to_pixel(interaction.bodyB.position[0], interaction.bodyB.position[1])
+            
+            arcade.draw_line(xA, yA, xB, yB , interaction.color, 2)
+     
+
 
 
     # Aktualisiert die Simulation um einen Zeitschritt
@@ -324,16 +353,6 @@ if __name__ == "__main__":
 # Wichtige Konzepte          (
 # ____________________________\
 
-# Kollisionserkennung:
-# Die Methode `check_collision` überprüft den Abstand zwischen zwei Objekten und 
-# bestimmt, ob sie kollidieren. Die Kollision wird erkannt, wenn die Entfernung 
-# zwischen ihren Mittelpunkten kleiner oder gleich der Summe ihrer Radien ist.
-
-# Impulserhaltung:
-# Die Methode `resolve_collision` berechnet die neue Geschwindigkeit beider Objekte 
-# unter Berücksichtigung des Impulserhaltungsgesetzes. Dies stellt sicher, dass 
-# die Objekte nach einer Kollision in korrekter Richtung abprallen.
-
 
 
 
@@ -348,8 +367,6 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Füge zur Simulation einen dritten Ball hinzu. Denke daran, auch die Wechsel-
-# wirkungen hinzuzufügen. Teste die Simulation.
 
 
 # Füge hier deine Lösung ein.
@@ -362,29 +379,12 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-# Modifiziere die Kollisionen der Objekte, sodass eine Energieverlustregel 
-# simuliert wird. Das bedeutet, dass bei jeder Kollision 10 % der Energie 
-# verloren gehen und die Geschwindigkeit entsprechend angepasst wird.
 
 
 # Füge hier deine Lösung ein.
 
 
 
-#            _...----.._
-#         ,:':::::.     `>.
-#       ,' |:::::;'     |:::.
-#      /    `'::'       :::::\
-#     /         _____     `::;\
-#    :         /:::::\      `  :      Das sieht nun schon so aus wie
-#    | ,.     /::SSt::\        |      beim Fussball. :-)
-#    |;:::.   `::::::;'        |
-#    ::::::     `::;'      ,.  ;
-#     \:::'              ,::::/
-#      \                 \:::/
-#       `.     ,:.        :;'
-#         `-.::::::..  _.''
-#            ```----'''
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -409,21 +409,6 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Füge zur Simulation einen dritten Ball hinzu. Denke daran, auch die Wechsel-
-# wirkungen hinzuzufügen. Teste die Simulation.
-
-
-'''
-        # Füge den folgenden Code bei Zeile 198 ein.
-        ball3 = Body([0, 1], [-1, 0], mass=1.0, radius=0.5, color=arcade.color.GREEN)
-        self.bodies.append(ball3)
-        
-        int13 = Interaction(ball1, ball3)
-        self.interactions.append(int13)
-        
-        int23 = Interaction(ball2, ball3)
-        self.interactions.append(int23)
-'''
 
 
 
@@ -433,34 +418,10 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-# Modifiziere die Kollisionen der Objekte, sodass eine Energieverlustregel 
-# simuliert wird. Das bedeutet, dass bei jeder Kollision 10 % der Energie 
-# verloren gehen und die Geschwindigkeit entsprechend angepasst wird.
 
-
-'''
-    # Die Funktion auf Zeile 95 muss wie folgt angepasst werden.
-    def resolve_collision(self, restitution=0.9):
-        # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
-        normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
-        relative_velocity = self.bodyA.velocity - self.bodyB.velocity
-        velocity_along_normal = np.dot(relative_velocity, normal)
-
-        # Berechnet nur, wenn die Körper aufeinander zu bewegen
-        if velocity_along_normal < 0:
-            return
-
-        # Impulsberechnung
-        impulse = ( (1 + restitution) * velocity_along_normal) / (1 / self.bodyA.mass + 1 / self.bodyB.mass)
-        impulse_vector = impulse * normal
-
-        # Aktualisiert die Geschwindigkeit der beiden Körper
-        self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
-        self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
-
-'''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 

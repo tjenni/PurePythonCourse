@@ -1,6 +1,6 @@
 #              ______________________________________
 #       ______|                                      |_____
-#       \     |    13.8 DAS RUNGE-KUTTA-VERFAHREN    |    /
+#       \     |      13.8 RUNGE-KUTTA-VERFAHREN      |    /
 #        )    |______________________________________|   (
 #       /________)                               (________\      11.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
