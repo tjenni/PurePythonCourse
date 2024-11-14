@@ -187,6 +187,8 @@ class AnimationWindow(arcade.Window):
         # FPS-Berechnung mit gleitendem Durchschnitt
         self.fps_history = [0] * 30
         
+        self.frame = 0
+        
         # UI-Manager zur Steuerung der Benutzeroberfläche (Buttons)
         self.uimanager = arcade.gui.UIManager() 
         self.uimanager.enable() 
@@ -308,14 +310,15 @@ class AnimationWindow(arcade.Window):
             if body.fixed:
                 continue
             
-            body.trace.append(body.position.copy())
-            if len(body.trace) > 50:
-                body.trace.pop(0)
+            if self.frame % 1 == 0:
+                body.trace.append(body.position.copy())
+                if len(body.trace) > 50:
+                    body.trace.pop(0)
             
             # zeichne die Spur
             for pos in body.trace:
                 x1, y1 = self.meter_to_pixel(pos[0], pos[1])
-                arcade.draw_point(x1, y1, color=arcade.color.BARN_RED, size=2)
+                arcade.draw_point(x1, y1, color=body.color, size=2)
                 
 
 
@@ -360,7 +363,10 @@ class AnimationWindow(arcade.Window):
                 body.velocity[0] *= -1
             
         # Erhöht die Simulationszeit
-        self.time += dt  
+        self.time += dt
+        
+        # erhöhre die Framenummer
+        self.frame += 1
 
 
 
@@ -525,5 +531,6 @@ if __name__ == "__main__":
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 

@@ -65,27 +65,33 @@ class Body:
         
 
 
-# Die Klasse `Interaction` verwaltet die Kollisionserkennung und -berechnung 
-# zwischen zwei Körpern.
+
+# Die Klasse `Interaction` ist die Basisklasse für alle Wechselwirkungen. 
 class Interaction:
-    # Die Coulomb-Konstante k in Nm²/C²
-    K = 8.99e9
-    
-    def __init__(self, bodyA, bodyB, restitution=1.0, color=arcade.color.YELLOW):
+    def __init__(self, bodyA, bodyB):
         self.bodyA = bodyA
         self.bodyB = bodyB
 
-        self.restitution = restitution # Energieerhaltung bei Kollision
+    def update(self):
+        pass
 
-        self.color = color # Farbe für die Darstellung
 
-        
+
+# Die Klasse `Collision` verwaltet die Kollisionserkennung und -berechnung 
+# zwischen zwei Körpern.
+class Collision(Interaction):
+
+    def __init__(self, bodyA, bodyB, restitution=1.0):
+        super().__init__(bodyA, bodyB)
+        self.restitution = restitution
+
+
     def check_collision(self):
         # Prüft, ob zwei Körper kollidieren.
         distance = np.linalg.norm(self.bodyA.position - self.bodyB.position)
         return distance <= (self.bodyA.radius + self.bodyB.radius)
-        
-    
+
+
     def resolve_collision(self):
         # Berechnet die neuen Geschwindigkeiten der beiden Körper nach einer Kollision.
         normal = (self.bodyB.position - self.bodyA.position) / np.linalg.norm(self.bodyB.position - self.bodyA.position)
@@ -103,7 +109,22 @@ class Interaction:
         # Aktualisiert die Geschwindigkeit der beiden Körper
         self.bodyA.velocity -= (impulse_vector / self.bodyA.mass)
         self.bodyB.velocity += (impulse_vector / self.bodyB.mass)
-        
+
+
+    # Überprüft und berechnet die Kollision, falls nötig
+    def update(self):
+        if self.check_collision():
+            self.resolve_collision()
+
+
+
+# Die Klasse `Coulomb` berechnet die Coulomb-Kraft zwischen zwei geladenen Körper.
+class Coulomb(Interaction):
+    # Die Coulomb-Konstante k in Nm²/C²
+    K = 8.99e9
+    
+    def __init__(self, bodyA, bodyB):
+        super().__init__(bodyA, bodyB)
         
     def calculate_coulomb_force(self):
         # Berechnet die Coulomb-Kraft zwischen zwei geladenen Teilchen.
@@ -113,7 +134,7 @@ class Interaction:
         if distance < self.bodyA.radius + self.bodyB.radius:
             return np.array([0.0, 0.0])  # Vermeidet unphysikalisch große Kräfte bei sehr kleinem Abstand
 
-        force_magnitude = Interaction.K * self.bodyA.charge * self.bodyB.charge / distance**2
+        force_magnitude = Coulomb.K * self.bodyA.charge * self.bodyB.charge / distance**2
         force_direction = r_vector / distance  # Einheitsvektor in Richtung des Abstandsvektors
         
         # Berechne die Coulomb-Kraft in Richtung des Einheitsvektors
@@ -125,9 +146,6 @@ class Interaction:
         force = self.calculate_coulomb_force()
         self.bodyA.add_force(force)
         self.bodyB.add_force(-force)  # Newtons drittes Gesetz (actio = reactio)
-        
-        if self.check_collision():
-            self.resolve_collision()
 
             
             
@@ -204,13 +222,12 @@ class AnimationWindow(arcade.Window):
 
         # Initialisiere zwei Körper
         ball1 = Body([-2, 1.1], [0, 2], mass=1.0, charge=1e-4, radius=0.5, color=arcade.color.RED)
-        self.bodies.append(ball1)
-        
         ball2 = Body([2.1, 1], [0, -1], mass=1.0, charge=-1e-4, radius=0.5, color=arcade.color.BLUE)
-        self.bodies.append(ball2)
+        self.bodies.extend([ball1, ball2])
 
-        int12 = Interaction(ball1, ball2)
-        self.interactions.append(int12)
+        collision12 = Collision(ball1, ball2)
+        coulomb12 = Coulomb(ball1, ball2)
+        self.interactions.extend([collision12, coulomb12])
 
     
     # Passt die Ursprungsposition bei Fenstergrößenänderung an
@@ -419,21 +436,17 @@ if __name__ == "__main__":
 # Füge folgenden Code in der __init__-Methode hinzu, um unterschiedliche Ladungen zu testen.
 # Beispiel für positive und negative Ladungen für ein mögliches Molekül:
 
-particle1 = Body([-2, 1], [0, 1.5], mass=1.0, charge=1e-6, radius=0.5, color=arcade.color.RED)
-self.bodies.append(particle1)
+        body1 = Body([-2, 1], [0, 1.5], mass=1.0, charge=1e-4, radius=0.5, color=arcade.color.RED)
+        body2 = Body([2, -1], [0, -1.5], mass=1.0, charge=-1e-4, radius=0.5, color=arcade.color.BLUE)
+        self.bodies.extend([body1, body2])
 
-particle2 = Body([2, -1], [0, -1.5], mass=1.0, charge=-1e-6, radius=0.5, color=arcade.color.BLUE)
-self.bodies.append(particle2)
+        coulomb12 = Coulomb(body1, body2)
+        collition12 = Collision(body1, body2, restitution=0.8)
+        self.interactions.extend([coulomb12,collition12])
 
 # Hinzufügen der Interaktion mit verringerter Elastizität (restitution) für eine 
-# gebundene Bewegung.
-
-int12 = Interaction(particle1, particle2)
-self.interactions.append(int12)
-
-# Setzen Sie die Elastizität in der `resolve_collision`-Methode auf einen kleineren 
-# Wert wie `restitution=0.8`, um die Geschwindigkeit bei jedem Stoß etwas zu 
-# reduzieren. Dadurch bleiben die Teilchen näher beieinander und bilden eine Bindung.
+# gebundene Bewegung. Dadurch wird die Geschwindigkeit bei jedem Stoß etwas  
+# reduziert. Dadurch bleiben die Teilchen näher beieinander und bilden eine Bindung.
 
 # Der Effekt wird durch Verringerung der restitution-Werte verstärkt, was eine Art 
 # „Molekülbindung“ erzeugen kann, indem die kinetische Energie im Stoß etwas verloren 
@@ -459,8 +472,25 @@ self.interactions.append(int12)
 
 # In der __init__-Methode einen dritten geladenen Körper hinzufügen:
 
-particle3 = Body([0, -2], [1, 0.5], mass=1.0, charge=1e-6, radius=0.5, color=arcade.color.GREEN)
-self.bodies.append(particle3)
+        # Initialisiere zwei Körper
+        body1 = Body([-2, 1.1], [0, 2], mass=1.0, charge=1e-4, radius=0.5, color=arcade.color.RED)
+        body2 = Body([2.1, 1], [0, -1], mass=1.0, charge=-1e-4, radius=0.5, color=arcade.color.BLUE)
+        body3 = Body([0, -2], [1, 0.5], mass=1.0, charge=1e-4, radius=0.5, color=arcade.color.GREEN)
+        self.bodies.extend([body1, body2, body3])
+
+        collision12 = Collision(body1, body2)
+        collision13 = Collision(body1, body3)
+        collision23 = Collision(body2, body3)
+        self.interactions.extend([collision12, collision13, collision23])
+
+        coulomb12 = Coulomb(body1, body2)
+        coulomb13 = Coulomb(body1, body3)
+        coulomb23 = Coulomb(body2, body3)
+        self.interactions.extend([coulomb12, coulomb13, coulomb23])
+        
+
+    body3 = Body([0, -2], [1, 0.5], mass=1.0, charge=1e-6, radius=0.5, color=arcade.color.GREEN)
+    self.bodies.append(body3)
 
 # Fügen Sie die entsprechenden Interaktionen hinzu, um Coulomb-Kräfte zwischen allen Teilchen zu berücksichtigen:
 
@@ -485,6 +515,9 @@ self.interactions.append(int23)
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
+
+
 
 
 

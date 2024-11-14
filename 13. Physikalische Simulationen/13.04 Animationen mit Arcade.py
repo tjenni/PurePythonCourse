@@ -208,8 +208,6 @@ class AnimationWindow(arcade.Window):
             arcade.draw_line(x, y, x + 2*body.velocity[0], y + 2*body.velocity[1] , arcade.color.GREEN, 2)
             
             
-
-
     # Aktualisiert die Simulation um einen Zeitschritt
     def on_update(self, dt):
         # Führe die Funktion nur aus, wenn der Status auf 1 ist.

@@ -64,6 +64,7 @@ class Body:
         
 
 
+
 # Die Klasse `Interaction` ist die Basisklasse für alle Wechselwirkungen. 
 class Interaction:
     def __init__(self, bodyA, bodyB):

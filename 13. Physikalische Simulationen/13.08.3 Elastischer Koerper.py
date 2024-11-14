@@ -1,35 +1,8 @@
-#              ___________________________________
-#       ______|                                   |_____
-#       \     |     13.8 GRAVITATIONSKRAFT        |    /
-#        )    |___________________________________|   (
-#       /________)                            (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
-
-
-# In diesem Kapitel erweitern wir unsere Simulation, um die Gravitationskräfte zwischen
-# Himmelskörpern zu simulieren und die Bahnen von Planeten zu berechnen. Die Gravitationskraft
-# zwischen zwei Massen führt zu einer Anziehung, die proportional zum Produkt der Massen und 
-# umgekehrt proportional zum Quadrat ihres Abstands ist. Diese Simulation illustriert die 
-# Bewegung der Planeten um die Sonne und die Anziehungskraft, die sie aufeinander ausüben.
-
-
-# _____________________________________
-#                                     /
-# Grundkonzepte: Gravitationskraft   (
-# ____________________________________\
-
-# - Gravitationskraft:
-#   Die Gravitationskraft \( F \) zwischen zwei Massen \( m_1 \) und \( m_2 \) im Abstand \( r \) 
-#   wird beschrieben durch:
-#   
-#        F = G * (m1 * m2) / r^2
-#   
-#   wobei G die Gravitationskonstante ist und in Luft oder Vakuum den Wert
-#   6.674 * 10^-11 (Nm}^2/kg^2 hat.
-#
-# - Himmelskörper:
-#   Die Planeten in der Simulation erhalten eine Masse und eine Anfangsgeschwindigkeit,
-#   die ihre Bewegung im Gravitationsfeld steuert. Diese Kräfte führen zu elliptischen Bahnen 
-#   oder stabilen Orbits je nach Anfangsbedingungen der Bewegung.
+#              __________________________________
+#       ______|                                  |_____
+#       \     |    13.8.3 ELASTISCHER KÖRPER     |    /
+#        )    |__________________________________|   (
+#       /________)                           (________\      14.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
 
@@ -38,17 +11,20 @@ import arcade.gui
 import numpy as np
 
 
+# Die Klasse `Body` modelliert ein physikalisches Objekt in der Simulation, 
+# das durch seine Position, Geschwindigkeit und Masse beschrieben wird.
+
 class Body:
-    def __init__(self, position, velocity, mass=1.0, radius=1.0, color=arcade.color.BLUE):
+    def __init__(self, position, velocity, mass=1.0, radius=1.0, fixed=False, color=arcade.color.BLUE):
         self.mass = mass                                 # Masse in kg
         self.position = np.array(position, dtype=float)  # Position in m
         self.velocity = np.array(velocity, dtype=float)  # Geschwindigkeit in m/s
         self.acceleration = np.array([0.0, 0.0])         # Beschleunigung in m/s^2
         self.force = np.array([0.0, 0.0])                # Resultierende Kraft in N
         self.radius = radius    # Radius des Körpers in m
+        self.fixed = fixed      # Körper wird festgehalten
         self.color = color      # Farbe für die Darstellung
-        self.trace = []         # Liste für die Spur
-
+        
 
     # Setzt die resultierende Kraft auf null
     def clear_force(self):
@@ -64,6 +40,11 @@ class Body:
     # Euler-Cromer-Verfahrens, wobei die Beschleunigung auf Basis der Kraft 
     # und Masse aktualisiert wird.
     def update_ec(self, dt):
+        if self.fixed:
+            self.force = np.array([0.0, 0.0]) 
+            self.velocity = np.array([0.0, 0.0]) 
+            return
+        
         self.acceleration = self.force / self.mass
         self.velocity += self.acceleration * dt
         self.position += self.velocity * dt
@@ -78,6 +59,50 @@ class Interaction:
     def update(self):
         pass
 
+
+
+# Die Klasse `Spring` simuliert eine Feder zwischen zwei Körpern. 
+class Spring(Interaction):
+
+    def __init__(self, bodyA, bodyB, k=1.0, length=None, damping=0.9, color=arcade.color.YELLOW):
+        super().__init__(bodyA, bodyB)
+
+        self.k = k # Federkonstante
+        
+        # Ursprungslänge der Feder
+        if length is None:
+            self.length = np.linalg.norm(bodyA.position - bodyB.position)
+        else:
+            self.length = length
+        
+        self.damping = damping # Dämpfungskonstante
+        
+        self.color = color 
+
+
+    def calculate_spring_force(self):
+        # Berechnet die Federkraft nach dem Hookeschen Gesetz.
+        r_vector = self.bodyB.position - self.bodyA.position
+        distance = np.linalg.norm(r_vector)
+        extension = distance - self.length  # Auslenkung der Feder
+
+        # Berechnet die Federkraft basierend auf der Auslenkung
+        force_magnitude = -self.k * extension
+        force_direction = r_vector / distance  # Einheitsvektor in Richtung des Abstandsvektors
+
+        # Dämpfungskraft parallel zur Federkraft
+        v_rel = self.bodyB.velocity - self.bodyA.velocity
+        force_magnitude += -self.damping * np.dot(v_rel, force_direction)
+        
+        # Berechne die Federkraft
+        return force_magnitude * force_direction
+
+
+    def update(self):
+        force = self.calculate_spring_force()
+        self.bodyA.add_force(-force)
+        self.bodyB.add_force(force)
+    
 
 
 # Die Klasse `Collision` verwaltet die Kollisionserkennung und -berechnung 
@@ -120,40 +145,7 @@ class Collision(Interaction):
             self.resolve_collision()
 
 
-
-
-# Die Klasse `Gravity` berechnet die Gravitationskraft zwischen zwei Massen.
-class Gravity(Interaction):
-    # Die Gravitationskonstante G in Nm²/kg²
-    G = 6.67430e-11
     
-    def __init__(self, bodyA, bodyB):
-        self.bodyA = bodyA
-        self.bodyB = bodyB
-    
-    def calculate_gravitational_force(self):
-        # Berechnet die Gravitationskraft zwischen zwei Massen.
-        r_vector = self.bodyB.position - self.bodyA.position
-        distance = np.linalg.norm(r_vector)
-        
-        if distance < self.bodyA.radius + self.bodyB.radius:
-            return np.array([0.0, 0.0])  # Vermeidet unphysikalisch große Kräfte bei sehr kleinem Abstand
-
-        force_magnitude = Gravity.G * self.bodyA.mass * self.bodyB.mass / distance**2
-        force_direction = r_vector / distance  # Einheitsvektor in Richtung des Abstandsvektors
-        
-        return force_magnitude * force_direction
-
-
-    # Wendet die Coulomb-Kraft auf beide Körper an
-    def update(self):
-        force = self.calculate_gravitational_force()
-        self.bodyA.add_force(force)
-        self.bodyB.add_force(-force)
-
-            
-            
-            
 # Die Klasse `AnimationWindow` steuert die grafische Darstellung und die Simulation 
 # der Partikelbewegungen.
 class AnimationWindow(arcade.Window):
@@ -168,7 +160,7 @@ class AnimationWindow(arcade.Window):
         self.set_min_size(width, height)
         
         # Skalierungsfaktor in Pixel/Meter für die Darstellung
-        self.scale = 1e-9                   
+        self.scale = 50                       
         
         # Ursprung des Koordinatensystems in die Mitte des Fensters setzen
         self.center = [width // 2 + 100, height // 2]  
@@ -182,14 +174,12 @@ class AnimationWindow(arcade.Window):
         # Simulationszeit in Sekunden
         self.time = 0
         
-        # Zeitschritt
-        self.dt = 10*3600
-        
         # Simulationsstatus (0 = Pause, 1 = Ausführen)
         self.state = 0
         
         # FPS-Berechnung mit gleitendem Durchschnitt
         self.fps_history = [0] * 30
+        
         self.frame = 0
         
         # UI-Manager zur Steuerung der Benutzeroberfläche (Buttons)
@@ -228,15 +218,18 @@ class AnimationWindow(arcade.Window):
                 child=v_box) 
         )
 
-        # Initialisiere zwei Himmelskörper, z.B. Sonne und Planet
-        sun = Body([0, 0], [0, 0], mass=1.989e30, radius=1e9, color=arcade.color.RED)
-        planet = Body([1.5e11, 0], [0, 2.98e4], mass=5.972e24, radius=1e8, color=arcade.color.BLUE)
+        # Initialisiere die Körper und Wechselwirkungen
+        body1 = Body([-1, -1], [0, 5], mass=0.5, radius=0.2, color=arcade.color.RED)
+        body2 = Body([0, 1], [0, 5], mass=0.5, radius=0.2, color=arcade.color.GREEN)
+        body3 = Body([1, -1], [-5, 0], mass=0.5, radius=0.2, color=arcade.color.BLUE)
         
-        self.bodies.extend([sun, planet])
+        self.bodies.extend([body1, body2, body3])
         
-        gravity_sun_planet = Gravity(sun, planet)
-        self.interactions.extend([gravity_sun_planet])
+        spring12 = Spring(body1, body2, k=40.0, damping=0.98)
+        spring13 = Spring(body1, body3, k=40.0, damping=0.98)
+        spring23 = Spring(body2, body3, k=40.0, damping=0.98)
 
+        self.interactions.extend([spring12, spring13, spring23])
 
     
     # Passt die Ursprungsposition bei Fenstergrößenänderung an
@@ -261,6 +254,7 @@ class AnimationWindow(arcade.Window):
         pixel_y = self.center[1] + y * self.scale
         return pixel_x, pixel_y
 
+
     # Zeichnet die Szene im Fenster
     def on_draw(self):
         arcade.start_render()
@@ -268,35 +262,45 @@ class AnimationWindow(arcade.Window):
         # Zeichnet die Benutzeroberfläche
         self.uimanager.draw() 
         
+        # Wände und Bodenlinien der Box
+        points = []
+        points.append(self.meter_to_pixel(-4.5, 4.5))
+        points.append(self.meter_to_pixel(-4.5, -4.5))
+        points.append(self.meter_to_pixel(4.5, -4.5))
+        points.append(self.meter_to_pixel(4.5, 4.5))
+        points.append(self.meter_to_pixel(-4.5, 4.5))
+        
+        arcade.draw_line_strip(points, arcade.color.BLACK, 2)
+        
         # Zeigt die Simulationszeit an
-        time = round(self.time // (24*3600), 1)
-        x, y = (-450 + self.center[0], 150 + self.center[1])
-        arcade.draw_text(f"t = {time} d", x, y, arcade.color.BLACK)
+        time = round(self.time, 1)
+        x, y = self.meter_to_pixel(-9, 3)
+        arcade.draw_text(f"t = {time} s", x, y, arcade.color.BLACK)
         
         # Zeigt die FPS an
         fps = round(sum(self.fps_history) / len(self.fps_history), 1)
-        x, y = (-450 + self.center[0], 100 + self.center[1])
+        x, y = self.meter_to_pixel(-9, 2.5)
         arcade.draw_text(f"FPS = {fps}", x, y, arcade.color.BLACK)
+
+        # Zeichnet die Federn
+        for interaction in self.interactions:
+            xA, yA = self.meter_to_pixel(interaction.bodyA.position[0], interaction.bodyA.position[1])
+            xB, yB = self.meter_to_pixel(interaction.bodyB.position[0], interaction.bodyB.position[1])
+            
+            arcade.draw_line(xA, yA, xB, yB , interaction.color, 2)
         
         # Zeichnet alle Körper in der Szene
         for body in self.bodies:
-            
-            # zeichne Körper
-            if self.frame % 10 == 0:
-                body.trace.append(body.position.copy())
-                if len(body.trace) > 100:
-                    body.trace.pop(0)
-            
-            # zeichne die Spur
-            for pos in body.trace:
-                x1, y1 = self.meter_to_pixel(pos[0], pos[1])
-                arcade.draw_point(x1, y1, color=body.color, size=2)
-                
             x, y = self.meter_to_pixel(body.position[0], body.position[1])
             r = body.radius * self.scale
-            r = max(5,r)
             arcade.draw_circle_filled(x, y, r, body.color)
 
+            # zeichne die Geschwindigkeit
+            arcade.draw_line(x, y, x + 2*body.velocity[0], y + 2*body.velocity[1] , arcade.color.GREEN, 2)
+            
+            # zeichne die resultierende Kraft
+            arcade.draw_line(x, y, x + 2*body.force[0], y + 2*body.force[1] , arcade.color.BARN_RED, 2)
+                
 
 
     # Aktualisiert die Simulation um einen Zeitschritt
@@ -313,26 +317,44 @@ class AnimationWindow(arcade.Window):
         for body in self.bodies:
             body.clear_force()
         
+        
         # Aktualisiert die Kollisionen
         for interacion in self.interactions:
             interacion.update()
             
         # Berechnet die Kräfte und aktualisiert die Bewegungen der Objekte
         for body in self.bodies:
-            body.update_ec(self.dt)  # Aktualisiert Position und Geschwindigkeit
+            body.update_ec(dt)  # Aktualisiert Position und Geschwindigkeit
         
+        # Überprüft und verarbeitet Kollisionen mit dem Boden
+        for body in self.bodies:
+            # Überprüft und verarbeitet Kollisionen mit dem Boden und der Decke
+            if body.position[1] > 4.5 - body.radius:
+                body.position[1] = 4.5 - body.radius
+                body.velocity[1] *= -1
+            if body.position[1] < -4.5 + body.radius:
+                body.position[1] = -4.5 + body.radius
+                body.velocity[1] *= -1
+                
+            # Überprüft die Kollisionen mit den Seitenwänden
+            if body.position[0] > 4.5 - body.radius:
+                body.position[0] = 4.5 - body.radius
+                body.velocity[0] *= -1
+            elif body.position[0] < -4.5 + body.radius:
+                body.position[0] = -4.5 + body.radius
+                body.velocity[0] *= -1
             
         # Erhöht die Simulationszeit
-        self.time += self.dt
+        self.time += dt
         
-        # erhöhe Framenummer
+        # erhöhre die Framenummer
         self.frame += 1
 
 
 
 if __name__ == "__main__":
     # Initialisiert das Fenster für die Simulation
-    window = AnimationWindow(800, 600, "Stern und Planet")
+    window = AnimationWindow(800, 600, "Elastischer Körper")
 
     # starte die Simulation
     arcade.run()
@@ -341,19 +363,21 @@ if __name__ == "__main__":
 
 
 
-
-# ____________________________
-#                            /
-# Zusammenfassung            (
-# ____________________________\
-
+# ___________________________
+#                           /
+# Zusammenfassung          (
+# __________________________\
+#
+# Das Doppelpendel zeigt chaotisches Verhalten durch die Interaktion von zwei Massen,
+# die über Federn verbunden sind. Die Bewegung hängt stark von der Anfangsposition und
+# den Systemparametern ab, was zu komplexen, oft unvorhersehbaren Bewegungen führt.
 
 
 
 # ____________________________
 #                            /
 # Übungsaufgaben            (
-# ___________________________\
+# ____________________________\
 
 
 # ___________
@@ -361,7 +385,9 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-
+# Experimentiere mit verschiedenen Anfangspositionen, Federkonstanten und Längen, 
+# um die Bewegung des Doppelpendels zu beeinflussen. Beobachte, wie sich die 
+# Stabilität und das Verhalten der Bewegung verändern.
 
 # Füge hier deine Lösung ein.
 
@@ -373,9 +399,6 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-
-
-# Füge hier deine Lösung ein.
 
 
 
@@ -399,8 +422,22 @@ if __name__ == "__main__":
 #   
 
 
-# >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+# ___________
+#            \
+# Aufgabe 1  /
+# __________/
+#
 
+
+# ___________
+#            \
+# Aufgabe 2  /
+# __________/
+#
+
+
+
+# >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
 
 
 
