@@ -25,7 +25,7 @@ class SingleSpriteExample(arcade.Window):
         arcade.set_background_color(arcade.color.LIGHT_SKY_BLUE)
         
         # Erstelle ein Sprite mit einem Bild und einer Größe
-        self.player = arcade.Sprite("character.png", 0.5)  
+        self.player = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png", 0.5)  
         self.player.center_x = 400
         self.player.center_y = 300
 
@@ -34,7 +34,7 @@ class SingleSpriteExample(arcade.Window):
         self.player.draw()  # Sprite zeichnen
 
     def on_update(self, delta_time):
-        self.player.center_x += 2  # Bewegung des Sprites
+        self.player.center_x += 1  # Bewegung des Sprites
 
 window = SingleSpriteExample()
 arcade.run()
@@ -60,7 +60,7 @@ class SpriteGroupExample(arcade.Window):
 
         # Füge der Sprite-Liste mehrere Münzen hinzu
         for i in range(5):
-            coin = arcade.Sprite("coin.png", 0.2)
+            coin = arcade.Sprite(":resources:images/items/coinGold.png", 0.5)
             coin.center_x = i * 100 + 50
             coin.center_y = 300
             self.coins.append(coin)
@@ -93,7 +93,7 @@ class MovingSpriteGroupExample(arcade.Window):
 
         # Füge Schneeflocken zur Sprite-Liste hinzu
         for i in range(20):
-            flake = arcade.Sprite("snowflake.png", 0.1)
+            flake = arcade.Sprite(":resources:images/pinball/bumper.png", 0.5)
             flake.center_x = i * 40 + 20
             flake.center_y = 600
             self.snowflakes.append(flake)
@@ -115,6 +115,10 @@ arcade.run()
 
 
 
+
+
+
+
 # _________________________________
 #                                 /
 # Kollisionserkennung            (
@@ -127,39 +131,55 @@ arcade.run()
 class CollisionExample(arcade.Window):
     def __init__(self):
         super().__init__(800, 600, "Kollisionserkennung")
-        arcade.set_background_color(arcade.color.ASH_GREY)
+        arcade.set_background_color(arcade.color.ASPARAGUS)
 
         # Spieler-Sprite
-        self.player = arcade.Sprite("character.png", 0.5)
+        self.player = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png", 0.5)
         self.player.center_x = 400
         self.player.center_y = 100
+        
+        self.speed_x = 0
+        self.speed_y = 0
 
         # Hindernisse in einer Sprite-Liste
         self.obstacles = arcade.SpriteList()
         for i in range(3):
-            obstacle = arcade.Sprite("rock.png", 0.3)
+            obstacle = arcade.Sprite(":resources:images/tiles/rock.png", 0.3)
             obstacle.center_x = i * 200 + 200
             obstacle.center_y = 300
             self.obstacles.append(obstacle)
-
+    
+    def on_update(self, delta_time):
+        self.player.center_x += self.speed_x
+        self.player.center_y += self.speed_y
+        
+        # Kollisionserkennung
+        if arcade.check_for_collision_with_list(self.player, self.obstacles):
+            print("Kollision mit Hindernis!")
+        
     def on_draw(self):
         arcade.start_render()
         self.player.draw()
         self.obstacles.draw()
 
     def on_key_press(self, key, modifiers):
+        # Bewege den Spieler mit den Pfeiltasten
         if key == arcade.key.UP:
-            self.player.center_y += 10
+            self.speed_y = 5
         elif key == arcade.key.DOWN:
-            self.player.center_y -= 10
+            self.speed_y = -5
         elif key == arcade.key.LEFT:
-            self.player.center_x -= 10
+            self.speed_x = -5
         elif key == arcade.key.RIGHT:
-            self.player.center_x += 10
-
-        # Kollisionserkennung
-        if arcade.check_for_collision_with_list(self.player, self.obstacles):
-            print("Kollision mit Hindernis!")
+            self.speed_x = 5
+    
+    def on_key_release(self, key, modifiers):
+        # Stoppe die Bewegung, wenn die Taste losgelassen wird
+        if key in [arcade.key.UP, arcade.key.DOWN]:
+            self.speed_y = 0
+        elif key in [arcade.key.LEFT, arcade.key.RIGHT]:
+            self.speed_x = 0
+        
 
 window = CollisionExample()
 arcade.run()

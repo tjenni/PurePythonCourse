@@ -16,13 +16,11 @@
 # ________________________________\
 
 # Um Arcade zu verwenden, musst du es zuerst installieren. In Thonny musst du dazu
-# unter Werkzeuge > Verwalte Packete ... das acrace Modul installieren. 
+# unter Werkzeuge > Verwalte Packete ... das arcade-Modul installieren. 
 
 # Nachdem das Modul installiert ist, kannst du es in deinem Code importieren:
 
 import arcade
-
-
 
 
 # _________________________________
@@ -60,8 +58,11 @@ arcade.run()
 # ________________________________\
 
 # Die Hauptmethoden in einem Arcade-Spiel sind:
+#
 # - `setup()`: Wird verwendet, um das Spiel zu initialisieren.
+#
 # - `on_draw()`: Definiert, was auf dem Bildschirm gezeichnet wird.
+#
 # - `on_update(delta_time)`: Aktualisiert den Zustand des Spiels in bestimmten Intervallen.
 # 
 # Beispiel:
@@ -155,7 +156,7 @@ arcade.run()
 # Zusammenfassung  (
 # __________________\
 
-# - Installiere Arcade mit `pip install arcade`, um einfache 2D-Spiele zu entwickeln.
+# - Installiere Arcade, um einfache 2D-Spiele zu entwickeln.
 #
 # - Verwende die `arcade.Window`-Klasse, um ein Spielfenster zu erstellen.
 #
@@ -215,7 +216,21 @@ arcade.run()
 
 
 
-
+#        ___------__
+#   |\__-- /\       _-
+#   |/    __      -
+#   //\  /  \    /__                Arcade klingt nach Action.
+#   |  o|  0|__     --_
+#   \\____-- __ \   ___-
+#   (@@    __/  / /_
+#      -_____---   --_
+#       //  \ \\   ___-
+#     //|\__/  \\  \
+#     \_-\_____/  \-\
+#          // \\--\|   -Han J. Lee-
+#     ____//  ||_
+#    /_____\ /___\
+#  ______________________
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 

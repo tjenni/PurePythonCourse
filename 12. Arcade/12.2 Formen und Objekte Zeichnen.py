@@ -5,9 +5,9 @@
 #       /________)                                     (________\       4.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
-# In Arcade können verschiedene Formen und Objekte gezeichnet werden, um Spielumgebungen und 
-# Charaktere zu gestalten. In diesem Kapitel lernst du, wie du Grundformen zeichnest und 
-# sie in deinem Spielfenster anzeigst.
+# In Arcade können verschiedene Formen und Objekte gezeichnet werden, um 
+# Spielumgebungen und Charaktere zu gestalten. In diesem Kapitel lernst du, 
+# wie du Grundformen zeichnest und sie in deinem Spielfenster anzeigst.
 
 import arcade
 
@@ -74,10 +74,10 @@ class ColorExample(arcade.Window):
         arcade.start_render()
         
         # Rechteck mit voller Deckkraft
-        arcade.draw_rectangle_filled(200, 300, 100, 50, (255, 0, 0, 255))  # Rotes Rechteck
+        arcade.draw_rectangle_filled(300, 300, 200, 100, (255, 0, 0, 255))  # Rotes Rechteck
         
         # Rechteck mit Transparenz
-        arcade.draw_rectangle_filled(400, 300, 100, 50, (0, 255, 0, 128))  # Halbtransparentes grünes Rechteck
+        arcade.draw_rectangle_filled(400, 300, 100, 200, (0, 255, 0, 128))  # Halbtransparentes grünes Rechteck
         
         # Text mit Transparenz
         arcade.draw_text("Transparenz-Beispiel", 200, 100, (0, 0, 255, 128), 24)  # Halbtransparenter blauer Text
@@ -106,9 +106,9 @@ class RepeatedObjects(arcade.Window):
         arcade.start_render()
         
         # Bäume in einer Schleife zeichnen
-        for x in range(50, 800, 150):
-            arcade.draw_triangle_filled(x, 150, x - 30, 50, x + 30, 50, arcade.color.DARK_GREEN)
-            arcade.draw_rectangle_filled(x, 25, 20, 30, arcade.color.BROWN)
+        for x in range(100, 800, 150):
+            arcade.draw_triangle_filled(x, 350, x - 30, 250, x + 30, 250, arcade.color.DARK_GREEN)
+            arcade.draw_rectangle_filled(x, 225, 20, 30, arcade.color.BROWN)
 
 # Erzeuge das Fenster und starte das Programm
 repeated_objects = RepeatedObjects()
@@ -221,7 +221,18 @@ arcade.run()
 
 
 
-
+#          _-_.
+#       _-',^. `-_.
+#   ._-' ,'   `.   `-_ 
+#  !`-_._________`-':::           Formen zeichnen macht Spass. :-)
+#  !   /\        /\::::
+#  ;  /  \      /..\:::
+#  ! /    \    /....\::
+#  !/      \  /......\:
+#  ;--.___. \/_.__.--;; 
+#   '-_    `:!;;;;;;;'
+#      `-_, :!;;;''
+#          `-!'         mn
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -295,7 +306,7 @@ class RowCirclesWindow(arcade.Window):
 
     def on_draw(self):
         arcade.start_render()
-        for i in range(10):
+        for i in range(9):
             arcade.draw_circle_filled(50 + i * 60, self.height // 2, 20, self.colors[i])
 
 # Fenster starten

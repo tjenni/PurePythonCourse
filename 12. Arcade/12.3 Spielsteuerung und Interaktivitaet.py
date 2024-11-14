@@ -99,7 +99,7 @@ class MouseControl(arcade.Window):
     def on_mouse_press(self, x, y, button, modifiers):
         # Klickeffekt bei Mausklick
         if button == arcade.MOUSE_BUTTON_LEFT:
-            arcade.draw_text("Klick!", x, y, arcade.color.BLACK, 16)
+            print("Klick!")
 
 mouse_window = MouseControl()
 arcade.run()
@@ -249,27 +249,25 @@ arcade.run()
 # Wenn der Spieler das Fenster verlässt, soll er am gegenüberliegenden Rand wieder erscheinen.
 
 '''
+import arcade
+
 class WrapAroundPlayer(arcade.Window):
     def __init__(self):
         super().__init__(600, 400, "Wrap Around Player")
         self.player_x = self.width // 2
         self.player_y = self.height // 2
-        self.speed = 5
+        self.speed_x = 0
+        self.speed_y = 0
 
     def on_draw(self):
         arcade.start_render()
         arcade.draw_circle_filled(self.player_x, self.player_y, 20, arcade.color.BLUE)
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP:
-            self.player_y += self.speed
-        elif key == arcade.key.DOWN:
-            self.player_y -= self.speed
-        elif key == arcade.key.LEFT:
-            self.player_x -= self.speed
-        elif key == arcade.key.RIGHT:
-            self.player_x += self.speed
-
+        
+    def on_update(self, delta_time):
+        # Aktualisiere die Spielerposition
+        self.player_x += self.speed_x
+        self.player_y += self.speed_y
+        
         # Wenn der Spieler das Fenster verlässt, erscheint er auf der gegenüberliegenden Seite
         if self.player_x > self.width:
             self.player_x = 0
@@ -279,6 +277,16 @@ class WrapAroundPlayer(arcade.Window):
             self.player_y = 0
         elif self.player_y < 0:
             self.player_y = self.height
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.UP:
+            self.speed_y = 5
+        elif key == arcade.key.DOWN:
+            self.speed_y = -5
+        elif key == arcade.key.LEFT:
+            self.speed_x = -5
+        elif key == arcade.key.RIGHT:
+            self.speed_x = 5
 
 # Anwendung starten
 window = WrapAroundPlayer()
@@ -298,16 +306,18 @@ arcade.run()
 # das Objekt verschwinden.
 
 '''
+import arcade
+
 class MouseFollower(arcade.Window):
     def __init__(self):
         super().__init__(600, 400, "Mouse Follower")
         self.circle_x = 0
         self.circle_y = 0
-        self.visible = False
+        self.is_visible = False
 
     def on_draw(self):
         arcade.start_render()
-        if self.visible:
+        if self.is_visible:
             arcade.draw_circle_filled(self.circle_x, self.circle_y, 20, arcade.color.RED)
 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -316,15 +326,16 @@ class MouseFollower(arcade.Window):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
-            self.visible = True
+            self.is_visible = True
 
     def on_mouse_release(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_LEFT:
-            self.visible = False
+            self.is_visible = False
 
 # Anwendung starten
 window = MouseFollower()
 arcade.run()
+
 '''
 
 
@@ -340,32 +351,41 @@ arcade.run()
 # auf der Konsole ausgegeben werden.
 
 '''
+import arcade
+
 class BorderAlertPlayer(arcade.Window):
     def __init__(self):
         super().__init__(600, 400, "Border Alert Player")
         self.player_x = self.width // 2
         self.player_y = self.height // 2
-        self.speed = 5
+        self.speed_x = 0
+        self.speed_y = 0
 
     def on_draw(self):
         arcade.start_render()
         arcade.draw_circle_filled(self.player_x, self.player_y, 20, arcade.color.GREEN)
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP:
-            self.player_y += self.speed
-        elif key == arcade.key.DOWN:
-            self.player_y -= self.speed
-        elif key == arcade.key.LEFT:
-            self.player_x -= self.speed
-        elif key == arcade.key.RIGHT:
-            self.player_x += self.speed
-
+        
+    def on_update(self, delta_time):
+        # Aktualisiere die Spielerposition
+        self.player_x += self.speed_x
+        self.player_y += self.speed_y
+        
         # Prüfen, ob der Spieler den Rand des Fensters erreicht hat
         if self.player_x <= 0 or self.player_x >= self.width:
             print("Grenze erreicht!")
         if self.player_y <= 0 or self.player_y >= self.height:
             print("Grenze erreicht!")
+    
+    # Bewege den Spieler mit den Pfeiltasten    
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.UP:
+            self.speed_y = 5
+        elif key == arcade.key.DOWN:
+            self.speed_y = -5
+        elif key == arcade.key.LEFT:
+            self.speed_x = -5
+        elif key == arcade.key.RIGHT:
+            self.speed_x = 5
 
 # Anwendung starten
 window = BorderAlertPlayer()
