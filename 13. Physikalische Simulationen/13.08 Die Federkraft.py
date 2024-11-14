@@ -1,8 +1,8 @@
-#              _____________________________________________
-#       ______|                                             |_____
-#       \     |    13.6 FEDERKRAFT ZWISCHEN ZWEI KÖRPERN    |    /
-#        )    |_____________________________________________|   (
-#       /________)                                     (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ___________________________
+#       ______|                           |_____
+#       \     |    13.6 DIE FEDERKRAFT    |    /
+#        )    |___________________________|   (
+#       /________)                    (________\      13.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # In diesem Kapitel erweitern wir unsere Simulation, um die Federkraft zwischen
 # zwei Körpern zu modellieren. Die Federkraft entspricht dem Hookeschen Gesetz,
@@ -32,7 +32,6 @@
 import arcade
 import arcade.gui 
 import numpy as np
-
 
 
 # Die Klasse `Body` modelliert ein physikalisches Objekt in der Simulation, 
@@ -100,6 +99,10 @@ class Interaction:
         # Berechnet die Federkraft basierend auf der Auslenkung
         force_magnitude = -self.k * extension
         force_direction = r_vector / distance  # Einheitsvektor in Richtung des Abstandsvektors
+
+        # Dämpfungskraft parallel zur Federkraft
+        v_rel = self.bodyB.velocity - self.bodyA.velocity
+        force_magnitude += -self.restitution * np.dot(v_rel, force_direction)
         
         # Berechne die Federkraft
         return force_magnitude * force_direction
@@ -212,13 +215,11 @@ class AnimationWindow(arcade.Window):
 
         # Initialisiere zwei Körper
         ball1 = Body([-2, 1.1], [2, 2], mass=1.0, radius=0.5, color=arcade.color.RED)
-        self.bodies.append(ball1)
-        
         ball2 = Body([2, 1], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
-        self.bodies.append(ball2)
+        self.bodies.extend([ball1,ball2])
 
         int12 = Interaction(ball1, ball2, k=5.0)
-        self.interactions.append(int12)
+        self.interactions.extend([int12])
 
     
     # Passt die Ursprungsposition bei Fenstergrößenänderung an
@@ -339,7 +340,7 @@ class AnimationWindow(arcade.Window):
 
 if __name__ == "__main__":
     # Initialisiert das Fenster für die Simulation
-    window = AnimationWindow(800, 600, "Zwei Flummis")
+    window = AnimationWindow(800, 600, "Molekül")
 
     # starte die Simulation
     arcade.run()
@@ -367,7 +368,9 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-
+# Experimentiere mit verschiedenen Federkonstanten, Massen und Anfangspositionen.
+# Beobachte, wie sich die Schwingungsfrequenz der beiden Körper mit grossen 
+# und kleinen Werten für k ändert.
 
 # Füge hier deine Lösung ein.
 
@@ -379,7 +382,10 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-
+# Füge der Simulation ein drittes Objekt hinzu, das ebenfalls mit einer Feder 
+# an das zweite Objekt gebunden ist. Stelle dir vor, dass eine Kette von 
+# miteinander verbundenen Objekten entsteht, die alle miteinander durch Federn 
+# verknüpft sind.
 
 # Füge hier deine Lösung ein.
 
@@ -409,7 +415,19 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
+# Experimentiere mit verschiedenen Federkonstanten, Massen und Anfangspositionen.
+# Beobachte, wie sich die Schwingungsfrequenz der beiden Körper mit grossen 
+# und kleinen Werten für k ändert.
 
+'''
+        # Initialisiere zwei Körper
+        ball1 = Body([-2, 1.1], [2, 2], mass=1.0, radius=0.5, color=arcade.color.RED)
+        ball2 = Body([2, 1], [-2, 0], mass=1.0, radius=0.5, color=arcade.color.BLUE)
+        self.bodies.extend([ball1,ball2])
+
+        int12 = Interaction(ball1, ball2, k=500.0)
+        self.interactions.extend([int12])
+'''
 
 
 
@@ -418,10 +436,25 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
+# Füge der Simulation ein drittes Objekt hinzu, das ebenfalls mit einer Feder 
+# an das zweite Objekt gebunden ist. Stelle dir vor, dass eine Kette von 
+# miteinander verbundenen Objekten entsteht, die alle miteinander durch Federn 
+# verknüpft sind.
 
+'''
+        # Initialisiere drei Körper
+        ball1 = Body([-2, 1.1], [2, 2], mass=1.0, radius=0.2, color=arcade.color.RED)
+        ball2 = Body([0, 1], [-2, 0], mass=1.0, radius=0.2, color=arcade.color.BLUE)
+        ball3 = Body([2, 1], [-2, 0], mass=1.0, radius=0.2, color=arcade.color.GREEN)
+        self.bodies.extend([ball1,ball2, ball3])
 
+        int12 = Interaction(ball1, ball2, k=5.0)
+        int23 = Interaction(ball2, ball3, k=5.0)
+        self.interactions.extend([int12, int23])
+'''
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 
 

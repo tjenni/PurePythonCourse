@@ -12,11 +12,9 @@
 
 
 
-
 import arcade
 import arcade.gui 
 import numpy as np
-
 
 
 # Die Klasse `Body` modelliert ein physikalisches Objekt in der Simulation, 
@@ -373,39 +371,30 @@ if __name__ == "__main__":
 
 
 
-#              (_)
-#            _ )_( _
-#          /`_) H (_`\
-#        .' (  { }  ) '.
-#      _/ /` '-'='-' `\ \_
-#     [_.'   _,...,_   '._]
-#      |   .:"`````":.   |
-#      |__//_________\\__|
-#       | .-----------. |
-#       | |  .-"""-.  | |
-#       | | /    /  \ | |       Nun kannst du eine Uhr mit einem 
-#       | ||-   <   -|| |       Doppelpendel erstellen. 
-#       | | \    \  / | |
-#       | |[`'-...-'`]| |
-#       | | ;-.___.-; | |
-#       | | |  |||  | | |
-#       | | |  |||  | | |
-#       | | |  |||  | | |
-#       | | |  |||  | | |
-#       | | |  |||  | | |
-#       | | | _|||_ | | |
-#       | | | >===< | | |
-#       | | | |___| | | |
-#       | | |  |||  | | |
-#       | | |  ;-;  | | |
-#       | | | (   ) | | |
-#       | | |  '-'  | | |
-#       | | '-------' | |
-#  jgs _| '-----------' |_
-#     [= === === ==== == =]
-#     [__--__--___--__--__]
-#    /__-___-___-___-___-__\
-#   `"""""""""""""""""""""""`
+
+#                                     \
+#                                     `\,/
+#                                     .-'-.
+#                                    '     `
+#                                    `.   .'
+#                             `._  .-~     ~-.   _,'
+#                              ( )'           '.( )
+#                `._    _       /               .'
+#                 ( )--' `-.  .'                 ;
+#            .    .'        '.;                  ()
+#             `.-.`           '                 .'
+#   ----*-----;                                .'        Chaospendel und 
+#             .`-'.           ,                `.        Fraktale haben 
+#            '    '.        .';                  ()      viel gemeinsam.
+#                 (_)-   .-'  `.                 ;
+#                ,'   `-'       \               `.
+#                              (_).           .'(_)
+#                             .'   '-._   _.-'    `.
+#                                    .'   `.
+#                                    '     ;              ^aNT
+#                                     `-,-'
+#                                      /`\
+#                                    /`
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -433,7 +422,7 @@ if __name__ == "__main__":
 # Mit diesen Einstellungen können Sie die Auswirkungen verschiedener Parameter auf 
 # die Stabilität und die chaotische Natur des Systems untersuchen. Je nach Werten 
 # können Sie eine stärkere oder schwächere Schwingung und unterschiedliche chaotische 
-# Bewegungen beobachten. Ersetze dazu zum Beispiel die Zeilen 178 bis 188 mit:
+# Bewegungen beobachten. Ersetze dazu zum Beispiel die Zeilen 176 bis 186 mit:
 #
 '''
         # Initialisiere die Körper und Wechselwirkungen
@@ -466,7 +455,7 @@ if __name__ == "__main__":
 '''
 # Lösung:
 # Füge dazu weitere Body- und Interaction-Objekte hinzu, sodass eine Kette von 
-# Körpern entsteht. Ersetze die Zeilen 178 bis 188 mit:
+# Körpern entsteht. Ersetze die Zeilen 176 bis 186 mit:
 
         # Initialisiere die Körper
         ball1 = Body([-2, 1], [0, 0], mass=0.1, radius=0.1, fixed=True, color=arcade.color.BLACK)
