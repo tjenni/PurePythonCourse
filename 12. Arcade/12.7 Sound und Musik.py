@@ -28,7 +28,7 @@ class SoundEffectExample(arcade.Window):
         arcade.set_background_color(arcade.color.LIGHT_BLUE)
 
         # Lade den Sound-Effekt
-        self.coin_sound = arcade.load_sound("coin_sound.wav")
+        self.coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
 
     def on_draw(self):
         arcade.start_render()

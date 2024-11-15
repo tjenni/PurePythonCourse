@@ -61,7 +61,7 @@ class SpriteGroupExample(arcade.Window):
         # Füge der Sprite-Liste mehrere Münzen hinzu
         for i in range(5):
             coin = arcade.Sprite(":resources:images/items/coinGold.png", 0.5)
-            coin.center_x = i * 100 + 50
+            coin.center_x = i * 100 + 200
             coin.center_y = 300
             self.coins.append(coin)
 
@@ -92,9 +92,9 @@ class MovingSpriteGroupExample(arcade.Window):
         self.snowflakes = arcade.SpriteList()
 
         # Füge Schneeflocken zur Sprite-Liste hinzu
-        for i in range(20):
+        for i in range(12):
             flake = arcade.Sprite(":resources:images/pinball/bumper.png", 0.5)
-            flake.center_x = i * 40 + 20
+            flake.center_x = i * 60 + 80
             flake.center_y = 600
             self.snowflakes.append(flake)
 
@@ -144,7 +144,7 @@ class CollisionExample(arcade.Window):
         # Hindernisse in einer Sprite-Liste
         self.obstacles = arcade.SpriteList()
         for i in range(3):
-            obstacle = arcade.Sprite(":resources:images/tiles/rock.png", 0.3)
+            obstacle = arcade.Sprite(":resources:images/tiles/rock.png", 0.5)
             obstacle.center_x = i * 200 + 200
             obstacle.center_y = 300
             self.obstacles.append(obstacle)

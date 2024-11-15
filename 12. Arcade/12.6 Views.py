@@ -78,7 +78,6 @@ arcade.run()
 
 # Ansichten können Parameter an andere Ansichten übergeben, z.B. den Punktestand.
 # Dazu kann man den Wert direkt beim Erstellen der nächsten Ansicht übergeben.
-
 class GameOverView(arcade.View):
     def __init__(self, score):
         super().__init__()
@@ -95,7 +94,7 @@ class GameOverView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ENTER:
-            game_view = GameView()
+            game_view = ScoringGameView()
             self.window.show_view(game_view)
 
 
@@ -119,7 +118,11 @@ class ScoringGameView(arcade.View):
         elif key == arcade.key.RIGHT:
             self.score += 1
 
-
+# Startet die Anwendung und zeigt das Hauptmenü an
+window = arcade.Window(800, 600, "Spiel mit Views")
+scoring_game_view = ScoringGameView()
+window.show_view(scoring_game_view)
+arcade.run()
 
 
 # _________________________________

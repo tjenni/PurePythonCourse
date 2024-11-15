@@ -67,24 +67,36 @@ arcade.run()
 # 
 # Beispiel:
 
+import arcade
+
+import arcade
+
 class SimpleGame(arcade.Window):
-    def __init__(self):
-        super().__init__(600, 400, "Ein einfaches Arcade-Spiel")
+    def __init__(self, width, height):
+        super().__init__(width, height, "Ein einfaches Arcade-Spiel")
         arcade.set_background_color(arcade.color.LIGHT_GREEN)
+        
+        self.center = (width // 2, height // 2)
+        self.frame = 0
 
     def setup(self):
         print("Spiel ist bereit!")
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("Arcade ist cool!", 100, 200, arcade.color.BLACK, 24)
+
+        arcade.draw_text(self.frame, self.center[0], self.center[1], arcade.color.BLACK, 24, anchor_x="center")
+        arcade.draw_text("Arcade ist cool!", self.center[0], self.center[1]+40, arcade.color.BLACK, 24, anchor_x="center")
 
     def on_update(self, delta_time):
-        print("Aktualisiere das Spiel ...")
+        self.frame += 1
 
-game = SimpleGame()
+
+game = SimpleGame(600, 400)
 game.setup()
 arcade.run()
+
+
 
 
 
@@ -107,7 +119,7 @@ class ControlGame(arcade.Window):
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("Drücke eine Taste und sieh die Konsole!", 150, 300,
+        arcade.draw_text("Drücke eine Taste und betrachte die Konsole!", 150, 300,
                          arcade.color.BLACK, 20)
 
     def on_key_press(self, key, modifiers):

@@ -35,7 +35,7 @@ class ShapeDrawer(arcade.Window):
         arcade.draw_rectangle_filled(300, 500, 120, 60, arcade.color.RED)
         
         # Linie zeichnen
-        arcade.draw_line(50, 450, 150, 450, arcade.color.BLACK, 5)
+        arcade.draw_line(100, 300, 200, 400, arcade.color.BLACK, 5)
         
         # Dreieck zeichnen
         arcade.draw_triangle_filled(500, 500, 450, 400, 550, 400, arcade.color.GREEN)

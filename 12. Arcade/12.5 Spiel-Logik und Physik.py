@@ -29,7 +29,7 @@ class SimpleGameLogicExample(arcade.Window):
         # Spiel-Logik
         self.score = 0
         self.lives = 3
-        self.player = arcade.Sprite("character.png", 0.5)
+        self.player = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png", 0.5)
         self.player.center_x = 400
         self.player.center_y = 100
 
@@ -38,8 +38,8 @@ class SimpleGameLogicExample(arcade.Window):
         self.player.draw()
         
         # Punktzahl und Leben anzeigen
-        arcade.draw_text(f"Punkte: {self.score}", 10, 570, arcade.color.BLACK, 18)
-        arcade.draw_text(f"Leben: {self.lives}", 700, 570, arcade.color.RED, 18)
+        arcade.draw_text(f"Punkte: {self.score}", 30, 570, arcade.color.BLACK, 18)
+        arcade.draw_text(f"Leben: {self.lives}", 670, 570, arcade.color.RED, 18)
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP:
@@ -74,7 +74,7 @@ class SimplePhysicsExample(arcade.Window):
         self.platform_list = arcade.SpriteList()
 
         # Einfache Boden-Plattform
-        ground = arcade.SpriteSolidColor(800, 50, arcade.color.GREEN)
+        ground = arcade.SpriteSolidColor(800, 50, arcade.color.ASPARAGUS)
         ground.center_x = 400
         ground.center_y = 25
         self.platform_list.append(ground)
@@ -116,14 +116,16 @@ class CollisionInteractionExample(arcade.Window):
         arcade.set_background_color(arcade.color.SKY_BLUE)
 
         # Spieler-Sprite und Plattform-Sprites
-        self.player = arcade.Sprite("character.png", 0.5)
+        self.player = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png", 0.5)
         self.player.center_x = 100
         self.player.center_y = 100
+        self.player.speed_x = 0
+        self.player.speed_y = 0
         self.coin_list = arcade.SpriteList()
 
         # Erstelle Münzen für das Sammeln
         for i in range(5):
-            coin = arcade.Sprite("coin.png", 0.2)
+            coin = arcade.Sprite(":resources:images/items/coinGold.png", 0.5)
             coin.center_x = 150 * (i + 1)
             coin.center_y = 200
             self.coin_list.append(coin)
@@ -132,19 +134,34 @@ class CollisionInteractionExample(arcade.Window):
         arcade.start_render()
         self.player.draw()
         self.coin_list.draw()
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.RIGHT:
-            self.player.center_x += 10
-        elif key == arcade.key.LEFT:
-            self.player.center_x -= 10
-
+        
     def on_update(self, delta_time):
+        self.player.center_x += self.player.speed_x
+        self.player.center_y += self.player.speed_y
+        
         # Kollisionserkennung zwischen Spieler und Münzen
         coins_collected = arcade.check_for_collision_with_list(self.player, self.coin_list)
         for coin in coins_collected:
             coin.remove_from_sprite_lists()
             print("Münze eingesammelt!")
+
+    def on_key_press(self, key, modifiers):
+        # Bewege den Spieler mit den Pfeiltasten
+        if key == arcade.key.UP:
+            self.player.speed_y = 5
+        elif key == arcade.key.DOWN:
+            self.player.speed_y = -5
+        elif key == arcade.key.LEFT:
+            self.player.speed_x = -5
+        elif key == arcade.key.RIGHT:
+            self.player.speed_x = 5
+            
+    def on_key_release(self, key, modifiers):
+        # Stoppe die Bewegung, wenn die Taste losgelassen wird
+        if key in [arcade.key.UP, arcade.key.DOWN]:
+            self.player.speed_y = 0
+        elif key in [arcade.key.LEFT, arcade.key.RIGHT]:
+            self.player.speed_x = 0
 
 window = CollisionInteractionExample()
 arcade.run()
@@ -152,13 +169,17 @@ arcade.run()
 
 
 
+
+
+
 # ____________________________________
 #                                    /
-# Fortgeschrittene Physik mit Box2D (
+# Fortgeschrittene Physik mit pymunk (
 # ___________________________________\
 
-# Für komplexere Physik kann die Box2D-Engine in Arcade genutzt werden. Sie
+# Für komplexere Physik kann die pymunk-Engine in Arcade genutzt werden. Sie
 # unterstützt realistische Bewegungen und Kollisionen.
+# siehe https://api.arcade.academy/en/2.6.15/tutorials/pymunk_platformer/index.html
 
 class AdvancedPhysicsExample(arcade.Window):
     def __init__(self):
@@ -166,7 +187,7 @@ class AdvancedPhysicsExample(arcade.Window):
         arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
 
         # Spieler- und Plattform-Sprite
-        self.player = arcade.Sprite("character.png", 0.5)
+        self.player = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png", 0.5)
         self.player.center_x = 400
         self.player.center_y = 300
         self.platform_list = arcade.SpriteList()
@@ -176,21 +197,62 @@ class AdvancedPhysicsExample(arcade.Window):
         ground.center_x = 400
         ground.center_y = 25
         self.platform_list.append(ground)
+        
+        self.right_pressed = False
+        self.left_pressed = False
 
-        # Box2D Physics-Engine
-        self.physics_engine = arcade.PhysicsEngineBox2D(self.player, gravity=(0, -1000), walls=self.platform_list)
-
+        # pymunk Physics-Engine
+        self.physics_engine = arcade.PymunkPhysicsEngine(damping=1.0,
+                                                         gravity=(0.0,-1500))
+        self.physics_engine.add_sprite(self.player,
+                                       mass=1.0,
+                                       moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
+                                       collision_type="player")
+        
+        self.physics_engine.add_sprite_list(self.platform_list,
+                                            friction=1,
+                                            collision_type="wall",
+                                            body_type=arcade.PymunkPhysicsEngine.STATIC)
+        
     def on_draw(self):
         arcade.start_render()
         self.platform_list.draw()
         self.player.draw()
+        
+    def on_update(self, delta_time):
+            
+        # Bewege den Spieler mit den Pfeiltasten
+        if self.left_pressed:
+            self.physics_engine.apply_force(self.player, (-1000, 0))
+            
+        elif self.right_pressed:
+            self.physics_engine.apply_force(self.player, (1000, 0))
+    
+        # Aktualisierung der Physics-Engine
+        self.physics_engine.step()
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.SPACE:
-            self.player.change_y = 10  # Setzt die Sprunggeschwindigkeit
-
+        if key == arcade.key.LEFT:
+            self.left_pressed = True
+        elif key == arcade.key.RIGHT:
+            self.right_pressed = True
+        elif key == arcade.key.UP:
+            self.up_pressed = True
+            # find out if player is standing on ground, and not on a ladder
+            if self.physics_engine.is_on_ground(self.player):
+                # She is! Go ahead and jump
+                self.physics_engine.apply_impulse(self.player, (0, 800))
+            
+    def on_key_release(self, key, modifiers):
+        if key == arcade.key.LEFT:
+            self.left_pressed = False
+        elif key == arcade.key.RIGHT:
+            self.right_pressed = False
+            
 window = AdvancedPhysicsExample()
 arcade.run()
+
+
 
 
 
@@ -207,7 +269,7 @@ arcade.run()
 # - Kollisionen und Interaktionen sind essenziell, um Reaktionen und Spielfortschritte
 #   im Spiel zu implementieren.
 #
-# - Für fortgeschrittene Physik kann die `PhysicsEngineBox2D` in Arcade verwendet werden.
+# - Für fortgeschrittene Physik kann die `pymunk` in Arcade verwendet werden.
 
 
 
