@@ -54,15 +54,20 @@ arcade.run()
 # Dauer zusätzliche Parameter wie `volume` und `loop` enthalten, um die Lautstärke
 # und das wiederholte Abspielen zu steuern.
 
+# Hinweis: Auf dem Mac lassen sich in Arcade keine mp3-Dateien abspielen. 
+# Konvertiere daher die Hintergrundmusik ins WAV-Format. Leider benötigt
+# das viel mehr Speicherplatz.
+
 class BackgroundMusicExample(arcade.Window):
     def __init__(self):
         super().__init__(800, 600, "Hintergrundmusik")
         arcade.set_background_color(arcade.color.LIGHT_YELLOW)
 
         # Lade die Hintergrundmusik
-        self.background_music = arcade.load_sound("background_music.ogg")
+        self.background_music = arcade.load_sound("epic_strings.wav")
         arcade.play_sound(self.background_music, volume=0.3, looping=True)  # Musik mit 30% Lautstärke und Loop
-
+        
+        
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text("Hintergrundmusik spielt...", 300, 300, arcade.color.BLACK, 16)
@@ -91,32 +96,54 @@ class InteractiveSoundExample(arcade.Window):
         arcade.set_background_color(arcade.color.LIGHT_GREEN)
 
         # Sprites und Sound laden
-        self.player = arcade.Sprite("character.png", 0.5, center_x=400, center_y=300)
-        self.coin = arcade.Sprite("coin.png", 0.3, center_x=600, center_y=300)
-        self.coin_sound = arcade.load_sound("coin_sound.wav")
+        self.player = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png", 0.5, center_x=400, center_y=300)
+        self.coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
+        
+        self.coin_list = arcade.SpriteList()
+
+        # Erstelle Münzen für das Sammeln
+        for i in range(5):
+            coin = arcade.Sprite(":resources:images/items/coinGold.png", 0.5)
+            coin.center_x = 150 * (i + 1)
+            coin.center_y = 200
+            self.coin_list.append(coin)
+        
+        self.player.speed_x = 0
+        self.player.speed_y = 0
 
     def on_draw(self):
         arcade.start_render()
         self.player.draw()
-        self.coin.draw()
+        self.coin_list.draw()
         arcade.draw_text("Bewege die Spielfigur mit den Pfeiltasten", 250, 50, arcade.color.BLACK, 14)
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.RIGHT:
-            self.player.center_x += 10
-        elif key == arcade.key.LEFT:
-            self.player.center_x -= 10
-        elif key == arcade.key.UP:
-            self.player.center_y += 10
+        # Bewege den Spieler mit den Pfeiltasten
+        if key == arcade.key.UP:
+            self.player.speed_y = 5
         elif key == arcade.key.DOWN:
-            self.player.center_y -= 10
-
+            self.player.speed_y = -5
+        elif key == arcade.key.LEFT:
+            self.player.speed_x = -5
+        elif key == arcade.key.RIGHT:
+            self.player.speed_x = 5
+            
+    def on_key_release(self, key, modifiers):
+        # Stoppe die Bewegung, wenn die Taste losgelassen wird
+        if key in [arcade.key.UP, arcade.key.DOWN]:
+            self.player.speed_y = 0
+        elif key in [arcade.key.LEFT, arcade.key.RIGHT]:
+            self.player.speed_x = 0
+    
     def on_update(self, delta_time):
-        # Überprüft auf Kollision und spielt Sound ab
-        if arcade.check_for_collision(self.player, self.coin):
+        self.player.center_x += self.player.speed_x
+        self.player.center_y += self.player.speed_y
+        
+        coins_collected = arcade.check_for_collision_with_list(self.player, self.coin_list)
+        for coin in coins_collected:
+            coin.remove_from_sprite_lists()
             arcade.play_sound(self.coin_sound)
-            self.coin.remove_from_sprite_lists()  # Entfernt die Münze nach Einsammeln
-
+            
 window = InteractiveSoundExample()
 arcade.run()
 
