@@ -365,9 +365,15 @@ arcade.run()
 # Wenn der Spieler eine Münze berührt, soll die Münze verschwinden und ein Punkt
 # zur Punktzahl hinzugefügt werden. Zeige die aktuelle Punktzahl in der Titelzeile an.
 #
-# Hinweis: Verwende dazu den Befehl.
-# 
-#  self.set_caption(f"Münzspiel - Punktzahl: {self.score}")
+# Hinweise: 
+#
+# - Um die Münze aus der Münzliste zu entfernen, verwende den Befehl:
+#
+#        coin.remove_from_sprite_lists() 
+#
+# - Um den Fenstertitel zu verändern, verwende den Befehl:
+#
+#        self.set_caption(f"Münzspiel - Punktzahl: {self.score}")
 
 
 # Füge hier deine Lösung ein.
@@ -547,10 +553,17 @@ arcade.run()  # Starte das Aquarium
 # Erstelle eine Anwendung, bei der eine Gruppe von Münz-Sprites vorhanden ist.
 # Wenn der Spieler eine Münze berührt, soll die Münze verschwinden und ein Punkt
 # zur Punktzahl hinzugefügt werden. Zeige die aktuelle Punktzahl in der Titelzeile an.
-# 
-# Hinweis: Verwende dazu den Befehl.
-# 
-#  self.set_caption(f"Münzspiel - Punktzahl: {self.score}")
+#
+# Hinweise: 
+#
+# - Um die Münze aus der Münzliste zu entfernen, verwende den Befehl:
+#
+#        coin.remove_from_sprite_lists() 
+#
+# - Um den Fenstertitel zu verändern, verwende den Befehl:
+#
+#        self.set_caption(f"Münzspiel - Punktzahl: {self.score}")
+
 
 '''
 import arcade

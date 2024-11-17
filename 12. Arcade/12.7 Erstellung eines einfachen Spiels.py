@@ -25,7 +25,7 @@ import random
 class Player(arcade.Sprite):
     def __init__(self):
         super().__init__(":resources:images/animated_characters/female_adventurer/femaleAdventurer_idle.png", scale=0.5)
-        self.center_x = 50
+        self.center_x = 20
         self.center_y = 100
         self.change_x = 0
         self.change_y = 0
