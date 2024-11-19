@@ -223,6 +223,12 @@ class GameView(arcade.View):
         elif self.player.center_x < 0:
             self.player.center_x = 0
 
+        # Spieler fällt aus dem Fenster
+        if self.player.center_y < 0:
+            arcade.play_sound(self.gameover_sound)
+            self.window.show_view(InfoView("GAME OVER"))
+            
+
     # Verarbeitet Tasteneingaben für Spielerbewegungen.
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP and self.physics_engine.can_jump():
