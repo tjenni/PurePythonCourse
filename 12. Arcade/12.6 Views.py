@@ -9,8 +9,6 @@
 # eines Spiels zu erstellen, wie z.B. das Hauptmenü, das Spiel und den Game-Over-Bildschirm.
 # Ansichten erleichtern das Wechseln zwischen verschiedenen Abschnitten der Anwendung.
 
-import arcade
-
 
 # _________________________________
 #                                 /
@@ -21,6 +19,9 @@ import arcade
 # `on_draw()` und `on_show()` sowie Interaktionsmethoden wie `on_key_press()` 
 # überschreiben kann. Jede Ansicht kann eigene Inhalte und Logik haben und durch 
 # `window.show_view(view)` aktiviert werden.
+
+import arcade
+
 
 class MainMenuView(arcade.View):
     def __init__(self):
@@ -78,6 +79,10 @@ arcade.run()
 
 # Ansichten können Parameter an andere Ansichten übergeben, z.B. den Punktestand.
 # Dazu kann man den Wert direkt beim Erstellen der nächsten Ansicht übergeben.
+
+import arcade
+
+
 class GameOverView(arcade.View):
     def __init__(self, score):
         super().__init__()
@@ -223,7 +228,8 @@ arcade.run()
 # | |   / _ \/ __| | | | '_ \ / _` |/ _ \ '_ \ 
 # | |__| (_) \__ \ |_| | | | | (_| |  __/ | | |
 # |_____\___/|___/\__,_|_| |_|\__, |\___|_| |_|
-#   
+#                             |___/            
+
 
 # ___________
 #            \

@@ -2,7 +2,7 @@
 #       ______|                               |_____
 #       \     |   12.7 JUMP AND RUN SPIEL     |    /
 #        )    |_______________________________|   (
-#       /________)                        (________\     18 .11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#       /________)                        (________\     18.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Jump-and-Run-Spiele gehören zu den Klassikern der Videospiele und sind seit den frühen Tagen 
 # der Gaming-Welt populär. Typische Vertreter wie "Super Mario" oder "Sonic the Hedgehog" 
@@ -46,7 +46,8 @@
 import arcade
 import random
 
-# Ansicht für Start-, Game-Over- oder Endbildschirme
+# Diese Klasse repräsentiert eine Ansicht für Informationsbildschirme wie Start-, 
+# Game-Over- oder Endbildschirme.
 class InfoView(arcade.View):
 
     # Initialisiert die Info-Ansicht mit einem Text und einer Hintergrundfarbe.
@@ -57,7 +58,7 @@ class InfoView(arcade.View):
         self.text = text  # Der anzuzeigende Text
         self.color = color  # Die Textfarbe
 
-    # Zeichnet den Text und eine Anleitung zur Interaktion.
+    # Zeichnet die Ansicht mit dem Text und einer Anweisung zur Interaktion.
     def on_draw(self):
         self.clear()
         arcade.draw_text(self.text, self.window.width // 2, self.window.height // 2, self.color, 48, anchor_x="center")
@@ -66,7 +67,7 @@ class InfoView(arcade.View):
             self.window.width // 2,
             self.window.height // 2 - 50,
             arcade.color.BLACK,
-            24,
+            14,
             anchor_x="center",
         )
 
@@ -78,86 +79,94 @@ class InfoView(arcade.View):
             self.window.show_view(game_view)
 
 
-# Die Hauptspiel-Ansicht
+# Diese Klasse repräsentiert die Hauptspiel-Logik, einschließlich der Spielerbewegung, 
+# Levelstruktur und Kollisionserkennung.
 class GameView(arcade.View):
 
-    # Initialisiert das Spiel mit Spieler, Objekten und weiteren Listen.
+    # Initialisiert das Spiel mit einem Spieler, Sprite-Listen und der Punktzahl.
     def __init__(self):
         super().__init__()
 
         arcade.set_background_color(arcade.color.SKY_BLUE)
-        self.player = None
-        self.coin_list = None
-        self.physics_engine = None
+
         self.score = 0
 
 
-    # Initialisiert das Spiel für das gegebene Level.
+    # Initialisiert das Spiel für ein spezifisches Level.
     def setup(self, level=1):
         self.level = level
+        
+        self.tile_path = ":resources:images/"
+        self.tile_scale = 0.5
 
         # Spieler-Sprite erstellen
-        self.player = arcade.Sprite(":resources:images/animated_characters/female_adventurer/femaleAdventurer_idle.png", scale=0.5)
+        self.player = arcade.Sprite(self.tile_path + "animated_characters/female_adventurer/femaleAdventurer_idle.png", scale=self.tile_scale)
         self.player.center_x = 50
         self.player.center_y = 100
 
         # Sprite-Listen initialisieren
         self.wall_list = arcade.SpriteList()
-        self.coin_list = arcade.SpriteList()
         self.object_list = arcade.SpriteList()
-        self.trap_list = arcade.SpriteList()
 
         # Zuordnung der Tile-IDs zu Grafiken und Listen
         path = ":resources:images/"
         self.tiles = {
-            1: [path + "tiles/grassLeft.png", self.wall_list],
-            2: [path + "tiles/grassMid.png", self.wall_list],
-            3: [path + "tiles/grassRight.png", self.wall_list],
-            4: [path + "tiles/grassHalf_left.png", self.wall_list],
-            5: [path + "tiles/grassHalf_mid.png", self.wall_list],
-            6: [path + "tiles/grassHalf_right.png", self.wall_list],
-            7: [path + "tiles/cactus.png", self.object_list],
-            8: [path + "tiles/spikes.png", self.trap_list],
-            9: [path + "items/coinGold.png", self.coin_list],
-            10: [path + "tiles/signExit.png", self.object_list],
+            1: ["tiles/grassLeft.png", self.wall_list],
+            2: ["tiles/grassMid.png", self.wall_list],
+            3: ["tiles/grassRight.png", self.wall_list],
+            4: ["tiles/grassHalf_left.png", self.wall_list],
+            5: ["tiles/grassHalf_mid.png", self.wall_list],
+            6: ["tiles/grassHalf_right.png", self.wall_list],
+            7: ["tiles/cactus.png", self.object_list],
+            8: ["tiles/spikes.png", self.object_list],
+            9: ["items/coinGold.png", self.object_list],
+            10: ["tiles/signExit.png", self.object_list],
         }
 
-        # Tilemap für Level 1 oder 2 laden
-        if level == 1:
-            self.tilemap = [
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0],
-                [0, 0, 0, 0, 9, 0, 8, 8, 9, 0, 7, 0, 10],
-                [2, 3, 0, 1, 2, 2, 2, 2, 2, 2, 3, 0, 1]
-            ]
-        elif level == 2:
-            self.tilemap = [
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 0, 0],
-                [0, 9, 0, 0, 0, 4, 4, 6, 0, 0, 0, 0, 0],
-                [0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 7, 0, 0, 0, 0, 0, 8, 0, 0, 10],
-                [2, 2, 2, 3, 0, 0, 0, 0, 0, 2, 3, 0, 1]
-            ]
+        # Tilemap-Daten für mehrere Level
+        self.level_tilemaps = [
+            # Level 1
+            [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0],
+            [0, 0, 0, 0, 9, 0, 8, 8, 9, 0, 7, 0, 10],
+            [2, 3, 0, 1, 2, 2, 2, 2, 2, 2, 3, 0, 1]
+            ],
 
-        # Erstellen der Objekte basierend auf der Tilemap
-        for i, row in enumerate(self.tilemap):
+            # Level 2
+            [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 0, 0],
+            [0, 9, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0],
+            [0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 7, 0, 0, 0, 0, 0, 8, 0, 0, 10],
+            [2, 2, 2, 3, 0, 0, 0, 0, 0, 2, 3, 0, 1]
+            ]
+        ]
+
+
+        # Objekte basierend auf der Tilemap erstellen
+        for i, row in enumerate(self.level_tilemaps[self.level-1]):
             for j, tile_id in enumerate(row):
                 if tile_id != 0:
-                    tile_path, tile_list = self.tiles[tile_id]
-                    tile = arcade.Sprite(tile_path, 0.5)
+                    tile_file, tile_list = self.tiles[tile_id]
+                    tile = arcade.Sprite(self.tile_path + tile_file, self.tile_scale)
+
                     tile.center_x = j * 64
                     tile.center_y = self.window.height - i * 64
+
+                    tile.id = tile_id
+
                     tile_list.append(tile)
 
         # Sounds laden
@@ -166,12 +175,10 @@ class GameView(arcade.View):
         self.gameover_sound = arcade.load_sound(":resources:sounds/gameover2.wav")
         self.success_sound = arcade.load_sound(":resources:sounds/upgrade2.wav")
 
-        # Szene erstellen und Sprite-Listen hinzufügen
+        # Szene initialisieren
         self.scene = arcade.Scene()
-        self.scene.add_sprite_list("Background", sprite_list=self.object_list)
-        self.scene.add_sprite_list("Coins", sprite_list=self.coin_list)
+        self.scene.add_sprite_list("Objects", sprite_list=self.object_list)
         self.scene.add_sprite_list("Walls", sprite_list=self.wall_list)
-        self.scene.add_sprite_list("Traps", sprite_list=self.trap_list)
         self.scene.add_sprite("Player", self.player)
 
         # Physik-Engine initialisieren
@@ -189,32 +196,34 @@ class GameView(arcade.View):
     def on_update(self, delta_time):
         self.physics_engine.update()
 
-        # Kollisionen mit Münzen
-        coin_hit_list = arcade.check_for_collision_with_list(self.player, self.coin_list)
-        for coin in coin_hit_list:
-            arcade.play_sound(self.coin_sound)
-            coin.remove_from_sprite_lists()
-            self.score += 1
-
-        # Kollisionen mit Fallen
-        trap_hit_list = arcade.check_for_collision_with_list(self.player, self.trap_list)
-        if trap_hit_list or self.player.center_y < 0:
-            arcade.play_sound(self.gameover_sound)
-            self.window.show_view(InfoView("GAME OVER"))
+        # Kollisionserkennung mit Objekten
+        object_hit_list = arcade.check_for_collision_with_list(self.player, self.object_list)
+        for obj in object_hit_list:
+            # Münzen
+            if obj.id == 9:
+                arcade.play_sound(self.coin_sound)
+                obj.remove_from_sprite_lists()
+                self.score += 1
+                
+            # Falle
+            elif obj.id == 8:
+                arcade.play_sound(self.gameover_sound)
+                self.window.show_view(InfoView("GAME OVER"))
 
         # Übergang zum nächsten Level
         if self.player.center_x > self.window.width:
             arcade.play_sound(self.success_sound)
-            if self.level == 1:
-                self.setup(level=2)
+
+            if self.level < len(self.level_tilemaps):
+                self.setup(level=self.level + 1)
             else:
                 self.window.show_view(InfoView("ENDE", color=arcade.color.AMBER))
 
-        # Spieler bleibt im Fensterbereich
+        # Spieler innerhalb des Fensters halten
         elif self.player.center_x < 0:
             self.player.center_x = 0
 
-    # Reagiert auf Tastendrücke, um den Spieler zu bewegen.
+    # Verarbeitet Tasteneingaben für Spielerbewegungen.
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP and self.physics_engine.can_jump():
             self.player.change_y = 12
@@ -224,15 +233,15 @@ class GameView(arcade.View):
         elif key == arcade.key.RIGHT:
             self.player.change_x = 5
 
-    # Stoppt die Bewegung des Spielers, wenn die Taste losgelassen wird.
+    # Stoppt die Bewegung des Spielers bei Loslassen der Tasten.
     def on_key_release(self, key, modifiers):
         if key in (arcade.key.LEFT, arcade.key.RIGHT):
             self.player.change_x = 0
 
 
-# Startet die Anwendung und zeigt die Startansicht an.
+# Startet das Spiel und zeigt die Startansicht.
 def main():
-    window = arcade.Window(800, 600, "Einfaches Plattformspiel")
+    window = arcade.Window(800, 600, "Jumpmania")
 
     window.show_view(InfoView(text="Jumpmania", color=arcade.color_from_hex_string("#665d4a")))
 
@@ -371,6 +380,22 @@ if __name__ == "__main__":
 
 
 
+#   ⠀⠀⠀⠀⠀⠀⠀⠀⣀⡴⠒⠛⠛⠓⢦⡀⠀⢀⣀⡀⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠀⠀⢀⡾⠁⠀⠀⠀⣤⢦⢡⣷⣴⣛⠩⡙⠓⢦⡀⠀
+#   ⠀⠀⠀⠀⠀⢠⡟⠀⠀⠀⢀⠤⠑⠈⠉⣀⣤⣤⣭⢷⣀⠀⡇⠀
+#   ⠀⠀⠀⠀⣀⡟⠀⠀⡠⠊⠁⣀⠤⠂⠁⣬⣟⣉⠀⠀⢀⡼⠃⠀
+#   ⠀⠀⠀⡞⠉⠃⠀⣼⣇⠈⠁⠀⢿⠀⠀⠉⠉⠉⠙⣦⠾⠁⠀⠀    Go Mario !
+#   ⠀⠀⠀⢧⡔⠈⡉⠻⣿⡷⠀⣤⣄⣀⡀⠀⠀⠀⢀⡾⠀⠀⠀⠀
+#   ⠀⠀⠀⠸⡄⠀⠈⠀⠈⠁⠀⠙⢿⣿⣿⣷⣶⣶⠟⠁⠀⠀⠀⠀
+#   ⠀⠀⠀⠀⠙⠲⣶⣶⣦⣀⠀⠀⢈⠉⡹⡻⣩⠏⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⣠⡤⠶⡋⠁⢀⡠⠜⢹⠒⠲⡓⢫⠻⣅⣀⡴⠶⠶⣤⡀⠀
+#   ⠀⡴⠋⠀⠀⠀⢑⡏⠀⠀⡰⢠⠂⠈⠄⠀⠏⢻⠁⠀⠀⢸⢻⡆
+#   ⢸⡃⠊⠰⠀⠀⠀⣏⠐⠈⠀⠈⠢⠤⠂⠀⠈⡟⠀⠀⢀⢢⡟⠀
+#   ⠀⠳⣄⡀⠀⣲⠞⠉⠹⢦⡀⠀⠀⠀⠀⢀⣼⣇⡀⢀⢨⡟⠀⠀
+#   ⠀⠀⠀⢹⠏⠇⠀⠀⠀⢸⠧⠤⠤⠶⠚⠋⠀⠈⠉⠙⠛⠁⠀⠀
+#   ⠀⠀⠀⢼⢰⠀⠀⠀⢰⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   ⠀⠀⠀⠈⠛⠦⣤⡤⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+#   
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -387,7 +412,8 @@ if __name__ == "__main__":
 # | |   / _ \/ __| | | | '_ \ / _` |/ _ \ '_ \ 
 # | |__| (_) \__ \ |_| | | | | (_| |  __/ | | |
 # |_____\___/|___/\__,_|_| |_|\__, |\___|_| |_|
-#   
+#                             |___/            
+
 
 # ___________
 #            \
@@ -403,6 +429,8 @@ class GameView(GameView):
 
     def setup(self, level=1):
         ...
+        # Spieler-Sprite erstellen
+        ...
 
         self.player.health = 100  
         self.player.damage_cooldown = 0
@@ -415,20 +443,24 @@ class GameView(GameView):
         ...
 
         # Kollisionen mit Fallen
-        trap_hit_list = arcade.check_for_collision_with_list(self.player, self.trap_list)
-        if trap_hit_list:
+        object_hit_list = arcade.check_for_collision_with_list(self.player, self.object_list)
+        for obj in object_hit_list:
 
-            if self.player.damage_cooldown > 0:
-                self.player.damage_cooldown -= 1
-            else:
-                self.player.health -= 10  # Gesundheit reduzieren
-                self.player.damage_cooldown = 50
-                
-                arcade.play_sound(self.hurt_sound)
-                
-                if self.player.health <= 0:
-                    arcade.play_sound(self.gameover_sound)
-                    self.window.show_view(InfoView("GAME OVER"))
+            ...
+
+            # Spikes
+            elif obj.id == 8:
+                if self.player.damage_cooldown > 0:
+                    self.player.damage_cooldown -= 1
+                else:
+                    self.player.health -= 10  # Gesundheit reduzieren
+                    self.player.damage_cooldown = 50
+                    
+                    arcade.play_sound(self.hurt_sound)
+                    
+                    if self.player.health <= 0:
+                        arcade.play_sound(self.gameover_sound)
+                        self.window.show_view(InfoView("GAME OVER"))
         
         # Fall in die Tiefe
         if self.player.center_y < 0:
@@ -439,7 +471,7 @@ class GameView(GameView):
     def on_draw(self):
         ...
 
-        arcade.draw_text(f"Health: {self.health}", 10, 540, arcade.color.RED, 16)
+        arcade.draw_text(f"Health: {self.player.health}", 10, 540, arcade.color.RED, 16)
 '''
 
 
@@ -456,39 +488,25 @@ class GameView(GameView):
 '''
 class GameView(GameView):
     ...
-    
-    def setup(self, level=1):
-        ...
 
-        if level == 3:
-            self.tilemap = [
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0],
-                [0, 0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 9, 8, 0, 9, 0, 0, 0, 0],
-                [0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 0],
-                [0, 0, 0, 8, 9, 8, 0, 0, 8, 9, 7, 0, 10],
-                [2, 3, 0, 1, 2, 3, 0, 0, 1, 2, 3, 0, 1]
+    def setup(self, level=1):
+            ...
+
+            # Level 3
+            [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0],
+            [0, 0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 9, 8, 0, 9, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 8, 9, 8, 0, 0, 8, 9, 7, 0, 10],
+            [2, 3, 0, 1, 2, 3, 0, 0, 1, 2, 3, 0, 1]
             ]
 
-    def on_update(self, delta_time):
-        ...
-
-        if self.player.center_x > self.window.width:
-            arcade.play_sound(self.success_sound)
-            if self.level == 1:
-                self.setup(level=2)
-            if self.level == 2:
-                self.setup(level=3)
-            elif self.level == 3:
-                self.window.show_view(InfoView("ENDE", color=arcade.color.AMBER))
-
 '''
-
-            
 
 
 
@@ -501,13 +519,62 @@ class GameView(GameView):
 # Füge ein Power-Up hinzu, das der Spieler einsammeln kann. Das Power-Up sollte 
 # die Sprunghöhe des Spielers temporär erhöhen.
 
+'''
+...
 
-# Füge hier deine Lösung ein.
+class GameView(arcade.View):
+    ...
+
+    def setup(self, level=1):
+        ...
+        
+        # Tilemap-Daten für mehrere Level
+        self.tiles = {
+            ...
+
+            11: ["items/star.png", self.object_list],
+        }
+
+        ...
+
+        # Sounds laden
+        ...
+
+        self.upgrade_sound = arcade.load_sound(":resources:sounds/upgrade1.wav")
 
 
+    def on_update(self, delta_time):
 
+        # Spieler-Sprite erstellen
+        self.player.upgrade_timer = 0
+        
+        ...
 
+        for obj in object_hit_list:
+            ...
 
+            # Sternen
+            elif obj.id == 11:
+                arcade.play_sound(self.upgrade_sound)
+                obj.remove_from_sprite_lists()
+                self.player.upgrade_timer = 50
+        
+        # Aktualisiere den Upgrade Timer
+        if self.player.upgrade_timer > 0:
+            self.player.upgrade_timer -= 1
+    
+    ...
+
+    # Verarbeitet Tasteneingaben für Spielerbewegungen.
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.UP and self.physics_engine.can_jump():
+            if self.player.upgrade_timer > 0:
+                self.player.change_y = 15
+            else:
+                self.player.change_y = 12
+        ...
+
+'''
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
 
