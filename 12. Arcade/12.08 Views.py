@@ -1,8 +1,8 @@
-#              _______________________________
-#       ______|                               |_____
-#       \     |     12.6 VIEWS IN ARCADE      |    /
-#        )    |_______________________________|   (
-#       /________)                        (________\     19.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ____________________
+#       ______|                    |_____
+#       \     |     12.8 VIEWS     |    /
+#        )    |____________________|   (
+#       /________)             (________\     19.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
 # 

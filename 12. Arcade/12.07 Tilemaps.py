@@ -1,275 +1,167 @@
-#              ____________________________________________
-#       ______|                                            |_____
-#       \     |    12.5 SPIEL-LOGIK UND PHYSIK IN ARCADE   |    /
-#        )    |____________________________________________|   (
-#       /________)                                     (________\     4.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ____________________
+#       ______|                    |_____
+#       \     |    12.7 TILEMAPS   |    /
+#        )    |____________________|   (
+#       /________)             (________\     4.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-# Die Spiel-Logik und Physik sind grundlegende Bestandteile jeder Spielentwicklung.
-# In Arcade lassen sich Regeln und Bewegungsabläufe effizient mit eigenen Methoden
-# und Funktionen umsetzen. In diesem Kapitel erfährst du, wie du grundlegende
-# Spiel-Logik, einfache Physik und Kollisionen für dynamische Spiele implementierst.
+# Tilemaps sind eine einfache und leistungsstarke Methode, um Level-Layouts für 
+# 2D-Spiele zu erstellen. Anstatt jedes Detail eines Levels manuell zu zeichnen, 
+# kannst du kleine Kacheln (“Tiles”) verwenden, um komplexe Welten zu bauen. 
+# Jede Kachel repräsentiert dabei ein bestimmtes Spielelement wie Boden, Wand, 
+# Hindernis oder Sammelobjekt.
 
+# In Arcade kannst du Tilemaps flexibel einsetzen, um Strukturen und Hindernisse 
+# zu definieren. In diesem Kapitel lernst du:
+#   - Wie Tilemaps aufgebaut sind.
+#
+#   - Wie man sie erstellt und im Spiel anzeigt.
+#
+#   - Wie man verschiedene Elemente wie Wände, Münzen oder Plattformen in einer 
+#     Tilemap verwaltet.
 
-import arcade
 
 
 # _________________________________
 #                                 /
-# Grundlegende Spiel-Logik        (
+# Grundprinzip von Tilemaps      (
+# ________________________________\
+#
+# Eine Tilemap besteht aus:
+#   1.  Tiles: Kleine Grafiken, die verschiedene Elemente wie Gras, Stein oder 
+#       Wasser repräsentieren.
+# 
+#   2.  Tilemap-Grid: Ein Raster, das definiert, wo welche Kachel angezeigt wird. 
+#       Jede Position im Raster enthält eine Kachel-ID.
+#   
+# Beispiel für eine einfache Tilemap:
+#   0 0 0 0 0 0
+#   0 2 0 0 3 0
+#   1 1 1 1 1 1
+#
+#   1: Repräsentiert z. B. den Boden
+#   2: Repräsentiert eine Sammelmünze.
+#   3: Repräsentiert eine Plattform.
+
+
+
+
+# _________________________________
+#                                 /
+# Tilemap in Arcade umsetzen     (
+# ________________________________\
+#
+#
+# 1. Aufbau der Datenstruktur
+# ---------------------------
+#
+# In Arcade definieren wir die Tilemap als eine Liste von Listen (2D-Array). 
+# Jede Zahl im Array steht für eine Kachel.
+#
+#   tilemap = [
+#       [0, 0, 0, 0, 0, 0],
+#       [0, 0, 0, 1, 0, 0],
+#       [0, 2, 1, 1, 3, 0],
+#       [1, 1, 1, 1, 1, 1]
+#   ]
+#
+#
+# 2. Zuordnung der Tile-IDs
+# -------------------------
+# Mit einer Python-Datenstruktur verknüpfen wir jede Tile-ID mit einem Bild und 
+# einer Sprite-Liste.
+#
+#   tiles = {
+#       0: None,  # Leer (keine Kachel)
+#       1: ":resources:images/tiles/grassMid.png",  # Boden
+#       2: ":resources:images/items/coinGold.png",  # Münze
+#       3: ":resources:images/tiles/spikes.png"    # Falle
+#   }   
+#
+# 3. Tilemap anzeigen
+# -------------------
+# Um die Tilemap anzuzeigen, iterieren wir über das Tilemap-Array. Jede Kachel 
+# wird anhand ihrer ID in der entsprechenden Sprite-Liste gespeichert und an der 
+# passenden Position gezeichnet.
+#
+
+import arcade
+
+class TilemapDemo(arcade.Window):
+
+    def __init__(self, width=800, height=600, title=""):
+        super().__init__(width=width, height=height, title=title)
+        
+        arcade.set_background_color(arcade.color.LIGHT_SKY_BLUE)
+        
+        self.tile_size = 64  # Größe der Kacheln in Pixel
+        self.tilemap = []  # Die Tilemap-Daten
+        self.tiles = {}  # Zuordnung der Tile-IDs zu Grafiken
+        self.wall_list = arcade.SpriteList()  # Liste für Wände
+        self.coin_list = arcade.SpriteList()  # Liste für Münzen
+        
+        
+    # Bereitet die Tilemap-Daten und Sprites vor.
+    def setup(self):
+
+        # Zuordnung von Tile-IDs zu Grafiken
+        self.tiles = {
+            0: None,  # Leer (keine Kachel)
+            1: [":resources:images/tiles/grassMid.png", self.wall_list],  # Boden
+            2: [":resources:images/items/coinGold.png", self.coin_list],  # Münze
+            3: [":resources:images/tiles/spikes.png", self.wall_list]  # Falle
+        }
+        
+        # Tilemap
+        self.tilemap = [
+            [0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 1, 0, 0],
+            [0, 2, 1, 1, 3, 0],
+            [1, 1, 1, 1, 1, 1]
+        ]
+
+        # Tilemap durchlaufen und Sprites erstellen
+        for row_index, row in enumerate(self.tilemap):
+            for col_index, tile_id in enumerate(row):
+                if tile_id != 0:  # Nur nicht-leere Kacheln verarbeiten
+                    x = col_index * self.tile_size + self.tile_size // 2
+                    y = (len(self.tilemap) - 1 - row_index) * self.tile_size + self.tile_size // 2
+
+                    
+                    tile = arcade.Sprite(self.tiles[tile_id][0], scale=0.5)
+                    tile.center_x = x
+                    tile.center_y = y
+                    
+                    self.tiles[tile_id][1].append(tile)
+                
+    
+    # Zeichnet die Tilemap.
+    def on_draw(self):
+        arcade.start_render()
+        self.wall_list.draw()
+        self.coin_list.draw()
+
+
+# Hauptprogramm
+window = TilemapDemo(title="Tilemap Demo")
+window.setup()
+arcade.run()
+
+
+
+
+# _________________________________
+#                                 /
+# Zusammenfassung                (
 # ________________________________\
 
-# Die Spiel-Logik umfasst Regeln und Mechaniken, die bestimmen, wie das Spiel 
-# abläuft. Dies können Punkte, Leben, Timer oder Level-Übergänge sein.
-
-class SimpleGameLogicExample(arcade.Window):
-    def __init__(self):
-        super().__init__(800, 600, "Grundlegende Spiel-Logik")
-        arcade.set_background_color(arcade.color.WHITE)
-
-        # Spiel-Logik
-        self.score = 0
-        self.lives = 3
-        self.player = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png", 0.5)
-        self.player.center_x = 400
-        self.player.center_y = 100
-
-    def on_draw(self):
-        arcade.start_render()
-        self.player.draw()
-        
-        # Punktzahl und Leben anzeigen
-        arcade.draw_text(f"Punkte: {self.score}", 30, 570, arcade.color.BLACK, 18)
-        arcade.draw_text(f"Leben: {self.lives}", 670, 570, arcade.color.RED, 18)
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP:
-            self.score += 10
-        elif key == arcade.key.DOWN:
-            self.lives -= 1  # Leben verlieren
-
-window = SimpleGameLogicExample()
-arcade.run()
-
-
-
-
-# ______________________________________
-#                                      /
-# Grundlegende Physik und Schwerkraft (
-# _____________________________________\
-
-# Arcade bietet ein Modul für einfache Physik wie Schwerkraft und Kollisionen.
-# Dies lässt sich besonders gut mit der `PhysicsEngineSimple` und der `PhysicsEnginePlatformer`
-# umsetzen, die Arcade für uns bereitstellt.
-
-class SimplePhysicsExample(arcade.Window):
-    def __init__(self):
-        super().__init__(800, 600, "Grundlegende Physik")
-        arcade.set_background_color(arcade.color.LIGHT_BLUE)
-
-        # Spieler-Sprite und Boden-Sprite
-        self.player = arcade.Sprite("character.png", 0.5)
-        self.player.center_x = 400
-        self.player.center_y = 300
-        self.platform_list = arcade.SpriteList()
-
-        # Einfache Boden-Plattform
-        ground = arcade.SpriteSolidColor(800, 50, arcade.color.ASPARAGUS)
-        ground.center_x = 400
-        ground.center_y = 25
-        self.platform_list.append(ground)
-
-        # Physics-Engine mit Schwerkraft
-        self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, self.platform_list, gravity_constant=0.5)
-
-    def on_draw(self):
-        arcade.start_render()
-        self.platform_list.draw()
-        self.player.draw()
-
-    def on_update(self, delta_time):
-        # Aktualisierung der Physics-Engine
-        self.physics_engine.update()
-
-    def on_key_press(self, key, modifiers):
-        # Springen mit der Leertaste
-        if key == arcade.key.SPACE and self.physics_engine.can_jump():
-            self.player.change_y = 10
-
-window = SimplePhysicsExample()
-arcade.run()
-
-
-
-
-# __________________________________
-#                                  /
-# Kollisionen und Interaktionen   (
-# _________________________________\
-
-# Die Kollisionserkennung und Interaktion sind wichtige Bestandteile der Spiel-Logik,
-# um zu bestimmen, wann Objekte aufeinandertreffen und wie sie reagieren sollen.
-
-class CollisionInteractionExample(arcade.Window):
-    def __init__(self):
-        super().__init__(800, 600, "Kollision und Interaktion")
-        arcade.set_background_color(arcade.color.SKY_BLUE)
-
-        # Spieler-Sprite und Plattform-Sprites
-        self.player = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png", 0.5)
-        self.player.center_x = 100
-        self.player.center_y = 100
-        self.player.speed_x = 0
-        self.player.speed_y = 0
-        self.coin_list = arcade.SpriteList()
-
-        # Erstelle Münzen für das Sammeln
-        for i in range(5):
-            coin = arcade.Sprite(":resources:images/items/coinGold.png", 0.5)
-            coin.center_x = 150 * (i + 1)
-            coin.center_y = 200
-            self.coin_list.append(coin)
-
-    def on_draw(self):
-        arcade.start_render()
-        self.player.draw()
-        self.coin_list.draw()
-        
-    def on_update(self, delta_time):
-        self.player.center_x += self.player.speed_x
-        self.player.center_y += self.player.speed_y
-        
-        # Kollisionserkennung zwischen Spieler und Münzen
-        coins_collected = arcade.check_for_collision_with_list(self.player, self.coin_list)
-        for coin in coins_collected:
-            coin.remove_from_sprite_lists()
-            print("Münze eingesammelt!")
-
-    def on_key_press(self, key, modifiers):
-        # Bewege den Spieler mit den Pfeiltasten
-        if key == arcade.key.UP:
-            self.player.speed_y = 5
-        elif key == arcade.key.DOWN:
-            self.player.speed_y = -5
-        elif key == arcade.key.LEFT:
-            self.player.speed_x = -5
-        elif key == arcade.key.RIGHT:
-            self.player.speed_x = 5
-            
-    def on_key_release(self, key, modifiers):
-        # Stoppe die Bewegung, wenn die Taste losgelassen wird
-        if key in [arcade.key.UP, arcade.key.DOWN]:
-            self.player.speed_y = 0
-        elif key in [arcade.key.LEFT, arcade.key.RIGHT]:
-            self.player.speed_x = 0
-
-window = CollisionInteractionExample()
-arcade.run()
-
-
-
-
-
-
-
-# ____________________________________
-#                                    /
-# Fortgeschrittene Physik mit pymunk (
-# ___________________________________\
-
-# Für komplexere Physik kann die pymunk-Engine in Arcade genutzt werden. Sie
-# unterstützt realistische Bewegungen und Kollisionen.
-# siehe https://api.arcade.academy/en/2.6.15/tutorials/pymunk_platformer/index.html
-
-class AdvancedPhysicsExample(arcade.Window):
-    def __init__(self):
-        super().__init__(800, 600, "Fortgeschrittene Physik")
-        arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
-
-        # Spieler- und Plattform-Sprite
-        self.player = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png", 0.5)
-        self.player.center_x = 400
-        self.player.center_y = 300
-        self.platform_list = arcade.SpriteList()
-
-        # Plattform mit physikalischen Eigenschaften
-        ground = arcade.SpriteSolidColor(800, 50, arcade.color.SAND)
-        ground.center_x = 400
-        ground.center_y = 25
-        self.platform_list.append(ground)
-        
-        self.right_pressed = False
-        self.left_pressed = False
-
-        # pymunk Physics-Engine
-        self.physics_engine = arcade.PymunkPhysicsEngine(damping=1.0,
-                                                         gravity=(0.0,-1500))
-        self.physics_engine.add_sprite(self.player,
-                                       mass=1.0,
-                                       moment=arcade.PymunkPhysicsEngine.MOMENT_INF,
-                                       collision_type="player")
-        
-        self.physics_engine.add_sprite_list(self.platform_list,
-                                            friction=1,
-                                            collision_type="wall",
-                                            body_type=arcade.PymunkPhysicsEngine.STATIC)
-        
-    def on_draw(self):
-        arcade.start_render()
-        self.platform_list.draw()
-        self.player.draw()
-        
-    def on_update(self, delta_time):
-            
-        # Bewege den Spieler mit den Pfeiltasten
-        if self.left_pressed:
-            self.physics_engine.apply_force(self.player, (-1000, 0))
-            
-        elif self.right_pressed:
-            self.physics_engine.apply_force(self.player, (1000, 0))
-    
-        # Aktualisierung der Physics-Engine
-        self.physics_engine.step()
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.LEFT:
-            self.left_pressed = True
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = True
-        elif key == arcade.key.UP:
-            self.up_pressed = True
-            # find out if player is standing on ground, and not on a ladder
-            if self.physics_engine.is_on_ground(self.player):
-                # She is! Go ahead and jump
-                self.physics_engine.apply_impulse(self.player, (0, 800))
-            
-    def on_key_release(self, key, modifiers):
-        if key == arcade.key.LEFT:
-            self.left_pressed = False
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = False
-            
-window = AdvancedPhysicsExample()
-arcade.run()
-
-
-
-
-
-
-# ___________________
-#                   /
-# Zusammenfassung  (
-# __________________\
-
-# - Die Spiel-Logik legt fest, wie das Spiel abläuft und was während des Spiels passiert.
+# Tilemaps sind eine zentrale Technik für das Level-Design in 2D-Spielen.
+# Mit Arcade kannst du:
 #
-# - Grundlegende Physik und Schwerkraft können mit `PhysicsEnginePlatformer` umgesetzt werden.
+# - Komplexe Spielwelten durch ein einfaches Raster definieren.
 #
-# - Kollisionen und Interaktionen sind essenziell, um Reaktionen und Spielfortschritte
-#   im Spiel zu implementieren.
+# - Jedes Element einer Kachel (Tile) zuordnen, z. B. Boden, Münzen oder Hindernisse.
 #
-# - Für fortgeschrittene Physik kann die `pymunk` in Arcade verwendet werden.
+# - Sprite-Listen verwenden, um die Objekte der Tilemap effizient zu verwalten und anzuzeigen.
 
 
 
@@ -285,11 +177,17 @@ arcade.run()
 # Aufgabe 1  /
 # __________/
 #
-# Erstelle ein einfaches Spiel, bei dem ein Ball auf eine Plattform fällt. Füge
-# Schwerkraft hinzu und sorge dafür, dass der Ball zurückprallt, wenn er die Plattform berührt.
+# Erweitere die Tilemap und das Dictionary, um zwei neue Kacheln hinzuzufügen:
+#
+# - Eine Wasser-Kachel (ID 4) mit der Farbe Blau.
+#
+# - Eine Star-Kachel (ID 5) mit der Farbe Gelb.
+#
+# Zeige diese Kacheln in der Tilemap an.
 
 
 # Füge hier deine Lösung ein.
+
 
 
 
@@ -299,27 +197,13 @@ arcade.run()
 # Aufgabe 2  /
 # __________/
 #
-# Entwickle eine Anwendung, bei der der Spieler-Sprite Münzen sammeln kann, die zufällig
-# auf dem Bildschirm erscheinen. Jede gesammelte Münze sollte die Punktzahl erhöhen,
-# und die Punktzahl sollte auf der Konsole angezeigt werden.
+# Erstelle eine Funktion, die die Tilemap während des Spiels ändert.
+# Zum Beispiel  wird eine Plattform (ID 1) durch eine Falle (ID 3) ersetzt, wenn 
+# eine Taste gedrückt wird.
 
 
 # Füge hier deine Lösung ein.
 
-
-
-
-# ___________
-#            \
-# Aufgabe 3  /
-# __________/
-#
-# Schreibe ein Programm, in dem ein Spieler-Sprite Hindernissen ausweichen muss,
-# die sich von oben nach unten bewegen. Wenn der Spieler ein Hindernis trifft,
-# verliert er ein Leben. Zeige die verbleibenden Leben in der Titelzeile an.
-
-
-# Füge hier deine Lösung ein.
 
 
 
@@ -341,208 +225,16 @@ arcade.run()
 # | |__| (_) \__ \ |_| | | | | (_| |  __/ | | |
 # |_____\___/|___/\__,_|_| |_|\__, |\___|_| |_|
 #                             |___/            
-
-
-# ___________
-#            \
-# Aufgabe 1  /
-# __________/
-#
-# Erstelle ein einfaches Spiel, bei dem ein Ball auf eine Plattform fällt. Füge
-# Schwerkraft hinzu und sorge dafür, dass der Ball zurückprallt, wenn er die Plattform berührt.
-
-'''
-import arcade
-import random
-
-class BallPlatformGame(arcade.Window):
-    def __init__(self):
-        super().__init__(600, 400, "Ball und Plattform")
-        self.ball = arcade.SpriteCircle(20, arcade.color.BLUE)
-        self.ball.center_x = 300
-        self.ball.center_y = 300
-        self.ball.change_y = 0  # Anfangsgeschwindigkeit
-        self.platform = arcade.SpriteSolidColor(100, 20, arcade.color.GREEN)
-        self.platform.center_x = 300
-        self.platform.center_y = 50
-        self.gravity = -0.3
-
-    def on_draw(self):
-        arcade.start_render()
-        self.ball.draw()
-        self.platform.draw()
-
-    def on_update(self, delta_time):
-        self.ball.change_y += self.gravity  # Schwerkraft anwenden
-        self.ball.center_y += self.ball.change_y
-        
-        # Prüfe Kollision mit der Plattform
-        if self.ball.collides_with_sprite(self.platform) and self.ball.change_y < 0:
-            self.ball.change_y *= -0.8  # Rückprall mit Verlust
-
-        # Beschränkung am unteren Rand
-        if self.ball.bottom < 0:
-            self.ball.center_y = 300
-            self.ball.change_y = 0
-
-
-# Anwendung starten
-window = BallPlatformGame()
-arcade.run()
-'''
+ 
 
 
 
 
-# ___________
-#            \
-# Aufgabe 2  /
-# __________/
-#
-# Entwickle eine Anwendung, bei der der Spieler-Sprite Münzen sammeln kann, die zufällig
-# auf dem Bildschirm erscheinen. Jede gesammelte Münze sollte die Punktzahl erhöhen,
-# und die Punktzahl sollte auf der Konsole angezeigt werden.
-
-'''
-import arcade
-import random
-
-class CoinCollectGame(arcade.Window):
-    def __init__(self):
-        super().__init__(600, 400, "Münzen sammeln")
-        self.player = arcade.SpriteSolidColor(30, 30, arcade.color.BLUE)
-        self.player.center_x = 300
-        self.player.center_y = 200
-        self.coin_list = arcade.SpriteList()
-        self.score = 0
-        self.spawn_coins()
-
-    def spawn_coins(self):
-        for _ in range(5):
-            coin = arcade.SpriteCircle(10, arcade.color.GOLD)
-            coin.center_x = random.randint(20, 580)
-            coin.center_y = random.randint(20, 380)
-            self.coin_list.append(coin)
-
-    def on_draw(self):
-        arcade.start_render()
-        self.player.draw()
-        self.coin_list.draw()
-        arcade.draw_text(f"Punktzahl: {self.score}", 10, 10, arcade.color.BLACK, 14)
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP:
-            self.player.change_y = 5
-        elif key == arcade.key.DOWN:
-            self.player.change_y = -5
-        elif key == arcade.key.LEFT:
-            self.player.change_x = -5
-        elif key == arcade.key.RIGHT:
-            self.player.change_x = 5
-
-    def on_key_release(self, key, modifiers):
-        if key in (arcade.key.UP, arcade.key.DOWN):
-            self.player.change_y = 0
-        elif key in (arcade.key.LEFT, arcade.key.RIGHT):
-            self.player.change_x = 0
-
-    def on_update(self, delta_time):
-        self.player.update()
-        coins_hit = arcade.check_for_collision_with_list(self.player, self.coin_list)
-        for coin in coins_hit:
-            coin.remove_from_sprite_lists()
-            self.score += 1
-            print(f"Neue Punktzahl: {self.score}")
-            # Nach dem Sammeln wieder neue Münzen hinzufügen, falls alle gesammelt sind
-            if len(self.coin_list) == 0:
-                self.spawn_coins()
-
-
-# Anwendung starten
-window = CoinCollectGame()
-arcade.run()
-'''
 
 
 
 
-# ___________
-#            \
-# Aufgabe 3  /
-# __________/
-#
-# Schreibe ein Programm, in dem ein Spieler-Sprite Hindernissen ausweichen muss,
-# die sich von oben nach unten bewegen. Wenn der Spieler ein Hindernis trifft,
-# verliert er ein Leben. Zeige die verbleibenden Leben in der Titelzeile an.
 
-'''
-import arcade
-import random
-
-class DodgeGame(arcade.Window):
-    def __init__(self):
-        super().__init__(600, 400, "Ausweichen")
-        self.player = arcade.SpriteSolidColor(30, 30, arcade.color.BLUE)
-        self.player.center_x = 300
-        self.player.center_y = 50
-        self.obstacle_list = arcade.SpriteList()
-        self.lives = 3
-        self.spawn_obstacles()
-        self.update_title()
-
-    def spawn_obstacles(self):
-        for _ in range(5):
-            obstacle = arcade.SpriteSolidColor(20, 20, arcade.color.RED)
-            obstacle.center_x = random.randint(20, 580)
-            obstacle.center_y = random.randint(300, 400)
-            obstacle.change_y = -2
-            self.obstacle_list.append(obstacle)
-
-    def on_draw(self):
-        arcade.start_render()
-        self.player.draw()
-        self.obstacle_list.draw()
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP:
-            self.player.change_y = 5
-        elif key == arcade.key.DOWN:
-            self.player.change_y = -5
-        elif key == arcade.key.LEFT:
-            self.player.change_x = -5
-        elif key == arcade.key.RIGHT:
-            self.player.change_x = 5
-
-    def on_key_release(self, key, modifiers):
-        if key in (arcade.key.UP, arcade.key.DOWN):
-            self.player.change_y = 0
-        elif key in (arcade.key.LEFT, arcade.key.RIGHT):
-            self.player.change_x = 0
-
-    def on_update(self, delta_time):
-        self.player.update()
-        self.obstacle_list.update()
-        
-        for obstacle in self.obstacle_list:
-            if obstacle.top < 0:
-                obstacle.center_y = random.randint(400, 500)
-                obstacle.center_x = random.randint(20, 580)
-        
-        if arcade.check_for_collision_with_list(self.player, self.obstacle_list):
-            self.lives -= 1
-            print(f"Restliche Leben: {self.lives}")
-            self.update_title()
-            if self.lives <= 0:
-                arcade.close_window()
-
-    def update_title(self):
-        self.set_caption(f"Ausweichen - Leben: {self.lives}")
-
-
-# Anwendung starten
-window = DodgeGame()
-arcade.run()
-'''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><

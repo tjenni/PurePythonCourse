@@ -2,7 +2,7 @@
 #       ______|                            |_____
 #       \     |    12.7 SOUND UND MUSIK    |    /
 #        )    |____________________________|   (
-#       /________)                     (________\     4.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#       /________)                     (________\     20.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
 # Sound und Musik sind wichtige Elemente, die einem Spiel Tiefe und Atmosphäre verleihen.
@@ -10,35 +10,44 @@
 # Python-Spiele zu integrieren. In diesem Kapitel lernst du die grundlegenden Funktionen
 # zum Einfügen von Sounds und Musik.
 
-import arcade
+# Auf der Webseite https://opengameart.org kannst du Musik, Töne und Bilder finden, 
+# die du in deinen Spielen verwenden darfst. 
 
 
-# ___________________________________
-#                                   /
-# Sound-Effekte laden und abspielen(
-# __________________________________\
+# _____________________________________
+#                                     /
+# Sound-Effekte laden und abspielen  (
+# ____________________________________\
 
 # Sounds lassen sich in Arcade als WAV-Dateien laden und durch die Funktion `play_sound()`
 # abspielen. Für die Verwendung von Sounds sollte sich die Datei im selben Verzeichnis
 # befinden oder der Pfad angepasst werden.
 
+import arcade
+
 class SoundEffectExample(arcade.Window):
-    def __init__(self):
-        super().__init__(800, 600, "Soundeffekte")
+
+    def __init__(self, width=800, height=600, title=""):
+        super().__init__(width=width, height=height, title=title)
+
         arcade.set_background_color(arcade.color.LIGHT_BLUE)
 
         # Lade den Sound-Effekt
         self.coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
 
+
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("Drücke die LEERTASTE, um den Sound abzuspielen", 100, 300, arcade.color.BLACK, 16)
+        arcade.draw_text("Drücke die LEERTASTE, um den Sound abzuspielen", self.width//2, self.height//2, arcade.color.BLACK, font_size=16, anchor_x="center")
+
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.SPACE:
             arcade.play_sound(self.coin_sound)  # Sound abspielen
 
-window = SoundEffectExample()
+
+# Hauptprogramm
+window = SoundEffectExample(title="Soundeffekte")
 arcade.run()
 
 
@@ -49,34 +58,41 @@ arcade.run()
 # Hintergrundmusik abspielen      (
 # ________________________________\
 
-# Arcade unterstützt das Abspielen von Musik im OGG-Format. Zum Abspielen von Musik
-# wird die Methode `play_sound()` verwendet, allerdings kann Musik mit längerer
-# Dauer zusätzliche Parameter wie `volume` und `loop` enthalten, um die Lautstärke
-# und das wiederholte Abspielen zu steuern.
+# Arcade unterstützt das Abspielen von Musik in verschiedenen Formaten. 
+# Zum Abspielen von Musik wird die Methode `play_sound()` verwendet, allerdings 
+# kann Musik mit längerer Dauer zusätzliche Parameter wie `volume` und `loop` 
+# enthalten, um die Lautstärke und das wiederholte Abspielen zu steuern.
 
 # Hinweis: Auf dem Mac lassen sich in Arcade keine mp3-Dateien abspielen. 
 # Konvertiere daher die Hintergrundmusik ins WAV-Format. Leider benötigt
 # das viel mehr Speicherplatz.
 
+import arcade
+
 class BackgroundMusicExample(arcade.Window):
-    def __init__(self):
-        super().__init__(800, 600, "Hintergrundmusik")
+
+    def __init__(self, width=800, height=600, title=""):
+        super().__init__(width=width, height=height, title=title)
+
         arcade.set_background_color(arcade.color.LIGHT_YELLOW)
 
-        # Lade die Hintergrundmusik
-        self.background_music = arcade.load_sound("epic_strings.wav")
+        # Lade die Hintergrundmusik, Quelle: https://opengameart.org/content/bossa-nova
+        self.background_music = arcade.load_sound("_assets/8bit_bossa.wav")
         arcade.play_sound(self.background_music, volume=0.3, looping=True)  # Musik mit 30% Lautstärke und Loop
-        
-        
+
+ 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("Hintergrundmusik spielt...", 300, 300, arcade.color.BLACK, 16)
+        arcade.draw_text("Hintergrundmusik spielt...", self.width//2, self.height//2, arcade.color.BLACK, font_size=16, anchor_x="center")
+
 
     def on_close(self):
         arcade.stop_sound(self.background_music)  # Stoppt die Musik beim Schließen des Fensters
         super().on_close()
 
-window = BackgroundMusicExample()
+
+# Hauptprogramm
+window = BackgroundMusicExample(title="Hintergrundmusik")
 arcade.run()
 
 
@@ -84,15 +100,19 @@ arcade.run()
 
 # ______________________________
 #                              /
-# Interaktive Soundauslöser   (
+# Sounds bei Interaktionen    (
 # _____________________________\
 
 # Sounds können auch basierend auf bestimmten Interaktionen ausgelöst werden, z. B.
 # das Abspielen eines Sounds bei einer Kollision oder einem Punktgewinn.
 
+import arcade
+
 class InteractiveSoundExample(arcade.Window):
-    def __init__(self):
-        super().__init__(800, 600, "Interaktive Soundeffekte")
+
+    def __init__(self, width=800, height=600, title=""):
+        super().__init__(width=width, height=height, title=title)
+
         arcade.set_background_color(arcade.color.LIGHT_GREEN)
 
         # Sprites und Sound laden
@@ -143,8 +163,10 @@ class InteractiveSoundExample(arcade.Window):
         for coin in coins_collected:
             coin.remove_from_sprite_lists()
             arcade.play_sound(self.coin_sound)
-            
-window = InteractiveSoundExample()
+
+
+# Hauptprogramm      
+window = InteractiveSoundExample(title="Interaktive Soundeffekte")
 arcade.run()
 
 
@@ -163,6 +185,8 @@ arcade.run()
 #
 # - Sounds lassen sich durch Interaktionen wie Kollisionen und Tastenanschläge
 #   auslösen, um das Spiel dynamischer und spannender zu gestalten.
+
+
 
 
 # ____________________________
@@ -216,6 +240,14 @@ arcade.run()
 
 
 
+#     |\
+#  |--|/----------------,~\-Billy Joel-(_)--
+#  |--|---4-------------|~'------------|---
+#  |-/|.-------|~~~~|--/|-----|~~~~|--/|--
+#  |(-|-)-4---_|---_|--\|----_|---_|--\|-
+#  |-`|'-----(_)--(_)-------(_)--(_)--
+#    \|
+#    
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -245,17 +277,28 @@ arcade.run()
 # die LEERTASTE, um das Springen zu simulieren.
 
 '''
-class JumpGame(arcade.Window):
-    def __init__(self):
-        super().__init__(600, 400, "Jump Sound")
-        self.jump_sound = arcade.load_sound("jump_sound.wav")  # Ersetze durch den Pfad zum Soundfile
+import arcade
 
+class JumpGame(arcade.Window):
+    def __init__(self, width=800, height=600, title=""):
+        super().__init__(width=width, height=height, title=title)
+        
+        arcade.set_background_color(arcade.color.SKY_BLUE)
+
+        self.jump_sound = arcade.load_sound(":resources:sounds/jump3.wav")
+    
+        
+    def on_draw(self):
+        arcade.start_render()
+
+        
     def on_key_press(self, key, modifiers):
         if key == arcade.key.SPACE:
             arcade.play_sound(self.jump_sound)
             print("Jump!")
 
-window = JumpGame()
+# Hauptprogramm
+window = JumpGame(title="Jump Sound")
 arcade.run()
 '''
 
@@ -271,14 +314,21 @@ arcade.run()
 # einen Button hinzu, der die Musik stoppt und das Icon versteckt.
 
 '''
+import arcade
+
 class MusicApp(arcade.Window):
-    def __init__(self):
-        super().__init__(600, 400, "Musik-App")
-        self.music = arcade.load_sound("background_music.mp3")  # Ersetze durch den Pfad zur Musikdatei
+
+    def __init__(self, width=800, height=600, title=""):
+        super().__init__(width=width, height=height, title=title)
+
+        arcade.set_background_color(arcade.color.SKY_BLUE)
+
+        self.music = arcade.load_sound("_assets/8bit_bossa.wav")
         self.music_playing = False
         self.icon = arcade.SpriteSolidColor(30, 30, arcade.color.GREEN)
         self.icon.center_x = 300
         self.icon.center_y = 200
+        self.music_player = None
 
     def on_draw(self):
         arcade.start_render()
@@ -288,13 +338,17 @@ class MusicApp(arcade.Window):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.P and not self.music_playing:  # Start
             self.music_playing = True
-            arcade.play_sound(self.music, looping=True)
+            self.music_player = arcade.play_sound(self.music, looping=True)
+            
         elif key == arcade.key.S and self.music_playing:  # Stop
-            arcade.stop_sound(self.music)
-            self.music_playing = False
+            if self.music_player is not None:
+                arcade.stop_sound(self.music_player)
+                self.music_playing = False
 
-window = MusicApp()
+# Hauptprogramm
+window = MusicApp(title="Musik-App")
 arcade.run()
+
 '''
 
 
@@ -310,49 +364,88 @@ arcade.run()
 
 
 '''
+import arcade
+import random
+
+# Klasse für das Sammelspiel
 class CollectGame(arcade.Window):
-    def __init__(self):
-        super().__init__(600, 400, "Sammelspiel")
-        self.collect_sound = arcade.load_sound("collect_sound.wav")  # Ersetze durch den Pfad zum Soundfile
+    
+    def __init__(self, width=800, height=600, title=""):
+        super().__init__(width=width, height=height, title=title)
+
+        arcade.set_background_color(arcade.color.SKY_BLUE)
+  
+        # Soundeffekt für das Einsammeln von Objekten laden
+        self.collect_sound = arcade.load_sound(":resources:sounds/coin2.wav")
+        
+        # Punktzahl initialisieren
         self.score = 0
-        self.player = arcade.SpriteSolidColor(20, 20, arcade.color.BLUE)
-        self.player.center_x = 300
-        self.player.center_y = 50
+        
+        # Spielfigur erstellen
+        self.player = arcade.SpriteSolidColor(20, 20, arcade.color.BLUE)  # Blaue Spielfigur
+        self.player.center_x = 300  # Startposition X
+        self.player.center_y = 50  # Startposition Y
+        self.player.speed_x = 0  # Horizontale Geschwindigkeit der Spielfigur
+        self.player.speed_y = 0  # Vertikale Geschwindigkeit der Spielfigur
+        
+        # Liste für Sammelobjekte
         self.objects = arcade.SpriteList()
         
-        # Erzeuge Sammelobjekte
+        # Sammelobjekte erstellen und zur Liste hinzufügen
         for i in range(10):
-            obj = arcade.SpriteSolidColor(15, 15, arcade.color.RED)
-            obj.center_x = i * 50 + 50
-            obj.center_y = 300
+            obj = arcade.SpriteSolidColor(15, 15, arcade.color.RED)  # Rote Sammelobjekte
+            obj.center_x = random.randint(50,self.width-100)  # Horizontale Verteilung der Objekte
+            obj.center_y = random.randint(50,self.height-100)  # Vertikale Position der Objekte
             self.objects.append(obj)
 
-    def on_draw(self):
-        arcade.start_render()
-        self.player.draw()
-        self.objects.draw()
-        arcade.draw_text(f"Punktzahl: {self.score}", 10, 10, arcade.color.BLACK, 14)
 
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.RIGHT:
-            self.player.center_x += 10
-        elif key == arcade.key.LEFT:
-            self.player.center_x -= 10
-        elif key == arcade.key.UP:
-            self.player.center_y += 10
-        elif key == arcade.key.DOWN:
-            self.player.center_y -= 10
-
+    # Aktualisiert die Spiellogik, z. B. die Bewegung der Spielfigur und das Einsammeln der Objekte.  
     def on_update(self, delta_time):
-        # Kollision mit Sammelobjekten prüfen
+        # Bewegung der Spielfigur basierend auf der Geschwindigkeit
+        self.player.center_x += self.player.speed_x
+        self.player.center_y += self.player.speed_y
+        
+        # Überprüfung auf Kollisionen zwischen Spielfigur und Sammelobjekten
         hit_list = arcade.check_for_collision_with_list(self.player, self.objects)
         for obj in hit_list:
-            obj.remove_from_sprite_lists()
-            arcade.play_sound(self.collect_sound)
-            self.score += 1
+            obj.remove_from_sprite_lists()  # Objekt aus der Liste entfernen (wird eingesammelt)
+            arcade.play_sound(self.collect_sound)  # Soundeffekt abspielen
+            self.score += 1  # Punktzahl erhöhen
 
-window = CollectGame()
-arcade.run()
+
+    # Zeichnet die Spielfigur, Sammelobjekte und den Punktestand.   
+    def on_draw(self):
+        arcade.start_render()  # Bildschirm löschen und bereit zum Zeichnen
+        self.player.draw()  # Spielfigur zeichnen
+        self.objects.draw()  # Sammelobjekte zeichnen
+        # Punktestand anzeigen
+        arcade.draw_text(f"Punktzahl: {self.score}", 10, 10, arcade.color.BLACK, 14)
+
+
+    # Verarbeitet Tastendrücke, um die Spielfigur zu bewegen.
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.UP:
+            self.player.speed_y = 5  # Bewegung nach oben
+        elif key == arcade.key.DOWN:
+            self.player.speed_y = -5  # Bewegung nach unten
+        elif key == arcade.key.LEFT:
+            self.player.speed_x = -5  # Bewegung nach links
+        elif key == arcade.key.RIGHT:
+            self.player.speed_x = 5  # Bewegung nach rechts
+    
+    
+    # Stoppt die Bewegung der Spielfigur, wenn die Taste losgelassen wird.   
+    def on_key_release(self, key, modifiers):
+        if key in [arcade.key.UP, arcade.key.DOWN]:
+            self.player.speed_y = 0  # Stoppt die vertikale Bewegung
+        elif key in [arcade.key.LEFT, arcade.key.RIGHT]:
+            self.player.speed_x = 0  # Stoppt die horizontale Bewegung
+
+
+# Hauptprogramm
+window = CollectGame(title="Sammelspiel")  # Instanziiert das Spiel
+arcade.run()  # Startet die Arcade-Spielschleife
+
 '''
 
 
