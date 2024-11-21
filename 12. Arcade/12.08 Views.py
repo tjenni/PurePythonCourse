@@ -2,7 +2,7 @@
 #       ______|                    |_____
 #       \     |     12.8 VIEWS     |    /
 #        )    |____________________|   (
-#       /________)             (________\     19.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#       /________)             (________\     21.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
 # 
@@ -283,14 +283,16 @@ arcade.run()  # Startet die Arcade-Game-Loop
 # Weitere nützliche View-Funktionen  (
 # ____________________________________\
 
-# 1. `on_update()`: Diese Methode kann in einer Ansicht implementiert werden, um regelmässig
-#    die Ansicht zu aktualisieren, z.B. für Animationen oder Zeitmechaniken.
+# 1. `on_update()`: Diese Methode kann in einer Ansicht implementiert werden, 
+#    um regelmässig die Ansicht zu aktualisieren, z.B. für Animationen 
+#    oder Zeitmechaniken.
 
-# 2. `on_mouse_press()`, `on_mouse_release()`, `on_mouse_motion()`: Diese Methoden fangen
-#    Mausklicks und -bewegungen ab und ermöglichen interaktive Inhalte.
+# 2. `on_mouse_press()`, `on_mouse_release()`, `on_mouse_motion()`: Diese 
+#    Methoden fangen Mausklicks und -bewegungen ab und ermöglichen 
+#    interaktive Inhalte.
 
-# 3. `window.show_view(view)`: Die wichtigste Methode zum Wechseln der Ansicht. Der übergebene
-#    Parameter `view` gibt die nächste Ansicht an.
+# 3. `window.show_view(view)`: Die wichtigste Methode zum Wechseln der Ansicht. 
+#    Der übergebene Parameter `view` gibt die nächste Ansicht an.
 
 
 
@@ -300,19 +302,25 @@ arcade.run()  # Startet die Arcade-Game-Loop
 # Zusammenfassung  (
 # __________________\
 #
-# In diesem Kapitel hast du gelernt, wie man mit `arcade` verschiedene Ansichten (Views) erstellt, 
-# um Spiele mit mehreren Bildschirmen effizient zu strukturieren. Das Konzept der Views erlaubt:
+# In diesem Kapitel hast du gelernt, wie man mit `arcade` verschiedene Ansichten 
+# (Views) erstellt, um Spiele mit mehreren Bildschirmen effizient zu strukturieren. 
+# Das Konzept der Views erlaubt:
 #
-# 1. Modularität: Jede Ansicht kann ihre eigene Logik, ihr eigenes Layout und ihre eigenen Inhalte haben.
+# 1. Modularität: Jede Ansicht kann ihre eigene Logik, ihr eigenes Layout und ihre 
+#    eigenen Inhalte haben.
 #
-# 2. Wechsel zwischen Ansichten: Mithilfe von `window.show_view(view)` können Ansichten nahtlos gewechselt werden.
+# 2. Wechsel zwischen Ansichten: Mithilfe von `window.show_view(view)` können 
+#    Ansichten nahtlos gewechselt werden.
 #
-# 3. Datenübergabe: Daten wie Punktestände oder Einstellungen können einfach zwischen Ansichten übergeben werden.
+# 3. Datenübergabe: Daten wie Punktestände oder Einstellungen können einfach 
+#    zwischen Ansichten übergeben werden.
 #
-# 4. Flexibilität: Views können angepasst werden, um interaktive Menüs, Spielmodi und mehr zu erstellen.
+# 4. Flexibilität: Views können angepasst werden, um interaktive Menüs, 
+#    Spielmodi und mehr zu erstellen.
 #
-# Mit diesen Grundlagen kannst du ein strukturiertes und flexibles Spiel entwickeln. Nutze die Übungsaufgaben, 
-# um das Gelernte zu vertiefen und dein Wissen praktisch anzuwenden!
+# Mit diesen Grundlagen kannst du ein strukturiertes und flexibles Spiel entwickeln. 
+# Nutze die Übungsaufgaben, um das Gelernte zu vertiefen und dein Wissen 
+# praktisch anzuwenden!
 
 
 
@@ -366,6 +374,16 @@ arcade.run()  # Startet die Arcade-Game-Loop
 
 
 
+#
+#          _    .  ,   .           .
+#      *  / \_ *  / \_      _  *        *   /\'__        *
+#        /    \  /    \,   ((        .    _/  /  \  *'.
+#   .   /\/\  /\/ :' __ \_  `          _^/  ^/    `--.
+#      /    \/  \  _/  \-'\      *    /.' ^_   \_   .'\  *
+#    /\  .-   `. \/     \ /==~=-=~=-=-;.  _/ \ -. `_/   \
+#   /  `-.__ ^   / .-'.--\ =-=~_=-=~=^/  _ `--./ .-'  `-
+#  /jgs     `.  / /       `.~-^=-=~=^=.-'      '-._ `._
+#  
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -461,7 +479,9 @@ arcade.run()
 # __________/
 #
 # Entwickle ein Punktespiel mit zwei Views: einem Spielfeld und einem Endbildschirm.
-# Übergebe den Punktestand des Spiels an den Endbildschirm und zeige ihn dort an.
+# Auf dem Spielfeld werden die Punkte hochgezählt. Drückt man die Taste E, wird
+# das Spiel beendet und der Endbildschirm angezeig. Übergebe dazu den Punktestand 
+# des Spiels an den Endbildschirm.
 
 '''
 import arcade
@@ -523,6 +543,8 @@ arcade.run()
 # z. B. „Einfach“ und „Schwierig“, und passe das Spielfeld entsprechend an.
 
 '''
+import arcade 
+
 class StartScreenView(arcade.View):
     def on_show(self):
         arcade.set_background_color(arcade.color.YELLOW_ORANGE)
