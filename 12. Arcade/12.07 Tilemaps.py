@@ -21,7 +21,6 @@
 #     Tilemap verwaltet.
 
 
-
 # _________________________________
 #                                 /
 # Grundprinzip von Tilemaps      (
@@ -73,9 +72,9 @@
 #
 #   tiles = {
 #       0: None,  # Leer (keine Kachel)
-#       1: ":resources:images/tiles/grassMid.png",  # Boden
-#       2: ":resources:images/items/coinGold.png",  # Münze
-#       3: ":resources:images/tiles/spikes.png"    # Falle
+#       1: [":resources:images/tiles/grassMid.png", "Walls"]  # Boden
+#       2: [":resources:images/items/coinGold.png", "Items"]  # Münze
+#       3: [":resources:images/tiles/spikes.png", "Trap"]    # Falle
 #   }   
 #
 # 3. Tilemap anzeigen
@@ -83,76 +82,127 @@
 # Um die Tilemap anzuzeigen, iterieren wir über das Tilemap-Array. Jede Kachel 
 # wird anhand ihrer ID in der entsprechenden Sprite-Liste gespeichert und an der 
 # passenden Position gezeichnet.
-#
+
+
+# _________________________________
+#                                 /
+# Beispiel                       (
+# ________________________________\
 
 import arcade
 
+# Eine Demo-Klasse für die Verwendung von Tilemaps in einem Arcade-Spiel.
+# Dieses Programm zeigt, wie Kacheln hinzugefügt, entfernt und gezeichnet werden.
 class TilemapDemo(arcade.Window):
-
+    
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
+        # Hintergrundfarbe des Fensters setzen
         arcade.set_background_color(arcade.color.LIGHT_SKY_BLUE)
         
-        self.tile_size = 64  # Größe der Kacheln in Pixel
+        # Größe jeder Kachel in Pixel
+        self.tile_size = 64
+        self.tilemap = None  # 2D-Liste, die die Tile-IDs speichert
+        self.tiles = None  # Zuordnung von Tile-IDs zu Grafiken und Typen
+        self.sprite_lists = None  # Sammlung von Sprite-Listen für unterschiedliche Kacheltypen
 
-        self.tilemap = []  # Die Tilemap-Daten
-        self.tiles = {}  # Zuordnung der Tile-IDs zu Grafiken
 
-        self.background_list = arcade.SpriteList()  # Liste für den Hintergrund
-        self.wall_list = arcade.SpriteList()  # Liste für Wände
-        self.item_list = arcade.SpriteList()  # Liste für Objekte
-        
-        
-    # Bereitet die Tilemap-Daten und Sprites vor.
+    # Bereitet die Tilemap-Daten, Zuordnungen und Sprite-Listen vor. 
     def setup(self):
+        
+        # Initialisiere die Sprite-Listen für verschiedene Kacheltypen
+        self.sprite_lists = {
+            "Walls": arcade.SpriteList(),  # Wände
+            "Items": arcade.SpriteList(),  # Sammelbare Objekte
+            "Traps": arcade.SpriteList()   # Fallen
+        }
 
-        # Zuordnung von Tile-IDs zu Grafiken
+        # Zuordnung von Tile-IDs zu Grafiken und Sprite-Listen
         self.tiles = {
-            0: None,  # Leer (keine Kachel)
-            1: [":resources:images/tiles/grassMid.png", self.wall_list],  # Boden
-            2: [":resources:images/items/coinGold.png", self.item_list],  # Münze
-            3: [":resources:images/tiles/spikes.png", self.wall_list]  # Falle
+            0: None,  # Leere Kachel
+            1: [":resources:images/tiles/grassMid.png", "Walls"],  # Boden
+            2: [":resources:images/items/coinGold.png", "Items"],  # Münze
+            3: [":resources:images/tiles/spikes.png", "Traps"]     # Falle
         }
         
-        # Tilemap
+        # Definition der Tilemap als 2D-Liste
         self.tilemap = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
             [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-            [0, 2, 1, 1, 3, 0, 0, 0, 0, 0, 0],
-            [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
+            [0, 2, 1, 1, 3, 0, 0, 0, 3, 0, 0],
+            [1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0]
         ]
 
-        self.update_SpriteLists(self.tilemap)
-
-
-    def update_SpriteLists(self, tilemap):
-        self.background_list.clear()
-        self.wall_list.clear()
-        self.item_list.clear()
+        # Sprites aus der Tilemap erstellen
+        self.create_sprite_lists(self.tilemap)
         
-        # Tilemap durchlaufen und Sprites erstellen
-        for row_index, row in enumerate(tilemap):
-            for col_index, tile_id in enumerate(row):
-                if tile_id != 0:  # Nur nicht-leere Kacheln verarbeiten
-                    x = col_index * self.tile_size + self.tile_size // 2
-                    y = (len(self.tilemap) - 1 - row_index) * self.tile_size + self.tile_size // 2
-
-                    tile = arcade.Sprite(self.tiles[tile_id][0], scale=0.5)
-                    tile.center_x = x
-                    tile.center_y = y
-                    
-                    self.tiles[tile_id][1].append(tile)
+        # Beispiel: Eine Kachel entfernen und eine neue hinzufügen
+        self.remove_tile(4, 4, 3)  # Entferne die Falle an Position (4, 4)
+        self.add_tile(4, 4, 2)     # Füge eine Münze an derselben Position hinzu
 
 
-    # Zeichnet die Tilemap.
+    # Entfernt eine Kachel basierend auf ihrer Position und ID.
+    def remove_tile(self, column, row, tile_id):
+
+        if self.tiles[tile_id] is None:  # Keine Aktion, wenn die ID leer ist
+            return
+        
+        # Ermittele den Typ der Kachel (z. B. "Walls")
+        tile_type = self.tiles[tile_id][1]
+        
+        # Entferne das Sprite an der angegebenen Position
+        for sprite in self.sprite_lists[tile_type]:
+            if sprite.id == tile_id and sprite.column == column and sprite.row == row:
+                sprite.remove_from_sprite_lists()
+                break
+
+
+    # Fügt eine neue Kachel an der angegebenen Position hinzu.
+    def add_tile(self, column, row, tile_id):
+
+        if self.tiles[tile_id] is None:  # Keine Aktion, wenn die ID leer ist
+            return
+        
+        # Lade die Textur und ermittele den Kacheltyp
+        texture = self.tiles[tile_id][0]
+        sprite_type = self.tiles[tile_id][1]
+                
+        # Erstelle ein neues Sprite für die Kachel
+        sprite = arcade.Sprite(texture, scale=0.5)
+        sprite.center_x = column * self.tile_size + self.tile_size // 2
+        sprite.center_y = (len(self.tilemap) - 1 - row) * self.tile_size + self.tile_size // 2
+        sprite.row = row
+        sprite.column = column
+        sprite.id = tile_id
+        
+        # Füge das Sprite zur entsprechenden Sprite-Liste hinzu
+        self.sprite_lists[sprite_type].append(sprite)
+
+
+    # Erstellt die Sprite-Listen basierend auf der Tilemap.
+    def create_sprite_lists(self, tilemap):
+        
+        # Lösche bestehende Sprites in allen Listen
+        for sprite_list in self.sprite_lists.values():
+            sprite_list.clear()
+        
+        # Durchlaufe die Tilemap und füge Sprites hinzu
+        for i, row in enumerate(tilemap):
+            for j, tile_id in enumerate(row):
+                self.add_tile(j, i, tile_id)
+
+
+    # Zeichnet alle Sprite-Listen auf den Bildschirm.
     def on_draw(self):
-        arcade.start_render()
-        self.background_list.draw()
-        self.wall_list.draw()
-        self.item_list.draw()
+        
+        arcade.start_render()  # Bildschirminhalt vorbereiten
+        
+        # Zeichne alle Sprite-Listen
+        for sprite_list in self.sprite_lists.values():
+            sprite_list.draw()
 
 
 # Hauptprogramm
@@ -283,14 +333,22 @@ class TilemapDemo(arcade.Window):
 
     def setup(self):
 
+        # Initialisiere die Sprite-Listen für verschiedene Kacheltypen
+        self.sprite_lists = {
+            "Walls": arcade.SpriteList(),  # Wände
+            "Items": arcade.SpriteList(),  # Sammelbare Objekte
+            "Traps": arcade.SpriteList(),  # Fallen
+            "Water": arcade.SpriteList()   # Wasser
+        }
+
         # Zuordnung von Tile-IDs zu Grafiken
         self.tiles = {
             0: None,  # Leer (keine Kachel)
-            1: [":resources:images/tiles/grassMid.png", self.wall_list],  # Boden
-            2: [":resources:images/items/coinGold.png", self.item_list],  # Münze
-            3: [":resources:images/tiles/spikes.png", self.wall_list],  # Falle
-            4: [":resources:images/tiles/waterTop_low.png", self.background_list],  # Falle
-            5: [":resources:images/tiles/rock.png", self.background_list]  # Falle
+            1: [":resources:images/tiles/grassMid.png", "Walls"],  # Boden
+            2: [":resources:images/items/coinGold.png", "Items"],  # Münze
+            3: [":resources:images/tiles/spikes.png", "Traps"],  # Falle
+            4: [":resources:images/tiles/waterTop_low.png", "Water"],  # Falle
+            5: [":resources:images/tiles/rock.png", "Items"]  # Falle
                 
         }
         
@@ -321,87 +379,13 @@ import arcade
 
 class TilemapDemo(arcade.Window):
 
-    def __init__(self, width=800, height=600, title=""):
-        super().__init__(width=width, height=height, title=title)
-        
-        arcade.set_background_color(arcade.color.LIGHT_SKY_BLUE)
-        
-        self.tile_size = 64  # Größe der Kacheln in Pixel
-        
-        self.tilemap = []  # Die Tilemap-Daten
-        self.tiles = {}  # Zuordnung der Tile-IDs zu Grafiken
+    ...
 
-        self.background_list = arcade.SpriteList()  # Liste für den Hintergrund
-        self.wall_list = arcade.SpriteList()  # Liste für Wände
-        self.item_list = arcade.SpriteList()  # Liste für Objekte
-        
-        
-    # Bereitet die Tilemap-Daten und Sprites vor.
-    def setup(self):
-
-        # Zuordnung von Tile-IDs zu Grafiken
-        self.tiles = {
-            0: None,  # Leer (keine Kachel)
-            1: [":resources:images/tiles/grassMid.png", self.wall_list],  # Boden
-            2: [":resources:images/items/coinGold.png", self.item_list],  # Münze
-            3: [":resources:images/tiles/spikes.png", self.wall_list]  # Falle
-        }
-        
-        # Tilemap
-        self.tilemap = [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
-            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
-            [0, 2, 1, 1, 3, 0, 0, 0, 0, 0, 0],
-            [1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
-        ]
-
-        self.update_SpriteLists(self.tilemap)
-    
-        
-        
-    def update_SpriteLists(self, tilemap):
-        self.background_list.clear()
-        self.wall_list.clear()
-        self.item_list.clear()
-        
-        # Tilemap durchlaufen und Sprites erstellen
-        for row_index, row in enumerate(tilemap):
-            for col_index, tile_id in enumerate(row):
-                if tile_id != 0:  # Nur nicht-leere Kacheln verarbeiten
-                    x = col_index * self.tile_size + self.tile_size // 2
-                    y = (len(self.tilemap) - 1 - row_index) * self.tile_size + self.tile_size // 2
-
-                    tile = arcade.Sprite(self.tiles[tile_id][0], scale=0.5)
-                    tile.center_x = x
-                    tile.center_y = y
-                    
-                    self.tiles[tile_id][1].append(tile)
-
-
-
-    # Zeichnet die Tilemap.
-    def on_draw(self):
-        arcade.start_render()
-        
-        self.background_list.draw()
-        self.wall_list.draw()
-        self.item_list.draw()
-    
     def on_key_press(self, key, modifiers):
         if key == arcade.key.SPACE:
-            
-            self.tilemap[3][3] = 3
-            
-            print()
-            self.update_SpriteLists(self.tilemap)
-
-
-# Hauptprogramm
-window = TilemapDemo(title="Tilemap Demo")
-window.setup()
-arcade.run()
+            self.remove_tile(3, 3, 1) 
+            self.add_tile(3, 3, 3) 
+    
 '''
 
 
@@ -420,31 +404,21 @@ arcade.run()
 import arcade
 
 class TilemapDemo(arcade.Window):
-    """
-    Eine Demo-Anwendung zur Verwendung von Tilemaps und Sprites mit Arcade.
-    Die Tilemap definiert die Spielumgebung, und die Spielfigur kann mit Objekten interagieren.
-    """
     
-
     def __init__(self, width=800, height=600, title=""):
-        """
-        Initialisiert das Fenster und die grundlegenden Variablen.
-        """
         super().__init__(width=width, height=height, title=title)
         
         arcade.set_background_color(arcade.color.LIGHT_SKY_BLUE)  # Hintergrundfarbe setzen
         
-        self.tile_size = 64  # Größe jeder Kachel in Pixel
-
         self.tilemap = []  # Die Tilemap-Daten (als 2D-Array)
         self.tiles = {}  # Zuordnung der Tile-IDs zu Grafiken und Sprite-Listen
         
         self.player = None  # Die Spielfigur
 
-        # Sprite-Listen für verschiedene Elemente
-        self.background_list = arcade.SpriteList()  # Hintergrund-Sprites
-        self.wall_list = arcade.SpriteList()  # Wände
-        self.item_list = arcade.SpriteList()  # Sammelbare Objekte (z. B. Münzen)
+        self.tile_size = 64  # Größe jeder Kachel in Pixel
+        self.tilemap = None  # 2D-Liste, die die Tile-IDs speichert
+        self.tiles = None  # Zuordnung von Tile-IDs zu Grafiken und Typen
+        self.sprite_lists = None  # Sammlung von Sprite-Listen für unterschiedliche Kacheltypen
     
 
     def setup(self):
@@ -455,13 +429,19 @@ class TilemapDemo(arcade.Window):
         self.player = arcade.Sprite(":resources:images/animated_characters/female_adventurer/femaleAdventurer_idle.png", scale=0.5)
         self.player.center_x = 100
         self.player.center_y = 200
+        
+        # Initialisiere die Sprite-Listen für verschiedene Kacheltypen
+        self.sprite_lists = {
+            "Walls": arcade.SpriteList(),  # Wände
+            "Coins": arcade.SpriteList(),  # Münzen
+        }
 
         # Zuordnung von Tile-IDs zu Grafiken und Sprite-Listen
         self.tiles = {
             0: None,  # Leer (keine Kachel)
-            1: [":resources:images/tiles/grassMid.png", self.wall_list],  # Boden
-            2: [":resources:images/items/coinGold.png", self.item_list],  # Münze
-            3: [":resources:images/tiles/spikes.png", self.wall_list]  # Falle
+            1: [":resources:images/tiles/grassMid.png", "Walls"],  # Boden
+            2: [":resources:images/items/coinGold.png", "Coins"],  # Münze
+            3: [":resources:images/tiles/spikes.png", "Walls"]  # Falle
         }
         
         # Definiert die Tilemap als 2D-Array
@@ -475,65 +455,68 @@ class TilemapDemo(arcade.Window):
         ]
 
         # Generiert die Sprite-Listen basierend auf der Tilemap
-        self.update_SpriteLists(self.tilemap)
+        self.create_sprite_lists(self.tilemap)
         
         # Initialisiert die Physik-Engine mit Schwerkraft und Kollisionswänden
-        self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, gravity_constant=0.5, walls=self.wall_list)
+        self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, gravity_constant=0.5, walls=self.sprite_lists["Walls"])
 
 
-    def update_SpriteLists(self, tilemap):
-        """
-        Durchläuft die Tilemap-Daten und erstellt die zugehörigen Sprites.
-        """
-        # Löscht bestehende Sprite-Listen, um sie neu zu erstellen
-        self.background_list.clear()
-        self.wall_list.clear()
-        self.item_list.clear()
+    # Fügt eine neue Kachel an der angegebenen Position hinzu.
+    def add_tile(self, column, row, tile_id):
+
+        if self.tiles[tile_id] is None:  # Keine Aktion, wenn die ID leer ist
+            return
         
-        for row_index, row in enumerate(tilemap):  # Iteriert über die Zeilen der Tilemap
-            for col_index, tile_id in enumerate(row):  # Iteriert über die Spalten
-                if tile_id != 0:  # Nur nicht-leere Kacheln verarbeiten
-                    # Berechnet die Position der Kachel im Fenster
-                    x = col_index * self.tile_size + self.tile_size // 2
-                    y = (len(self.tilemap) - 1 - row_index) * self.tile_size + self.tile_size // 2
+        # Lade die Textur und ermittele den Kacheltyp
+        texture = self.tiles[tile_id][0]
+        sprite_type = self.tiles[tile_id][1]
+                
+        # Erstelle ein neues Sprite für die Kachel
+        sprite = arcade.Sprite(texture, scale=0.5)
+        sprite.center_x = column * self.tile_size + self.tile_size // 2
+        sprite.center_y = (len(self.tilemap) - 1 - row) * self.tile_size + self.tile_size // 2
+        sprite.row = row
+        sprite.column = column
+        sprite.id = tile_id
+        
+        # Füge das Sprite zur entsprechenden Sprite-Liste hinzu
+        self.sprite_lists[sprite_type].append(sprite)
 
-                    # Erstellt das entsprechende Sprite basierend auf der Tile-ID
-                    tile = arcade.Sprite(self.tiles[tile_id][0], scale=0.5)
-                    tile.center_x = x
-                    tile.center_y = y
-                    tile.id = tile_id
-                    
-                    # Fügt das Sprite der zugehörigen Liste hinzu
-                    self.tiles[tile_id][1].append(tile)
 
+    # Erstellt die Sprite-Listen basierend auf der Tilemap.
+    def create_sprite_lists(self, tilemap):
+        
+        # Lösche bestehende Sprites in allen Listen
+        for sprite_list in self.sprite_lists.values():
+            sprite_list.clear()
+        
+        # Durchlaufe die Tilemap und füge Sprites hinzu
+        for i, row in enumerate(tilemap):
+            for j, tile_id in enumerate(row):
+                self.add_tile(j, i, tile_id)
 
+               
     def on_draw(self):
-        """
-        Zeichnet alle Sprites (Hintergrund, Wände, Objekte und Spieler).
-        """
-        arcade.start_render()  # Startet den Renderprozess
-        self.background_list.draw()  # Zeichnet Hintergrund-Sprites
-        self.wall_list.draw()  # Zeichnet Wände
-        self.item_list.draw()  # Zeichnet sammelbare Objekte
+        arcade.start_render()
+        
+        # Zeichne alle Sprite-Listen
+        for sprite_list in self.sprite_lists.values():
+            sprite_list.draw()
+        
         self.player.draw()  # Zeichnet die Spielfigur
 
-        
+
+    # Aktualisiert die Spielfigur und überprüft Kollisionen mit Objekten.
     def on_update(self, delta_time):
-        """
-        Aktualisiert die Spielfigur und überprüft Kollisionen mit Objekten.
-        """
         self.physics_engine.update()  # Aktualisiert die Physik der Spielfigur
 
         # Überprüft Kollisionen zwischen der Spielfigur und den Objekten
-        for item in arcade.check_for_collision_with_list(self.player, self.item_list):
-            if item.id == 2:  # Wenn das Objekt eine Münze ist
-                item.remove_from_sprite_lists()  # Entfernt die Münze aus den Sprite-Listen
+        for item in arcade.check_for_collision_with_list(self.player, self.sprite_lists["Coins"]):
+            item.remove_from_sprite_lists()  # Entfernt die Münze aus den Sprite-Listen
 
 
+    # Reagiert auf Tastendrücke, um die Spielfigur zu bewegen.
     def on_key_press(self, key, modifiers):
-        """
-        Reagiert auf Tastendrücke, um die Spielfigur zu bewegen.
-        """
         if key == arcade.key.UP and self.physics_engine.can_jump():
             self.player.change_y = 12  # Springt nach oben
         elif key == arcade.key.LEFT:
@@ -542,10 +525,8 @@ class TilemapDemo(arcade.Window):
             self.player.change_x = 5  # Bewegt sich nach rechts
 
 
+    # Stoppt die Bewegung der Spielfigur, wenn eine Bewegungstaste losgelassen wird.
     def on_key_release(self, key, modifiers):
-        """
-        Stoppt die Bewegung der Spielfigur, wenn eine Bewegungstaste losgelassen wird.
-        """
         if key in (arcade.key.LEFT, arcade.key.RIGHT):
             self.player.change_x = 0  # Stoppt die horizontale Bewegung
 
@@ -554,10 +535,10 @@ class TilemapDemo(arcade.Window):
 window = TilemapDemo(title="Tilemap Demo")  # Erstellt das Fenster
 window.setup()  # Initialisiert die Spielfigur und die Tilemap
 arcade.run()  # Startet die Arcade-Game-Loop
-
 '''
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 
 
