@@ -103,10 +103,10 @@ class TilemapDemo(arcade.Window):
         
         # Größe jeder Kachel in Pixel
         self.tile_size = 64
-        self.tilemap = None  # 2D-Liste, die die Tile-IDs speichert
-        self.tiles = None  # Zuordnung von Tile-IDs zu Grafiken und Typen
         self.sprite_lists = None  # Sammlung von Sprite-Listen für unterschiedliche Kacheltypen
-
+        self.tiles = None  # Zuordnung von Tile-IDs zu Grafiken und Typen
+        self.tilemap = None  # 2D-Liste, die die Tile-IDs speichert
+        
 
     # Bereitet die Tilemap-Daten, Zuordnungen und Sprite-Listen vor. 
     def setup(self):
