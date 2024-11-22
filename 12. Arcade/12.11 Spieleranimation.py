@@ -25,7 +25,6 @@
 import arcade
 
 
-
 # Diese Klasse repräsentiert eine animierte Spielfigur. 
 # Sie verwaltet die Animationen für Laufen, Springen, Stehen und Klettern.
 class Character(arcade.Sprite):
@@ -227,6 +226,7 @@ class AnimatedPlayerDemo(arcade.Window):
 
         elif key == arcade.key.DOWN:
             self.keys["DOWN"] = True
+
 
     # Verarbeitet das Loslassen von Tasten.
     def on_key_release(self, key, modifiers):
@@ -476,15 +476,54 @@ class AnimatedPlayerDemo(arcade.Window):
 # Lade eine spezielle Animation für den "Fall"-Zustand und wechsle in diesen Zustand, 
 # wenn die Spielfigur nach unten fällt.
 
-# Füge hier deine Lösung ein.
+
+'''
+
+import arcade
+
+
+class Character(arcade.Sprite):
+    
+    def __init__(self, textures_path, scale=1):
+        super().__init__()
+
+        ...
+
+        self.all_textures["jump"] = self._load_texture_pair(f"{textures_path}_jump.png")
+
+        ...
+ 
+
+    def update_animation(self, delta_time):
+        
+        ...
+        
+        # Animation fürs Fallen
+        if self.change_y < 0:
+            self.texture = self.all_textures["fall"][self.face_direction]
+            return
+        
+        ...
 
 
 
+class AnimatedPlayerDemo(arcade.Window):
 
+    ...
+
+    # Initialisiert die Spielumgebung, die Leitern und die Spielfigur.
+    def setup(self):
+        ...
+
+        # Initialisiere die Spielfigur
+        self.player = Character("_assets/12.11/femaleAdventurer/character_femaleAdventurer", scale=0.25)
+        
+        ...
+
+
+'''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-
-
 
 
