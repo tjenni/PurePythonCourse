@@ -161,7 +161,7 @@ class AnimatedPlayerDemo(arcade.Window):
             self.ladder_list.append(ladder)
 
         # Initialisiere die Spielfigur
-        self.player = Character(":resources:images/animated_characters/female_adventurer/femaleAdventurer", scale=0.5)
+        self.player = Character("_assets/12.11/femaleAdventurer/character_femaleAdventurer", scale=0.25)
         self.player.center_x = 100
         self.player.center_y = 100
 
@@ -423,7 +423,7 @@ class AnimatedPlayerDemo(arcade.Window):
         ...
 
         # Initialisiere die Spielfigur
-        self.player = Character("_assets/12.11/femaleAdventurer/character_femaleAdventurer", scale=0.25)
+        self.player = Character("_assets/12.11/femaleAdventurer/character_femaleAdventurer")
         
         ...
 
@@ -461,7 +461,7 @@ class AnimatedPlayerDemo(arcade.Window):
 # einem anderen `textures_path`.
 
 '''
-        self.player = Character("_assets/12.11/Robot/character_robot", scale=0.25)
+        self.player = Character("_assets/12.11/Robot/character_robot", scale=0.5)
 '''
 
 
