@@ -2,7 +2,7 @@
 #       ______|                               |_____
 #       \     |   12.11 SPIELER ANIMIEREN     |    /
 #        )    |_______________________________|   (
-#       /________)                        (________\     21.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#       /________)                        (________\     22.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
 # Eine animierte Spielfigur ist entscheidend für die Dynamik und das immersive 
