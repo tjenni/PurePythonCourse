@@ -77,7 +77,7 @@ class BackgroundMusicExample(arcade.Window):
         arcade.set_background_color(arcade.color.LIGHT_YELLOW)
 
         # Lade die Hintergrundmusik, Quelle: https://opengameart.org/content/bossa-nova
-        self.background_music = arcade.load_sound("_assets/8bit_bossa.wav")
+        self.background_music = arcade.load_sound("_assets/12.05/8bit_bossa.wav")
         arcade.play_sound(self.background_music, volume=0.3, looping=True)  # Musik mit 30% Lautstärke und Loop
 
  
@@ -323,7 +323,7 @@ class MusicApp(arcade.Window):
 
         arcade.set_background_color(arcade.color.SKY_BLUE)
 
-        self.music = arcade.load_sound("_assets/8bit_bossa.wav")
+        self.music = arcade.load_sound("_assets/12.05/8bit_bossa.wav")
         self.music_playing = False
         self.icon = arcade.SpriteSolidColor(30, 30, arcade.color.GREEN)
         self.icon.center_x = 300

@@ -149,7 +149,7 @@ class MovingSpriteGroupExample(arcade.Window):
         # Füge 20 Schneeflocken zur Sprite-Liste hinzu
         for i in range(20):
             # Lade das Bild der Schneeflocke
-            flake = arcade.Sprite("_assets/snowflake.png")
+            flake = arcade.Sprite("_assets/12.04/snowflake.png")
             
             # Setze einen zufälligen Startwinkel für die Schneeflocke (zwischen 0° und 360°)
             flake.angle = random.randint(0, 360)
@@ -475,7 +475,7 @@ class AquariumApp(arcade.Window):
             i = random.randint(1, 3)
             
             # Lade das Fisch-Sprite
-            fish = arcade.Sprite(f"_assets/fish_{i}.png", 0.5)
+            fish = arcade.Sprite(f"_assets/12.04/fish_{i}.png", 0.5)
             
             # Skaliere den Fisch zufällig
             fish.scale = 0.04 * random.randint(2, 8)
