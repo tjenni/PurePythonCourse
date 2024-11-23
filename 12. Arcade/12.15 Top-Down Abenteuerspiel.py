@@ -31,7 +31,7 @@ class TopDownGame(arcade.Window):
         # Tilemap-Konfiguration
         self.tile_map = None            # Die geladene Tilemap
         self.tile_scale = 2.0           # Skalierung der Tiles
-        self.tile_offset = (-80, 0)     # Offset für die Tilemap
+        self.tile_offset = (0, 0)     # Offset für die Tilemap
         self.tile_size = 16 * self.tile_scale  # Grösse eines Tiles
         
         # Spieler-Konfiguration
@@ -40,17 +40,37 @@ class TopDownGame(arcade.Window):
         
         # Szene und Spieler
         self.scene = None               # Die Szene, die alle Objekte enthält
-        self.player_sprite = None       # Das Spieler-Sprite
+        self.player = None       # Das Spieler-Sprite
         
         # Physik-Engine
         self.physics_engine = None      # Physik-Engine für Bewegungen und Kollisionen
 
+        # Spielkamera: Verfolgt die Spiellandschaft
+        self.camera = arcade.Camera(self.width, self.height)
 
+        # GUI-Kamera: Statische Ansicht für Benutzeroberfläche
+        self.gui_camera = arcade.Camera(self.width, self.height)
+        
+        self.score = 0
+
+    # Aktualisiert die Spielkamera, sodass sie der Spielfigur folgt.
+    def update_camera(self):
+        
+        # Kamera zentrieren auf den Spieler, dabei X und Y Achse berücksichtigen
+        screen_center_x = max(0, self.player.center_x - self.camera.viewport_width // 2)
+        screen_center_y = max(0, self.player.center_y - self.camera.viewport_height // 2)
+
+        # Kamera zur berechneten Position verschieben
+        self.camera.move_to((screen_center_x, screen_center_y), speed=0.2)
+
+
+        
     # Lädt die Tilemap, erstellt die Szene und initialisiert den Spieler.
     def setup(self):
+    
 
         # Lade die Tilemap aus einer .tmx-Datei
-        map_name = "_assets/topdown/level_1.tmx"  # Pfad zur .tmx-Datei
+        map_name = "_assets/12.15/level_1.tmx"  # Pfad zur .tmx-Datei
         
         # Optionen für die Tilemap-Ebenen
         layer_options = {
@@ -61,7 +81,7 @@ class TopDownGame(arcade.Window):
             "Floor": {
                 "offset": self.tile_offset
             },
-            "Door": {
+            "Doors": {
                 "offset": self.tile_offset
             }
         }
@@ -73,21 +93,21 @@ class TopDownGame(arcade.Window):
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
         
         # Spieler-Sprite hinzufügen
-        self.player_sprite = arcade.Sprite(
+        self.player = arcade.Sprite(
             ":resources:images/animated_characters/female_adventurer/femaleAdventurer_idle.png",
             scale=self.player_scale
         )
         
         # Setze die Startposition des Spielers
-        self.player_sprite.center_x = self.tile_size * 23 + self.tile_offset[0] + self.player_offset[0]
-        self.player_sprite.center_y = self.tile_size * 4 + self.tile_offset[1] + self.player_offset[1]
+        self.player.center_x = self.tile_size * 6 + self.tile_offset[0] + self.player_offset[0]
+        self.player.center_y = self.tile_size * 4 + self.tile_offset[1] + self.player_offset[1]
         
         # Füge das Spieler-Sprite zur Szene hinzu
-        self.scene.add_sprite("Player", self.player_sprite)
+        self.scene.add_sprite("Player", self.player)
         
         # Initialisiere die Physik-Engine
         self.physics_engine = arcade.PhysicsEnginePlatformer(
-            self.player_sprite,
+            self.player,
             gravity_constant=0.0,  # Keine Schwerkraft, da es ein Top-Down-Spiel ist
             walls=self.scene["Walls"]
         )
@@ -99,9 +119,11 @@ class TopDownGame(arcade.Window):
         # Aktualisiere die Position des Spielers mithilfe der Physik-Engine
         self.physics_engine.update()
         
+        self.update_camera()
+        
         # Prüfe, ob der Spieler mit Türen kollidiert
         door_hit_list = arcade.check_for_collision_with_list(
-            self.player_sprite, self.scene["Door"]
+            self.player, self.scene["Doors"]
         )
 
         # Aktionen bei Kollision mit Türen
@@ -112,27 +134,35 @@ class TopDownGame(arcade.Window):
     # Zeichnet die Szene und den Spieler.
     def on_draw(self):
         arcade.start_render()  # Starte den Renderprozess
-        self.scene.draw()      # Zeichne alle Ebenen der Szene
+        
+        # Spielkamera aktivieren
+        self.camera.use() 
+        self.scene.draw() 
+
+        # GUI-Kamera aktivieren
+        self.gui_camera.use()
+        arcade.draw_text(f"Punkte: {self.score}", 15, self.height - 30, arcade.color.WHITE, 16)
+
 
 
     # Reagiert auf Tastendrücke und bewegt den Spieler.
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP:
-            self.player_sprite.change_y = 5  # Bewege nach oben
+            self.player.change_y = 5  # Bewege nach oben
         elif key == arcade.key.DOWN:
-            self.player_sprite.change_y = -5  # Bewege nach unten
+            self.player.change_y = -5  # Bewege nach unten
         elif key == arcade.key.LEFT:
-            self.player_sprite.change_x = -5  # Bewege nach links
+            self.player.change_x = -5  # Bewege nach links
         elif key == arcade.key.RIGHT:
-            self.player_sprite.change_x = 5  # Bewege nach rechts
+            self.player.change_x = 5  # Bewege nach rechts
 
 
     # Stoppt die Bewegung des Spielers, wenn die Taste losgelassen wird.
     def on_key_release(self, key, modifiers):
         if key in [arcade.key.UP, arcade.key.DOWN]:
-            self.player_sprite.change_y = 0  # Stoppe vertikale Bewegung
+            self.player.change_y = 0  # Stoppe vertikale Bewegung
         if key in [arcade.key.LEFT, arcade.key.RIGHT]:
-            self.player_sprite.change_x = 0  # Stoppe horizontale Bewegung
+            self.player.change_x = 0  # Stoppe horizontale Bewegung
 
 
 # Anwendung starten
@@ -346,7 +376,7 @@ class DungeonGameWithKeys(arcade.Window):
         self.player_scale = 0.3
         self.player_offset = (16, 22)
         self.scene = None
-        self.player_sprite = None
+        self.player = None
         
         # Physik-Engine
         self.physics_engine = None
@@ -378,17 +408,17 @@ class DungeonGameWithKeys(arcade.Window):
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
         
         # Spieler-Sprite erstellen
-        self.player_sprite = arcade.Sprite(
+        self.player = arcade.Sprite(
             ":resources:images/animated_characters/female_adventurer/femaleAdventurer_idle.png",
             scale=self.player_scale
         )
-        self.player_sprite.center_x = self.tile_size * 23 + self.tile_offset[0] + self.player_offset[0]
-        self.player_sprite.center_y = self.tile_size * 4 + self.tile_offset[1] + self.player_offset[1]
-        self.scene.add_sprite("Player", self.player_sprite)
+        self.player.center_x = self.tile_size * 23 + self.tile_offset[0] + self.player_offset[0]
+        self.player.center_y = self.tile_size * 4 + self.tile_offset[1] + self.player_offset[1]
+        self.scene.add_sprite("Player", self.player)
         
         # Physik-Engine
         self.physics_engine = arcade.PhysicsEnginePlatformer(
-            self.player_sprite,
+            self.player,
             gravity_constant=0.0,
             walls=self.scene["Walls"]
         )
@@ -398,12 +428,12 @@ class DungeonGameWithKeys(arcade.Window):
         self.physics_engine.update()
         
         # Kollision mit Türen prüfen
-        door_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.scene["Door"])
+        door_hit_list = arcade.check_for_collision_with_list(self.player, self.scene["Door"])
         for door in door_hit_list:
             print("Tür erreicht!")
         
         # Kollision mit Schlüsseln prüfen
-        keys_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.scene["Keys"])
+        keys_hit_list = arcade.check_for_collision_with_list(self.player, self.scene["Keys"])
         for key in keys_hit_list:
             # Schlüssel entfernen
             key.remove_from_sprite_lists()
@@ -417,19 +447,19 @@ class DungeonGameWithKeys(arcade.Window):
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP:
-            self.player_sprite.change_y = 5
+            self.player.change_y = 5
         elif key == arcade.key.DOWN:
-            self.player_sprite.change_y = -5
+            self.player.change_y = -5
         elif key == arcade.key.LEFT:
-            self.player_sprite.change_x = -5
+            self.player.change_x = -5
         elif key == arcade.key.RIGHT:
-            self.player_sprite.change_x = 5
+            self.player.change_x = 5
 
     def on_key_release(self, key, modifiers):
         if key in [arcade.key.UP, arcade.key.DOWN]:
-            self.player_sprite.change_y = 0
+            self.player.change_y = 0
         if key in [arcade.key.LEFT, arcade.key.RIGHT]:
-            self.player_sprite.change_x = 0
+            self.player.change_x = 0
 
 
 # Anwendung starten
@@ -479,7 +509,7 @@ class DungeonGameWithHealth(arcade.Window):
         self.player_scale = 0.3  # Skalierung des Spieler-Sprites
         self.player_offset = (16, 22)  # Offset für die Positionierung des Spielers
         self.scene = None  # Szene, die alle Ebenen und Objekte enthält
-        self.player_sprite = None  # Spieler-Sprite
+        self.player = None  # Spieler-Sprite
         self.damage_cooldown = 0  # Unverwundbarkeitsdauer (Frames)
         
         # Physik-Engine
@@ -505,19 +535,19 @@ class DungeonGameWithHealth(arcade.Window):
         self.scene = arcade.Scene.from_tilemap(self.tile_map)  # Erstelle die Szene
         
         # Spieler-Sprite initialisieren
-        self.player_sprite = arcade.Sprite(
+        self.player = arcade.Sprite(
             ":resources:images/animated_characters/female_adventurer/femaleAdventurer_idle.png",
             scale=self.player_scale
         )
         
         # Position des Spielers setzen
-        self.player_sprite.center_x = self.tile_size * 23 + self.tile_offset[0] + self.player_offset[0]
-        self.player_sprite.center_y = self.tile_size * 4 + self.tile_offset[1] + self.player_offset[1]
-        self.scene.add_sprite("Player", self.player_sprite)  # Spieler zur Szene hinzufügen
+        self.player.center_x = self.tile_size * 23 + self.tile_offset[0] + self.player_offset[0]
+        self.player.center_y = self.tile_size * 4 + self.tile_offset[1] + self.player_offset[1]
+        self.scene.add_sprite("Player", self.player)  # Spieler zur Szene hinzufügen
         
         # Physik-Engine für den Spieler
         self.physics_engine = arcade.PhysicsEnginePlatformer(
-            self.player_sprite,
+            self.player,
             gravity_constant=0.0,  # Keine Schwerkraft in einem Top-Down-Spiel
             walls=self.scene["Walls"]
         )
@@ -533,7 +563,7 @@ class DungeonGameWithHealth(arcade.Window):
             self.damage_cooldown -= 1
         
         # Kollision mit Fallen prüfen
-        traps_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.scene["Trap"])
+        traps_hit_list = arcade.check_for_collision_with_list(self.player, self.scene["Trap"])
         for trap in traps_hit_list:
             if self.damage_cooldown == 0:  # Wenn der Spieler nicht unverwundbar ist
                 self.health -= 10  # Gesundheit reduzieren
@@ -545,7 +575,7 @@ class DungeonGameWithHealth(arcade.Window):
                 arcade.close_window()  # Beende das Spiel
         
         # Kollision mit Türen prüfen
-        door_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.scene["Door"])
+        door_hit_list = arcade.check_for_collision_with_list(self.player, self.scene["Door"])
         for door in door_hit_list:
             print("Tür erreicht!")
 
@@ -566,20 +596,20 @@ class DungeonGameWithHealth(arcade.Window):
     # Bewegung des Spielers bei Tastendruck steuern.
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP:
-            self.player_sprite.change_y = 5  # Nach oben bewegen
+            self.player.change_y = 5  # Nach oben bewegen
         elif key == arcade.key.DOWN:
-            self.player_sprite.change_y = -5  # Nach unten bewegen
+            self.player.change_y = -5  # Nach unten bewegen
         elif key == arcade.key.LEFT:
-            self.player_sprite.change_x = -5  # Nach links bewegen
+            self.player.change_x = -5  # Nach links bewegen
         elif key == arcade.key.RIGHT:
-            self.player_sprite.change_x = 5  # Nach rechts bewegen
+            self.player.change_x = 5  # Nach rechts bewegen
 
     # Spielerbewegung stoppen, wenn die Taste losgelassen wird.
     def on_key_release(self, key, modifiers):
         if key in [arcade.key.UP, arcade.key.DOWN]:
-            self.player_sprite.change_y = 0  # Vertikale Bewegung stoppen
+            self.player.change_y = 0  # Vertikale Bewegung stoppen
         if key in [arcade.key.LEFT, arcade.key.RIGHT]:
-            self.player_sprite.change_x = 0  # Horizontale Bewegung stoppen
+            self.player.change_x = 0  # Horizontale Bewegung stoppen
 
 
 # Spiel starten
