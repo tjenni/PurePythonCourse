@@ -1,0 +1,43 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "level_1.tmx",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "Tileset.tsx": {
+            "scaleInDock": 0.4553,
+            "scaleInEditor": 0.39
+        },
+        "level_1.tmx": {
+            "scale": 0.3728,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 871.7811158798283,
+                "y": 3484.4420600858366
+            }
+        }
+    },
+    "last.imagePath": "/Users/thomasjenni/Library/Mobile Documents/com~apple~CloudDocs/_git/PurePythonCourse/12. Arcade/_assets/12.12",
+    "map.height": 30,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 128,
+    "map.tileWidth": 128,
+    "map.width": 100,
+    "openFiles": [
+        "Tileset.tsx",
+        "level_1.tmx"
+    ],
+    "project": "jumpnrun.tiled-project",
+    "recentFiles": [
+        "Tileset.tsx",
+        "level_1.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 128,
+        "width": 128
+    }
+}

@@ -4,47 +4,106 @@
 #        )    |_______________________________|   (
 #       /________)                        (________\     18.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-# Jump-and-Run-Spiele gehören zu den Klassikern der Videospiele und sind seit den frühen Tagen 
-# der Gaming-Welt populär. Typische Vertreter wie "Super Mario" oder "Sonic the Hedgehog" 
-# haben ganze Generationen begeistert. Der Reiz dieser Spiele liegt in ihrer Mischung aus 
-# Geschicklichkeit, Timing und Entdeckung.
-
-# In einem Jump-and-Run-Spiel steuerst du eine Figur, die durch Level navigiert, Hindernisse 
-# überwindet, Münzen sammelt und Fallen ausweicht. Dabei ist Präzision gefragt: Ein falscher 
-# Sprung oder eine Berührung mit einer Falle kann das Spiel beenden. Ziel ist es, möglichst 
-# viele Punkte zu sammeln und das Ende eines Levels zu erreichen.
-
-# Dieses Kapitel zeigt dir Schritt für Schritt, wie du ein solches Spiel mit Arcade entwickelst. 
-# Dabei lernst du grundlegende Konzepte wie Sprite-Management, Kollisionserkennung und die 
-# Verwendung von Tilemaps für das Level-Design kennen. Außerdem wirst du Soundeffekte und 
-# Level-Übergänge hinzufügen, um das Spielerlebnis abzurunden.
-
-# Hier sind die wichtigsten Themen, die du in diesem Kapitel umsetzen wirst:
-#
-# - Aufbau eines Spiels mit Start- und Endbildschirmen: 
-#   Du lernst, wie du ein Spiel mit einer klaren Struktur startest und abschließt.
-#
-# - Steuerung der Spielfigur mit der Tastatur: 
-#   Die Spielfigur wird mit den Pfeiltasten bewegt und kann springen.
-#
-# - Hinzufügen von Hindernissen und Fallen: 
-#   Du integrierst Wände, Abgründe und andere Elemente, die der Spieler überwinden muss.
-#
-# - Einsammeln von Münzen: 
-#   Punkte werden durch das Sammeln von Münzen erhöht.
-#
-# - Übergänge zwischen verschiedenen Leveln: 
-#   Am Ende eines Levels wird automatisch das nächste Level geladen.
-#
-# - Soundeffekte und Feedback: 
-#   Durch Geräusche für Sprünge, Münzen und Game-Over-Meldungen wird das Spiel lebendig.
-#
-# Egal, ob du das Spiel minimalistisch oder mit komplexen Features gestalten möchtest, 
-# dieses Kapitel liefert dir das Grundgerüst, das du nach deinen Vorstellungen erweitern kannst.
 
 
 import arcade
-import random
+
+
+# Diese Klasse repräsentiert eine animierte Spielfigur. 
+# Sie verwaltet die Animationen für Laufen, Springen, Stehen und Klettern.
+class Character(arcade.Sprite):
+    
+    def __init__(self, textures_path, scale=1):
+        super().__init__()
+
+        self.n_walking_textures = 8  # Anzahl der Texturen für die Laufanimation
+        self.n_climbing_textures = 2  # Anzahl der Texturen für die Kletteranimation
+        
+        self.face_direction = 0  # Richtung der Spielfigur (0: rechts, 1: links)
+        self.can_jump = False  # Gibt an, ob die Spielfigur springen kann
+        self.is_on_ladder = False  # Gibt an, ob die Spielfigur auf einer Leiter ist
+
+        self.scale = scale  # Skalierung der Spielfigur
+        
+        self.frame = 0  # Animationsrahmenzähler
+        self.animation_speed = 2  # Geschwindigkeit der Animation
+        
+        self.current_texture = 0  # Aktuelle Textur der Animation
+        
+        # Lade alle Texturen für die Animationen
+        self.all_textures = {}
+
+        # Lade die Texturen für Stehen und Springen
+        self.all_textures["idle"] = self._load_texture_pair(f"{textures_path}_idle.png")
+        self.all_textures["jump"] = self._load_texture_pair(f"{textures_path}_jump.png")
+        
+        # Lade die Texturen für die Laufanimation
+        self.all_textures["walk"] = [
+            self._load_texture_pair(f"{textures_path}_walk{i}.png") for i in range(self.n_walking_textures)
+        ]
+        
+        # Lade die Texturen für die Kletteranimation
+        self.all_textures["climb"] = [
+            self._load_texture_pair(f"{textures_path}_climb{i}.png") for i in range(self.n_climbing_textures)
+        ]
+
+        # Setze die Anfangstextur
+        self.texture = self.all_textures["idle"][0]
+        
+        # Setze die Kollisionsbox basierend auf der Anfangstextur
+        self.hit_box = self.texture.hit_box_points
+ 
+
+    # Lädt ein Texturpaar: eine normale und eine horizontal gespiegelt.
+    def _load_texture_pair(self, path):
+        return [
+            arcade.load_texture(path),
+            arcade.load_texture(path, flipped_horizontally=True)
+        ]
+
+
+    # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand (Laufen, Springen, Klettern, Stehen).
+    def update_animation(self, delta_time):
+
+        self.frame = (self.frame + 1) % self.animation_speed
+
+        # Bestimme die Blickrichtung der Spielfigur
+        if self.change_x < 0:
+            self.face_direction = 1  # Blick nach links
+        elif self.change_x > 0:
+            self.face_direction = 0  # Blick nach rechts
+        
+        # Animation für die Leiter
+        if self.is_on_ladder:
+            if self.change_y == 0:  # Wenn die Figur nicht auf der Leiter bewegt wird
+                self.current_texture = 0
+            elif self.frame == 0:  # Aktualisiere die Textur nur bei bestimmten Frames
+                self.current_texture += 1
+            
+            self.current_texture = self.current_texture % self.n_climbing_textures
+            self.texture = self.all_textures["climb"][self.current_texture][self.face_direction]
+            return
+        
+        # Animation für Springen
+        if not self.can_jump:
+            self.texture = self.all_textures["jump"][self.face_direction]
+            return
+        
+        # Animation für Stehen
+        if self.change_x == 0 and self.change_y == 0:
+            self.texture = self.all_textures["idle"][self.face_direction]
+            return
+        
+        # Animation für Laufen
+        if self.frame == 0:  # Aktualisiere die Textur nur bei bestimmten Frames
+            self.current_texture += 1
+        
+        self.current_texture = self.current_texture % self.n_walking_textures
+        self.texture = self.all_textures["walk"][self.current_texture][self.face_direction]
+
+
+
+
 
 # Diese Klasse repräsentiert eine Ansicht für Informationsbildschirme wie Start-, 
 # Game-Over- oder Endbildschirme.
@@ -88,108 +147,80 @@ class GameView(arcade.View):
         super().__init__()
 
         arcade.set_background_color(arcade.color.SKY_BLUE)
+        
+        # Spielkamera: Verfolgt die Spiellandschaft
+        self.camera = arcade.Camera(self.window.width, self.window.height)
+
+        # GUI-Kamera: Statische Ansicht für Benutzeroberfläche
+        self.gui_camera = arcade.Camera(self.window.width, self.window.height)
 
         self.score = 0
+        
+        self.n_level = 1
 
         # Größe jeder Kachel in Pixel
         self.tile_size = 64
-        self.tilemap = None  # 2D-Liste, die die Tile-IDs speichert
-        self.tiles = None  # Zuordnung von Tile-IDs zu Grafiken und Typen
-        self.sprite_lists = None  # Sammlung von Sprite-Listen für unterschiedliche Kacheltypen
+        self.keys = {"UP": False, "DOWN": False, "LEFT": False, "RIGHT": False}  # Zustände der Tasten
+        
+        self.tile_offset = (0, 0)     # Offset für die Tilemap
+        
+    # Aktualisiert die Spielkamera, sodass sie der Spielfigur folgt.
+    def update_camera(self):
+        
+        # Kamera zentrieren auf den Spieler, dabei X und Y Achse berücksichtigen
+        screen_center_x = max(0, self.player.center_x - self.camera.viewport_width // 2)
+        screen_center_y = max(0, self.player.center_y - self.camera.viewport_height // 2)
+
+        # Kamera zur berechneten Position verschieben
+        self.camera.move_to((screen_center_x, screen_center_y), speed=0.2)
 
 
     # Initialisiert das Spiel für ein spezifisches Level.
     def setup(self, level=1):
         self.level = level
         
-        path = ":resources:images/"
-        
         self.tile_scale = 0.5
 
         # Spieler-Sprite erstellen
-        self.player = arcade.Sprite(path + "animated_characters/female_adventurer/femaleAdventurer_idle.png", scale=self.tile_scale)
-        self.player.center_x = 50
+        self.player = Character("_assets/12.11/femaleAdventurer/character_femaleAdventurer", scale=self.tile_scale/1.5)
+        self.player.center_x = 196
         self.player.center_y = 100
-
-        # Sprite-Listen initialisieren
-        self.wall_list = arcade.SpriteList()
-        self.object_list = arcade.SpriteList()
-
-        # Initialisiere die Sprite-Listen für verschiedene Kacheltypen
-        self.sprite_lists = {
-            "Walls": arcade.SpriteList(),  # Wände
-            "Coins": arcade.SpriteList(),  # Sammelbare Objekte
-            "Traps": arcade.SpriteList(),  # Fallen
-            "Objects": arcade.SpriteList()  # Objekte im Hintergrund
+        
+        # Lade die Tilemap aus einer .tmx-Datei
+        map_name = "_assets/12.12/level_1.tmx"  # Pfad zur .tmx-Datei
+        
+        
+        # Optionen für die Tilemap-Ebenen
+        layer_options = {
+            "Walls": {
+                "use_spatial_hash": True,
+                "offset": self.tile_offset
+            },
+            "Floor": {
+                "offset": self.tile_offset
+            },
+            "Door": {
+                "offset": self.tile_offset
+            }
         }
-
-        # Zuordnung der Tile-IDs zu Grafiken und Listen
         
-        self.tiles = {
-            0: None,
-            1: [path + "tiles/grassLeft.png", "Walls"],
-            2: [path + "tiles/grassMid.png", "Walls"],
-            3: [path + "tiles/grassRight.png", "Walls"],
-            4: [path + "tiles/grassHalf_left.png", "Walls"],
-            5: [path + "tiles/grassHalf_mid.png", "Walls"],
-            6: [path + "tiles/grassHalf_right.png", "Walls"],
-            7: [path + "tiles/cactus.png", "Objects"],
-            8: [path + "tiles/spikes.png", "Traps"],
-            9: [path + "items/coinGold.png", "Coins"],
-            10: [path + "tiles/signExit.png", "Objects"],
-        }
-
-        # Tilemap-Daten für mehrere Level
-        self.tilemaps = [
-            # Level 1
-            [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0],
-            [0, 0, 0, 0, 9, 0, 8, 8, 9, 0, 7, 0, 10],
-            [2, 3, 0, 1, 2, 2, 2, 2, 2, 2, 3, 0, 1]
-            ],
-
-            # Level 2
-            [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 0, 0],
-            [0, 9, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0],
-            [0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 7, 0, 0, 0, 0, 0, 8, 0, 0, 10],
-            [2, 2, 2, 3, 0, 0, 0, 0, 0, 2, 3, 0, 1]
-            ]
-        ]
+        # Lade die Tilemap mit den angegebenen Optionen
+        self.tile_map = arcade.load_tilemap(map_name, self.tile_scale, layer_options=layer_options)
         
-        # Objekte basierend auf der Tilemap erstellen
-        self.create_sprite_lists(self.tilemaps[self.level-1])
+        # Erstelle die Szene basierend auf der geladenen Tilemap
+        self.scene = arcade.Scene.from_tilemap(self.tile_map)
         
+
         # Sounds laden
         self.coin_sound = arcade.load_sound(":resources:sounds/coin2.wav")
         self.jump_sound = arcade.load_sound(":resources:sounds/jump3.wav")
         self.gameover_sound = arcade.load_sound(":resources:sounds/gameover2.wav")
         self.success_sound = arcade.load_sound(":resources:sounds/upgrade2.wav")
 
-        # Szene initialisieren
-        self.scene = arcade.Scene()
-
-        # Füge alle Sprite-Listen der Szene hinzu
-        for key, sprite_list in self.sprite_lists.items():
-            self.scene.add_sprite_list(key, sprite_list=sprite_list)
-            
         self.scene.add_sprite("Player", self.player)
 
         # Physik-Engine initialisieren
-        self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, gravity_constant=0.5, walls=self.sprite_lists["Walls"])
+        self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, gravity_constant=0.5, walls=self.scene["Walls"], ladders=self.scene["Ladders"])
 
 
     # Fügt eine neue Kachel an der angegebenen Position hinzu.
@@ -226,63 +257,117 @@ class GameView(arcade.View):
             for j, tile_id in enumerate(row):
                 self.add_tile(j, i, tile_id)
 
-
+    
     # Zeichnet die Szene und die Punktzahl.
     def on_draw(self):
         arcade.start_render()
-        self.scene.draw()
-        arcade.draw_text(f"Score: {self.score}", 10, 570, arcade.color.WHITE, 16)
+        
+        # Spielkamera aktivieren
+        self.camera.use() 
+        self.scene.draw() 
+
+        # GUI-Kamera aktivieren
+        self.gui_camera.use()
+        arcade.draw_text(f"Punkte: {self.score}", 15, self.window.height - 30, arcade.color.WHITE, 16)
 
 
-    # Aktualisiert die Spiellogik, wie Kollisionen und Levelübergänge.
+        
+            
+
+    # Aktualisiert den Spielzustand und die Animation der Spielfigur.
     def on_update(self, delta_time):
-        self.physics_engine.update()
 
+        # Bewegung der Spielfigur basierend auf Tasteneingaben
+        if self.keys["RIGHT"]:
+            self.player.change_x = 5
+        elif self.keys["LEFT"]:
+            self.player.change_x = -5
+        else:
+            self.player.change_x = 0
+
+        # Bewegung der Spielfigur auf der Leiter
+        if self.player.is_on_ladder:
+            if self.keys["UP"]:
+                self.player.change_y = 5
+            elif self.keys["DOWN"]:
+                self.player.change_y = -5
+            else:
+                self.player.change_y = 0
+
+        # Aktualisiere die Physik-Engine
+        self.physics_engine.update()
+        
+        
+        self.update_camera()
+    
+        
+        # Aktualisiere die Zustände der Spielfigur
+        self.player.is_on_ladder = self.physics_engine.is_on_ladder()
+        self.player.can_jump = self.physics_engine.can_jump() and not self.player.is_on_ladder
+
+        # Aktualisiere die Animation der Spielfigur
+        self.player.update_animation(delta_time)
+        
         # Kollisionserkennung mit Coins
-        coin_hit_list = arcade.check_for_collision_with_list(self.player, self.sprite_lists["Coins"])
+        coin_hit_list = arcade.check_for_collision_with_list(self.player, self.scene["Coins"])
         for coin in coin_hit_list:
             arcade.play_sound(self.coin_sound)
             coin.remove_from_sprite_lists()
             self.score += 1
         
-        trap_hit_list = arcade.check_for_collision_with_list(self.player, self.sprite_lists["Traps"])
+        # Kollision mit Fallen
+        trap_hit_list = arcade.check_for_collision_with_list(self.player, self.scene["Traps"])
         for trap in trap_hit_list:
             arcade.play_sound(self.gameover_sound)
             self.window.show_view(InfoView("GAME OVER"))
-
-        # Übergang zum nächsten Level
-        if self.player.center_x > self.window.width:
+        
+        # Kollision mit Türen
+        door_hit_list = arcade.check_for_collision_with_list(self.player, self.scene["Doors"])
+        for door in door_hit_list:
             arcade.play_sound(self.success_sound)
-
-            if self.level < len(self.tilemaps):
+            
+            if self.level < self.n_level:
                 self.setup(level=self.level + 1)
             else:
                 self.window.show_view(InfoView("ENDE", color=arcade.color.AMBER))
-
+             
         # Spieler innerhalb des Fensters halten
-        elif self.player.center_x < 0:
+        if self.player.center_x < 0:
             self.player.center_x = 0
-
+        
         # Spieler fällt aus dem Fenster
         if self.player.center_y < 0:
             arcade.play_sound(self.gameover_sound)
             self.window.show_view(InfoView("GAME OVER"))
-            
+        
+        
 
-    # Verarbeitet Tasteneingaben für Spielerbewegungen.
+    # Verarbeitet Tastendrücke.
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP and self.physics_engine.can_jump():
-            self.player.change_y = 12
-            arcade.play_sound(self.jump_sound)
+        if key == arcade.key.RIGHT:
+            self.keys["RIGHT"] = True
         elif key == arcade.key.LEFT:
-            self.player.change_x = -5
-        elif key == arcade.key.RIGHT:
-            self.player.change_x = 5
+            self.keys["LEFT"] = True
+        elif key == arcade.key.UP:
+            self.keys["UP"] = True
+            
+            if self.player.can_jump:
+                self.player.change_y = 12
 
-    # Stoppt die Bewegung des Spielers bei Loslassen der Tasten.
+        elif key == arcade.key.DOWN:
+            self.keys["DOWN"] = True
+
+
+    # Verarbeitet das Loslassen von Tasten.
     def on_key_release(self, key, modifiers):
-        if key in (arcade.key.LEFT, arcade.key.RIGHT):
-            self.player.change_x = 0
+        if key == arcade.key.RIGHT:
+            self.keys["RIGHT"] = False
+        elif key == arcade.key.LEFT:
+            self.keys["LEFT"] = False
+        elif key == arcade.key.UP:
+            self.keys["UP"] = False
+        elif key == arcade.key.DOWN:
+            self.keys["DOWN"] = False
 
 
 # Startet das Spiel und zeigt die Startansicht.
