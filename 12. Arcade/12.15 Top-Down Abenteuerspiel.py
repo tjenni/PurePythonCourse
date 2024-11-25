@@ -21,6 +21,146 @@
 # Das Tileset stammt von Robert (https://0x72.itch.io/dungeontileset-ii)
 
 import arcade
+import re
+import math
+
+# Diese Klasse repräsentiert eine animierte Spielfigur. 
+# Sie verwaltet die Animationen für Laufen, Springen, Stehen und Klettern.
+class Character(arcade.Sprite):
+    
+    IDLE = 0
+    WALK = 1
+    
+    RIGHT = 0
+    LEFT = 1
+    
+    def __init__(self, textures_path, x, y, width=16, height=16, scale=1.5):
+        super().__init__()
+
+        self.face_direction = Character.RIGHT  # Richtung der Spielfigur (0: rechts, 1: links)
+        
+        self.scale = scale  # Skalierung der Spielfigur
+        
+        self.frame = 0  # Animationsrahmenzähler
+        self.animation_speed = 3  # Geschwindigkeit der Animation
+        
+        self.current_texture = 0  # Aktuelle Textur der Animation
+        
+        self.state = Character.IDLE
+        
+        # Lade alle Texturen für die Animationen
+        self.all_textures = {}
+
+        # Lade die Texturen für Stehen und Springen
+        self.all_textures[Character.IDLE] = self._load_textures(textures_path, x, y, width, height, 2)
+        
+        # Lade die Texturen für die Laufanimation
+        self.all_textures[Character.WALK] = self._load_textures(textures_path, x, y, width, height, 4)
+        
+        # Setze die Anfangstextur
+        self.texture = self.all_textures[self.state][0][0]
+        
+        # Setze die Kollisionsbox basierend auf der Anfangstextur
+        self.hit_box = self.texture.hit_box_points
+ 
+    
+    def _load_textures(self, textures_path, x, y, width, height, n):
+        return [
+            self._load_texture_pair(textures_path, x+i*width, y, width, height) for i in range(n)
+        ]
+        
+        
+    
+    # Lädt ein Texturpaar: eine normale und eine horizontal gespiegelt.
+    def _load_texture_pair(self, path, x, y, width, height):
+        return [
+            arcade.load_texture(path, x, y, width, height),
+            arcade.load_texture(path, x, y, width, height, flipped_horizontally=True)
+        ]
+
+
+    # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand (Laufen, 
+    # Springen, Klettern, Stehen).
+    def update_animation(self, delta_time):
+
+        self.frame = (self.frame + 1) % self.animation_speed
+        
+        # Animation für Laufen
+        if self.frame == 0:  # Aktualisiere die Textur nur bei bestimmten Frames
+            self.current_texture += 1
+            
+        # Bestimme die Blickrichtung der Spielfigur
+        if self.change_x < 0:
+            self.face_direction = 1  # Blick nach links
+        elif self.change_x > 0:
+            self.face_direction = 0  # Blick nach rechts
+        
+        
+        self.current_texture = self.current_texture % len(self.all_textures[self.state])
+        self.texture = self.all_textures[Character.IDLE][self.current_texture][self.face_direction]
+        
+        
+    
+    def search_player(self, player):
+        dx = player.center_x - self.center_x
+        dy = player.center_y - self.center_y
+        distance = math.sqrt(dx ** 2 + dy ** 2)
+        
+        # Bewege den Roboter in Richtung des Spielers
+        if distance > 0 and distance < self.max_distance:  # Vermeide Division durch Null
+            
+            dx = self.speed * (dx / distance)
+            dy = self.speed * (dy / distance)
+            
+            self.center_x += dx
+            walls_hit_list = arcade.check_for_collision_with_list(self, self.walls)
+            if len(walls_hit_list) > 0:
+                self.center_x -= dx
+                
+            self.center_y += dy
+            walls_hit_list = arcade.check_for_collision_with_list(self, self.walls)
+            if len(walls_hit_list) > 0:
+                self.center_y -= dy
+            
+        
+
+
+
+class Skeleton(Character):
+    
+    def __init__(self, textures_path, x, y, width=16, height=16, scale=1.5):
+        super().__init__(textures_path, x, y, width, height, scale)
+        
+        self.speed = 3
+        self.max_distance = 300
+        
+        
+
+class OgreMage(Character):
+    
+    def __init__(self, textures_path, x, y, width=16, height=16, scale=1.5):
+        super().__init__(textures_path, x, y, width, height, scale)
+        
+        self.speed = 1
+        self.max_distance = 400
+        
+        
+class RedOgre(Character):
+    
+    def __init__(self, textures_path, x, y, width=16, height=16, scale=1.5):
+        super().__init__(textures_path, x, y, width, height, scale)
+        
+        self.speed = 2
+        self.max_distance = 200
+        
+        
+        
+       
+    
+    
+
+
+
 
 class TopDownGame(arcade.Window):
 
@@ -35,12 +175,13 @@ class TopDownGame(arcade.Window):
         self.tile_size = 16 * self.tile_scale  # Grösse eines Tiles
         
         # Spieler-Konfiguration
-        self.player_scale = 0.3         # Skalierung des Spielers
-        self.player_offset = (16, 22)   # Offset zur Positionierung des Spielers
+        self.player_scale = 1.5         # Skalierung des Spielers
+        self.player_offset = (16, -10)   # Offset zur Positionierung des Spielers
         
         # Szene und Spieler
         self.scene = None               # Die Szene, die alle Objekte enthält
         self.player = None       # Das Spieler-Sprite
+        self.enemies = None 
         
         # Physik-Engine
         self.physics_engine = None      # Physik-Engine für Bewegungen und Kollisionen
@@ -89,21 +230,48 @@ class TopDownGame(arcade.Window):
         # Lade die Tilemap mit den angegebenen Optionen
         self.tile_map = arcade.load_tilemap(map_name, self.tile_scale, layer_options=layer_options)
         
+        
         # Erstelle die Szene basierend auf der geladenen Tilemap
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
         
+        
         # Spieler-Sprite hinzufügen
-        self.player = arcade.Sprite(
-            ":resources:images/animated_characters/female_adventurer/femaleAdventurer_idle.png",
-            scale=self.player_scale
-        )
-        
-        # Setze die Startposition des Spielers
-        self.player.center_x = self.tile_size * 6 + self.tile_offset[0] + self.player_offset[0]
-        self.player.center_y = self.tile_size * 4 + self.tile_offset[1] + self.player_offset[1]
-        
-        # Füge das Spieler-Sprite zur Szene hinzu
+        self.player = Character("_assets/12.15/dungeon_tiles.png", 512, 16)
+        self.set_position(self.player, 6,95)
         self.scene.add_sprite("Player", self.player)
+        
+        # Enemies
+        
+        enemies = arcade.SpriteList()
+        
+        for tile in self.scene["Enemies"]:
+            
+            pattern = r'dungeon_tiles\.png-(\d+)-(\d+)'
+            match = re.search(pattern, tile.texture.name)
+            
+            if match:
+                # Extrahiere die Gruppen, die Zahlen enthalten
+                tile_position = list(map(int, match.groups()))
+                
+                if tile_position == [368, 176]:
+                    enemy = Skeleton("_assets/12.15/dungeon_tiles.png", tile_position[0], tile_position[1])
+                elif tile_position == [368, 80]:
+                    enemy = OgreMage("_assets/12.15/dungeon_tiles.png", tile_position[0], tile_position[1])
+                elif tile_position == [368, 304]:
+                    enemy = RedOgre("_assets/12.15/dungeon_tiles.png", tile_position[0], tile_position[1])
+                
+                
+                enemy.walls = self.scene["Walls"]
+                
+                enemy.center_x = tile.center_x
+                enemy.center_y = tile.center_y
+                
+                enemies.append(enemy)
+            
+            
+        self.scene["Enemies"].clear()
+        self.scene["Enemies"].extend(enemies)
+        
         
         # Initialisiere die Physik-Engine
         self.physics_engine = arcade.PhysicsEnginePlatformer(
@@ -112,12 +280,47 @@ class TopDownGame(arcade.Window):
             walls=self.scene["Walls"]
         )
 
+    
+    def set_position(self, character, x, y):
+        x , y = self.tilemap_to_screen(x, y)
+        character.center_x = x
+        character.center_y = y
+        
+        
+    def tilemap_to_screen(self, x, y):
+        return (
+            self.tile_size * x + self.tile_offset[0] + self.player_offset[0],
+            self.tile_size * (self.tile_map.height - y) + self.tile_offset[1] + self.player_offset[1]
+        )
+    
+    def screen_to_tilemap(self, x, y):
+        return (
+            round((x - self.player_offset[0] - self.tile_offset[0]) / self.tile_size),
+            round(self.tile_map.height - (y - self.player_offset[1] - self.tile_offset[1]) / self.tile_size)
+        )
+    
+        
+        
+    
+    
 
+            
+        
+            
+            
     # Aktualisiert die Physik und prüft Kollisionen.
     def on_update(self, delta_time):
 
         # Aktualisiere die Position des Spielers mithilfe der Physik-Engine
         self.physics_engine.update()
+        
+        
+        self.player.update_animation(delta_time)
+        
+        for enemy in self.scene["Enemies"]:
+            enemy.update_animation(delta_time)
+            enemy.search_player(self.player)
+        
         
         self.update_camera()
         
@@ -125,10 +328,26 @@ class TopDownGame(arcade.Window):
         door_hit_list = arcade.check_for_collision_with_list(
             self.player, self.scene["Doors"]
         )
-
+        
         # Aktionen bei Kollision mit Türen
         for door in door_hit_list:
-            print("Tür erreicht!")
+            
+            position = self.screen_to_tilemap(door.center_x, door.center_y)
+            
+            if position == (14,77):
+                self.set_position(self.player, 32, 89)
+                
+            elif position == (32,91):
+                self.set_position(self.player,14, 79)
+    
+            elif position in [(46,74), (46,73)] :
+                self.set_position(self.player,26, 66)
+                
+            elif position == (26,64):
+                self.set_position(self.player,45, 74)
+
+                
+
 
 
     # Zeichnet die Szene und den Spieler.
@@ -173,94 +392,9 @@ arcade.run()  # Starte das Spiel
 
 
 
-# ____________________________________
-#                                    /
-# Erstellen von Tilemaps mit Tiled  (
-# ___________________________________\
-
-# Tiled ist eine Open-Source-Software, mit der du Karten (Tilemaps) für Spiele 
-# erstellen kannst. Diese Karten können anschließend in Arcade verwendet werden, 
-# um Spielumgebungen zu gestalten. 
-
-# Was ist eine Tilemap?
-# ---------------------
-# Eine Tilemap besteht aus einer Sammlung von Kacheln (Tiles), die auf einer Karte 
-# angeordnet sind. Jede Kachel repräsentiert ein Element der Spielwelt, z. B. 
-# Boden, Wände oder Objekte.
-
-# Was benötigst du?
-# -----------------
-# - Die Software Tiled (https://www.mapeditor.org/)
-#
-# - Ein Set von Grafiken, sogenannte Tilesets, um die Karten zu gestalten.
-#   Im Ordner _assets/topdown hat es ein Tileset (dungeon_tiles.png) und 
-#   die Tilemap (level_1.tmx). Du kannst diese Datei mit der Software
-#   Tiled öffnen und verändern. 
-
-# Schritte zum Erstellen einer Tilemap:
-# -------------------------------------
-
-# 1. Neues Projekt erstellen
-#    - Öffne Tiled und erstelle ein neues Projekt.
-# 
-#    - Wähle die gewünschte Kartengröße, z. B. 40x30 Kacheln.
-# 
-#    - Setze die Kachelgröße, z. B. 16x16 Pixel.
-
-# 2. Tilesets hinzufügen
-#    - Importiere ein Tileset (eine Sammlung von Kachelbildern), das du für 
-#      deine Karte verwenden möchtest.
-#
-#    - Klicke auf `Map > New Tileset` und wähle die Bilddatei aus.
-#
-#    - Setze die Größe der Tiles auf die gleiche Größe wie in deiner Karte 
-#      (z. B. 16x16 Pixel).
-
-# 3. Ebenen erstellen
-#    - In Tiled kannst du mehrere Ebenen (Layers) erstellen. Jede Ebene 
-#      repräsentiert eine Kategorie von Objekten.
-#
-#    - Beispiele:
-#      * Floor: Der Boden der Karte.
-#      * Walls: Hindernisse oder Wände.
-#      * Door: Türen, mit denen der Spieler interagieren kann.
-
-# 4. Karte gestalten
-#    - Wähle in der Werkzeugleiste das "Stift"-Werkzeug aus, um Kacheln auf der 
-#      Karte zu platzieren.
-#
-#    - Male deine Karte, indem du die Kacheln aus dem Tileset auf die Ebenen ziehst.
-
-# 5. Kollisions-Ebenen erstellen
-#    - Erstelle eine Ebene für Kollisionen (z. B. "Walls").
-#
-#    - Stelle sicher, dass Hindernisse und Wände auf dieser 
-#      Ebene gezeichnet werden.
-
-# 6. Speichern und Exportieren
-#    - Speichere die Karte als `.tmx`-Datei. Diese Datei wird später in 
-#      Arcade geladen.
-#
-#    - Stelle sicher, dass alle Grafiken im gleichen Ordner wie die `.tmx`-Datei 
-#      gespeichert sind.
 
 
 
-
-
-# _________________________________
-#                                 /
-# Zusammenfassung                (
-# ________________________________\
-
-# - Tilemaps: Mit Arcade kannst du .tmx-Dateien laden, um eine Spielumgebung zu erstellen.
-#
-# - Szene: Die `arcade.Scene`-Klasse organisiert alle Sprites und Ebenen.
-#
-# - Physik-Engine: Die `arcade.PhysicsEnginePlatformer` ermöglicht Bewegung und Kollisionen.
-#
-# - Kollisionen: Mit `check_for_collision_with_list()` können Interaktionen zwischen 
-#   Objekten erkannt werden.
 
 
 
@@ -620,5 +754,6 @@ arcade.run()  # Starte das Spiel
 '''
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 

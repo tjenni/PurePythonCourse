@@ -1,8 +1,78 @@
-#              _______________________________
-#       ______|                               |_____
-#       \     |   12.7 JUMP AND RUN SPIEL     |    /
-#        )    |_______________________________|   (
-#       /________)                        (________\     18.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              __________________________
+#       ______|                          |_____
+#       \     |   12.7 TILED SOFTWARE    |    /
+#        )    |__________________________|   (
+#       /________)                   (________\     24.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+
+# Tiled ist eine Open-Source-Software, mit der du Karten (Tilemaps) für Spiele 
+# erstellen kannst. Diese Karten können anschließend in Arcade verwendet werden, 
+# um Spielumgebungen zu gestalten. 
+
+# Was ist eine Tilemap?
+# ---------------------
+# Eine Tilemap besteht aus einer Sammlung von Kacheln (Tiles), die auf einer Karte 
+# angeordnet sind. Jede Kachel repräsentiert ein Element der Spielwelt, z. B. 
+# Boden, Wände oder Objekte.
+
+# Was benötigst du?
+# -----------------
+# - Die Software Tiled (https://www.mapeditor.org/)
+#
+# - Ein Set von Grafiken, sogenannte Tilesets, um die Karten zu gestalten.
+#   Im Ordner `_assets/12.12` hat es ein Tileset (tiles.png) und 
+#   die Tilemap (level_1.tmx). Du kannst diese Datei mit der Software
+#   Tiled öffnen und verändern. 
+
+# Schritte zum Erstellen einer Tilemap:
+# -------------------------------------
+
+# 1. Neues Projekt erstellen
+#    - Öffne Tiled und erstelle ein neues Projekt.
+# 
+#    - Wähle die gewünschte Kartengröße, z. B. 40x30 Kacheln.
+# 
+#    - Setze die Kachelgröße, z. B. 16x16 Pixel.
+
+# 2. Tilesets hinzufügen
+#    - Importiere ein Tileset (eine Sammlung von Kachelbildern), das du für 
+#      deine Karte verwenden möchtest.
+#
+#    - Klicke auf `Map > New Tileset` und wähle die Bilddatei aus.
+#
+#    - Setze die Größe der Tiles auf die gleiche Größe wie in deiner Karte 
+#      (z. B. 16x16 Pixel).
+
+# 3. Ebenen erstellen
+#    - In Tiled kannst du mehrere Ebenen (Layers) erstellen. Jede Ebene 
+#      repräsentiert eine Kategorie von Objekten.
+#
+#    - Beispiele:
+#      * Traps: Fallse
+#      * Coins: Münzen
+#      * Ladders: Leitern
+#      * Walls: Hindernisse oder Wände.
+#      * Door: Türen, mit denen der Spieler interagieren kann.
+#      * Background: Hintergrundobjekte
+
+# 4. Karte gestalten
+#    - Wähle in der Werkzeugleiste das "Stift"-Werkzeug aus, um Kacheln auf der 
+#      Karte zu platzieren.
+#
+#    - Male deine Karte, indem du die Kacheln aus dem Tileset auf die Ebenen ziehst.
+
+# 5. Kollisions-Ebenen erstellen
+#    - Erstelle eine Ebene für Kollisionen (z. B. "Walls").
+#
+#    - Stelle sicher, dass Hindernisse und Wände auf dieser 
+#      Ebene gezeichnet werden.
+
+# 6. Speichern und Exportieren
+#    - Speichere die Karte als `.tmx`-Datei. Diese Datei wird später in 
+#      Arcade geladen.
+#
+#    - Stelle sicher, dass alle Grafiken im gleichen Ordner wie die `.tmx`-Datei 
+#      gespeichert sind.
 
 
 
@@ -62,7 +132,8 @@ class Character(arcade.Sprite):
         ]
 
 
-    # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand (Laufen, Springen, Klettern, Stehen).
+    # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand (Laufen, 
+    # Springen, Klettern, Stehen).
     def update_animation(self, delta_time):
 
         self.frame = (self.frame + 1) % self.animation_speed
@@ -94,7 +165,7 @@ class Character(arcade.Sprite):
             self.texture = self.all_textures["idle"][self.face_direction]
             return
         
-        # Animation für Laufen
+        # Animation fürs Gehen
         if self.frame == 0:  # Aktualisiere die Textur nur bei bestimmten Frames
             self.current_texture += 1
         
@@ -370,97 +441,30 @@ class GameView(arcade.View):
             self.keys["DOWN"] = False
 
 
-# Startet das Spiel und zeigt die Startansicht.
-def main():
-    window = arcade.Window(800, 600, "Jumpmania")
+# Hauptprogramm
 
-    window.show_view(InfoView(text="Jumpmania", color=arcade.color_from_hex_string("#665d4a")))
-
-    arcade.run()
-
-
-if __name__ == "__main__":
-    main()
+window = arcade.Window(800, 600, "Jumpmania")
+window.show_view(InfoView(text="Jumpmania", color=arcade.color_from_hex_string("#665d4a")))
+arcade.run()
 
 
 
 
-# ___________________
-#                   /
-# Zusammenfassung  (
-# __________________\
 
-# In diesem Kapitel hast du ein vollständiges Jump-and-Run-Spiel entwickelt. 
-# Hier sind die wichtigsten Konzepte und Funktionen, die du dabei kennengelernt hast:
 
-# 1. Spielansichten (Views):
-#    - Du hast verschiedene Ansichten wie den Startbildschirm, das Hauptspiel und 
-#      die Endbildschirme erstellt. 
+# _________________________________
+#                                 /
+# Zusammenfassung                (
+# ________________________________\
+
+# - Tilemaps: Mit Arcade kannst du .tmx-Dateien laden, um eine Spielumgebung zu erstellen.
 #
-#    - Mit der Klasse `arcade.View` kannst du unterschiedliche Zustände des Spiels 
-#      verwalten, z. B. die Anzeige einer Start- oder Game-Over-Nachricht.
+# - Szene: Die `arcade.Scene`-Klasse organisiert alle Sprites und Ebenen.
 #
-#    - Die Methode `self.window.show_view(view)` ermöglicht den Wechsel zwischen 
-#      den Ansichten.
-
-# 2. Sprite-Management:
-#    - Du hast gelernt, wie Sprites erstellt, positioniert und in verschiedenen 
-#      Sprite-Listen organisiert werden.
-# 
-#    - Die `arcade.SpriteList`-Klasse bietet eine effiziente Möglichkeit, 
-#      Gruppen von Sprites wie Münzen, Fallen oder Wände zu verwalten.
-
-# 3. Tilemaps für Level-Design:
-#    - Mit Hilfe einer Tilemap hast du das Spielfeld für verschiedene Level erstellt.
-#    
-#    - Tilemaps ermöglichen es, das Level-Layout systematisch zu definieren, 
-#      indem Kacheln (Tiles) für bestimmte Elemente wie Wände, Münzen oder 
-#      Fallen verwendet werden.
+# - Physik-Engine: Die `arcade.PhysicsEnginePlatformer` ermöglicht Bewegung und Kollisionen.
 #
-#    - Die Tilemap wird in Python als verschachtelte Liste dargestellt, wobei 
-#      jeder Eintrag eine bestimmte Tile-ID repräsentiert.
-
-# 4. Physik-Engine:
-#    - Mit der Klasse `arcade.PhysicsEnginePlatformer` wurde die Bewegung des 
-#      Spielers realistisch simuliert.
-#
-#    - Die Engine sorgt dafür, dass der Spieler korrekt mit Wänden kollidiert 
-#      und Sprünge ausführen kann, während die Schwerkraft berücksichtigt wird.
-
-# 5. Kollisionserkennung:
-#    - Kollisionen zwischen dem Spieler und anderen Objekten (Münzen, Fallen) 
-#      wurden mit der Methode `arcade.check_for_collision_with_list()` überprüft.
-#
-#    - Diese Methode erlaubt es, Kollisionen effizient zu erkennen und entsprechende 
-#      Aktionen auszulösen, z. B. das Einsammeln von Münzen oder das Verlieren 
-#      des Spiels.
-
-# 6. Soundeffekte:
-#    - Das Spiel wurde durch Soundeffekte wie das Einsammeln von Münzen oder das 
-#      Verlieren des Spiels verbessert.
-#
-#    - Sounds wurden mit `arcade.play_sound()` abgespielt, um dem Spiel ein 
-#      immersiveres Erlebnis zu verleihen.
-
-# 7. Level-Übergänge:
-#    - Wenn der Spieler das Ende eines Levels erreicht, wird automatisch das 
-#      nächste Level gestartet.
-#
-#    - Mit einer neuen Tilemap kannst du leicht weitere Level hinzufügen, 
-#      um das Spiel zu erweitern.
-
-# 8. Spielgrenzen und Logik:
-#    - Der Spieler wurde darauf beschränkt, sich nur innerhalb des Spielfelds 
-#      zu bewegen.
-#
-#    - Das Spiel erkennt, wenn der Spieler aus dem Spielfeld fällt, und zeigt 
-#      dann eine Game-Over-Nachricht an.
-
-# Diese grundlegenden Konzepte sind die Bausteine für jedes 2D-Jump-and-Run-Spiel. 
-# Mit diesem Wissen kannst du das Spiel weiterentwickeln, z. B. durch Hinzufügen 
-# neuer Objekte, Power-Ups oder benutzerdefinierter Level. Nutze die Aufgaben 
-# als Gelegenheit, deine Kenntnisse zu vertiefen!
-
+# - Kollisionen: Mit `check_for_collision_with_list()` können Interaktionen zwischen 
+#   Objekten erkannt werden.
 
 
 
@@ -475,9 +479,7 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Füge eine Gesundheitsanzeige hinzu, die jedes Mal reduziert wird, wenn der 
-# Spieler mit einer Falle kollidiert. Wenn die Gesundheit 0 erreicht, wird 
-# das Spiel beendet.
+
 
 # Füge hier deine Lösung ein.
 
@@ -489,8 +491,7 @@ if __name__ == "__main__":
 # Aufgabe 2  /
 # __________/
 #
-# Erstelle ein drittes Level mit einer neuen Tilemap, die komplexer ist als die 
-# ersten beiden.
+
 
 # Füge hier deine Lösung ein.
 
@@ -502,8 +503,7 @@ if __name__ == "__main__":
 # Aufgabe 3  /
 # __________/
 #
-# Füge ein Power-Up hinzu, das der Spieler einsammeln kann. Das Power-Up sollte 
-# die Sprunghöhe des Spielers temporär erhöhen.
+
 
 
 # Füge hier deine Lösung ein.
@@ -511,22 +511,6 @@ if __name__ == "__main__":
 
 
 
-#   ⠀⠀⠀⠀⠀⠀⠀⠀⣀⡴⠒⠛⠛⠓⢦⡀⠀⢀⣀⡀⠀⠀⠀⠀
-#   ⠀⠀⠀⠀⠀⠀⢀⡾⠁⠀⠀⠀⣤⢦⢡⣷⣴⣛⠩⡙⠓⢦⡀⠀
-#   ⠀⠀⠀⠀⠀⢠⡟⠀⠀⠀⢀⠤⠑⠈⠉⣀⣤⣤⣭⢷⣀⠀⡇⠀
-#   ⠀⠀⠀⠀⣀⡟⠀⠀⡠⠊⠁⣀⠤⠂⠁⣬⣟⣉⠀⠀⢀⡼⠃⠀
-#   ⠀⠀⠀⡞⠉⠃⠀⣼⣇⠈⠁⠀⢿⠀⠀⠉⠉⠉⠙⣦⠾⠁⠀⠀    Go Mario !
-#   ⠀⠀⠀⢧⡔⠈⡉⠻⣿⡷⠀⣤⣄⣀⡀⠀⠀⠀⢀⡾⠀⠀⠀⠀
-#   ⠀⠀⠀⠸⡄⠀⠈⠀⠈⠁⠀⠙⢿⣿⣿⣷⣶⣶⠟⠁⠀⠀⠀⠀
-#   ⠀⠀⠀⠀⠙⠲⣶⣶⣦⣀⠀⠀⢈⠉⡹⡻⣩⠏⠀⠀⠀⠀⠀⠀
-#   ⠀⠀⣠⡤⠶⡋⠁⢀⡠⠜⢹⠒⠲⡓⢫⠻⣅⣀⡴⠶⠶⣤⡀⠀
-#   ⠀⡴⠋⠀⠀⠀⢑⡏⠀⠀⡰⢠⠂⠈⠄⠀⠏⢻⠁⠀⠀⢸⢻⡆
-#   ⢸⡃⠊⠰⠀⠀⠀⣏⠐⠈⠀⠈⠢⠤⠂⠀⠈⡟⠀⠀⢀⢢⡟⠀
-#   ⠀⠳⣄⡀⠀⣲⠞⠉⠹⢦⡀⠀⠀⠀⠀⢀⣼⣇⡀⢀⢨⡟⠀⠀
-#   ⠀⠀⠀⢹⠏⠇⠀⠀⠀⢸⠧⠤⠤⠶⠚⠋⠀⠈⠉⠙⠛⠁⠀⠀
-#   ⠀⠀⠀⢼⢰⠀⠀⠀⢰⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-#   ⠀⠀⠀⠈⠛⠦⣤⡤⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-#   
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -545,162 +529,6 @@ if __name__ == "__main__":
 # |_____\___/|___/\__,_|_| |_|\__, |\___|_| |_|
 #                             |___/            
 
-
-# ___________
-#            \
-# Aufgabe 1  /
-# __________/
-#
-# Füge eine Gesundheitsanzeige hinzu, die jedes Mal reduziert wird, wenn der 
-# Spieler mit einer Falle kollidiert. Wenn die Gesundheit 0 erreicht, wird 
-# das Spiel beendet.
-
-'''
-class GameView(GameView):
-
-    def setup(self, level=1):
-        ...
-        # Spieler-Sprite erstellen
-        ...
-
-        self.player.health = 100  
-        self.player.damage_cooldown = 0
-
-
-    def on_update(self, delta_time):
-        ...
-
-        self.hurt_sound = arcade.load_sound(":resources:sounds/hurt1.wav")
-        ...
-
-        # Kollisionen mit Fallen
-        trap_hit_list = arcade.check_for_collision_with_list(self.player, self.sprite_lists["Traps"])
-        for trap in trap_hit_list:
-            if self.player.damage_cooldown > 0:
-                self.player.damage_cooldown -= 1
-            else:
-                self.player.health -= 10  # Gesundheit reduzieren
-                self.player.damage_cooldown = 50
-                
-                arcade.play_sound(self.hurt_sound)
-                
-                if self.player.health <= 0:
-                    arcade.play_sound(self.gameover_sound)
-                    self.window.show_view(InfoView("GAME OVER"))
-        
-
-
-    def on_draw(self):
-        ...
-
-        arcade.draw_text(f"Health: {self.player.health}", 10, 540, arcade.color.RED, 16)
-'''
-
-
-
-
-# ___________
-#            \
-# Aufgabe 2  /
-# __________/
-#
-# Erstelle ein drittes Level mit einer neuen Tilemap, die komplexer ist als die 
-# ersten beiden.
-
-'''
-class GameView(GameView):
-    ...
-
-    def setup(self, level=1):
-            ...
-
-            # Level 3
-            [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 9, 9, 9, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0],
-            [0, 0, 4, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 9, 8, 0, 9, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 4, 6, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 8, 9, 8, 0, 0, 8, 9, 7, 0, 10],
-            [2, 3, 0, 1, 2, 3, 0, 0, 1, 2, 3, 0, 1]
-            ]
-
-'''
-
-
-
-
-# ___________
-#            \
-# Aufgabe 3  /
-# __________/
-#
-# Füge ein Power-Up hinzu, das der Spieler einsammeln kann. Das Power-Up sollte 
-# die Sprunghöhe des Spielers temporär erhöhen.
-
-'''
-...
-
-class GameView(arcade.View):
-    ...
-
-    def setup(self, level=1):
-        ...
-
-        # Initialisiere die Sprite-Listen für verschiedene Kacheltypen
-        self.sprite_lists = {
-            ...
-
-            "Stars": arcade.SpriteList()  # Sterne
-        }
-
-        # Tilemap-Daten für mehrere Level
-        self.tiles = {
-            ...
-
-            11: ["items/star.png", "Stars"],
-        }
-
-        ...
-
-        # Sounds laden
-        ...
-
-        self.upgrade_sound = arcade.load_sound(":resources:sounds/upgrade1.wav")
-
-
-    def on_update(self, delta_time):
-
-        # Spieler-Sprite erstellen
-        self.player.upgrade_timer = 0
-        
-        ...
-        
-        star_hit_list = arcade.check_for_collision_with_list(self.player, self.sprite_lists["Stars"])
-        for star in star_hit_list:
-            arcade.play_sound(self.upgrade_sound)
-            star.remove_from_sprite_lists()
-            self.player.upgrade_timer = 50
-        
-        # Aktualisiere den Upgrade Timer
-        if self.player.upgrade_timer > 0:
-            self.player.upgrade_timer -= 1
-    
-    ...
-
-    # Verarbeitet Tasteneingaben für Spielerbewegungen.
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP and self.physics_engine.can_jump():
-            if self.player.upgrade_timer > 0:
-                self.player.change_y = 15
-            else:
-                self.player.change_y = 12
-        ...
-
-'''
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
 
