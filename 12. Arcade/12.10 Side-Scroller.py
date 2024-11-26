@@ -1,6 +1,6 @@
 #              _________________________
 #       ______|                         |_____
-#       \     |   12.9 SIDESCROLLING    |    /
+#       \     |   12.10 SIDE-SCROLLER    |    /
 #        )    |_________________________|   (
 #       /________)                  (________\     21.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 

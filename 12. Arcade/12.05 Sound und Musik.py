@@ -1,6 +1,6 @@
 #              ____________________________
 #       ______|                            |_____
-#       \     |    12.7 SOUND UND MUSIK    |    /
+#       \     |    12.5 SOUND UND MUSIK    |    /
 #        )    |____________________________|   (
 #       /________)                     (________\     20.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 

@@ -6,28 +6,29 @@
     "activeFile": "level_1.tmx",
     "expandedProjectPaths": [
     ],
+    "file.lastUsedOpenFilter": "Alle Dateien (*)",
     "fileStates": {
         "/Users/thomasjenni/Library/Mobile Documents/com~apple~CloudDocs/_git/PurePythonCourse/12. Arcade/_assets/12.12/Tileset.tsx": {
-            "scaleInDock": 1
+            "scaleInDock": 2.48
         },
         "/Users/thomasjenni/Library/Mobile Documents/com~apple~CloudDocs/_git/PurePythonCourse/12. Arcade/_assets/12.12/level_1.tmx": {
-            "scale": 0.039410156249999995,
+            "scale": 0.03,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 6406.9778967192,
-                "y": 1928.43691148776
+                "x": 6383.333333333333,
+                "y": 1933.3333333333321
             }
         },
         "dungeon_tiles.tsx": {
-            "scaleInDock": 2.4862,
-            "scaleInEditor": 2.2091
+            "scaleInDock": 1.4451,
+            "scaleInEditor": 2.5526
         },
         "level_1.tmx": {
-            "scale": 1.15,
-            "selectedLayer": 3,
+            "scale": 0.8653,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 269.13043478260875,
-                "y": 1455.6521739130435
+                "x": 364.61342886860047,
+                "y": 1374.0899110135215
             }
         }
     },
@@ -38,16 +39,15 @@
     "map.tileWidth": 16,
     "map.width": 100,
     "openFiles": [
-        "dungeon_tiles.tsx",
         "level_1.tmx",
-        "/Users/thomasjenni/Library/Mobile Documents/com~apple~CloudDocs/_git/PurePythonCourse/12. Arcade/_assets/12.12/level_1.tmx"
+        "dungeon_tiles.tsx"
     ],
     "project": "dungeon.tiled-project",
     "property.type": "string",
     "recentFiles": [
         "dungeon_tiles.tsx",
-        "/Users/thomasjenni/Library/Mobile Documents/com~apple~CloudDocs/_git/PurePythonCourse/12. Arcade/_assets/12.12/level_1.tmx",
-        "level_1.tmx"
+        "level_1.tmx",
+        "/Users/thomasjenni/Library/Mobile Documents/com~apple~CloudDocs/_git/PurePythonCourse/12. Arcade/_assets/12.12/level_1.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

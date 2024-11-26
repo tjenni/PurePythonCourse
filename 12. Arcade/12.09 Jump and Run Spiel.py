@@ -1,8 +1,8 @@
-#              _______________________________
-#       ______|                               |_____
-#       \     |   12.7 JUMP AND RUN SPIEL     |    /
-#        )    |_______________________________|   (
-#       /________)                        (________\     18.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              _________________________________
+#       ______|                                 |_____
+#       \     |   12.9 JUMP AND RUN - Teil 1    |    /
+#        )    |_________________________________|   (
+#       /________)                          (________\     18.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Jump-and-Run-Spiele gehören zu den Klassikern der Videospiele und sind seit den frühen Tagen 
 # der Gaming-Welt populär. Typische Vertreter wie "Super Mario" oder "Sonic the Hedgehog" 

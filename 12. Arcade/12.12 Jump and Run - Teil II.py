@@ -1,8 +1,8 @@
-#              __________________________
-#       ______|                          |_____
-#       \     |   12.7 TILED SOFTWARE    |    /
-#        )    |__________________________|   (
-#       /________)                   (________\     24.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ___________________________________
+#       ______|                                  |_____
+#       \     |   12.12 JUMP AND RUN - TEIL II   |    /
+#        )    |__________________________________|   (
+#       /________)                           (________\     24.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
 # Tiled ist eine Open-Source-Software, mit der du Karten (Tilemaps) für Spiele 
