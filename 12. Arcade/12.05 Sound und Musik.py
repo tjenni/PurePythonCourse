@@ -38,7 +38,14 @@ class SoundEffectExample(arcade.Window):
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("Drücke die LEERTASTE, um den Sound abzuspielen", self.width//2, self.height//2, arcade.color.BLACK, font_size=16, anchor_x="center")
+        arcade.draw_text(
+            "Drücke die LEERTASTE, um den Sound abzuspielen", 
+            self.width//2, 
+            self.height//2, 
+            arcade.color.BLACK, 
+            font_size=16, 
+            anchor_x="center"
+        )
 
 
     def on_key_press(self, key, modifiers):
@@ -83,7 +90,14 @@ class BackgroundMusicExample(arcade.Window):
  
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("Hintergrundmusik spielt...", self.width//2, self.height//2, arcade.color.BLACK, font_size=16, anchor_x="center")
+        arcade.draw_text(
+            "Hintergrundmusik spielt...", 
+            self.width//2, 
+            self.height//2, 
+            arcade.color.BLACK, 
+            font_size=16, 
+            anchor_x="center"
+        )
 
 
     def on_close(self):
@@ -135,7 +149,13 @@ class InteractiveSoundExample(arcade.Window):
         arcade.start_render()
         self.player.draw()
         self.coin_list.draw()
-        arcade.draw_text("Bewege die Spielfigur mit den Pfeiltasten", 250, 50, arcade.color.BLACK, 14)
+        arcade.draw_text(
+            "Bewege die Spielfigur mit den Pfeiltasten", 
+            250, 
+            50, 
+            arcade.color.BLACK, 
+            font_size=14
+        )
 
     def on_key_press(self, key, modifiers):
         # Bewege den Spieler mit den Pfeiltasten

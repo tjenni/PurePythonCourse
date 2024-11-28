@@ -1,8 +1,8 @@
-#              ____________________________
-#       ______|                            |_____
-#       \     |  12.4.2 PONG SPIEL         |    /
-#        )    |____________________________|   (
-#       /________)                     (________\     22.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ___________________________
+#       ______|                           |_____
+#       \     |    12.3.2 PONG SPIEL      |    /
+#        )    |___________________________|   (
+#       /________)                    (________\     27.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Pong ist eines der ersten Videospiele überhaupt und ein Klassiker der Spielgeschichte. 
 # Es simuliert ein Tischtennis-Spiel, bei dem zwei Spieler mit Schlägern versuchen, 
@@ -14,7 +14,9 @@
 
 # Die zentralen Themen in diesem Kapitel sind:
 # - Steuerung der Schläger durch Tasteneingaben.
+#
 # - Bewegung und Kollisionsverhalten des Balls.
+#
 # - Punkteverwaltung und Neustart des Spiels.
 
 
@@ -34,72 +36,93 @@ import random
 import math
 
 
+# Die Klasse `Paddle` repräsentiert einen Schläger im Pong-Spiel.
 class Paddle():
     def __init__(self, x, y, width=20, height=100, color=arcade.color.WHITE):
+        # Initialisiert die Position des Schlägers.
         self.x = x
         self.y = y
 
+        # Geschwindigkeit des Schlägers in Y-Richtung.
         self.vy = 0
 
+        # Dimensionen des Schlägers.
         self.width = width
         self.height = height
 
+        # Bewegungsgeschwindigkeit des Schlägers.
         self.speed = 5
 
+        # Farbe des Schlägers.
         self.color = color
 
 
+    # Prüft, ob der Ball den Schläger berührt.
     def check_collision(self, ball):
-        
+        # Überprüft, ob der Ball in X-Richtung mit dem Schläger kollidiert.
         result_x = (ball.x - ball.radius < self.x - self.width // 2) and (ball.x + ball.radius > self.x + self.width // 2)
+        
+        # Überprüft, ob der Ball in Y-Richtung mit dem Schläger kollidiert.
         result_y =  (ball.y - ball.radius < self.y + self.height // 2) and (ball.y + ball.radius > self.y - self.height // 2)
 
         return result_x and result_y
 
 
+    # Aktualisiert die Position des Schlägers basierend auf seiner Geschwindigkeit.
     def update(self):
         self.y += self.vy
 
 
+    # Zeichnet den Schläger auf dem Bildschirm.
     def draw(self):
         arcade.draw_rectangle_filled(self.x, self.y, self.width, self.height, self.color)
 
 
 
+# Die Klasse `Ball` repräsentiert den Ball im Pong-Spiel.
 class Ball():
     def __init__(self, x, y, radius=20, color=arcade.color.WHITE):
+        # Position des Balls.
         self.x = x
         self.y = y
 
+        # Bewegungsgeschwindigkeit des Balls.
         self.speed = 5
 
+        # Zufälliger Winkel für die Bewegung des Balls.
         angle = math.pi * random.random()
 
+        # Bestimmt die Richtung des Balls basierend auf dem Winkel.
         if angle > math.pi // 2:
             angle += math.pi // 2
         else:
             angle -= math.pi // 2
 
+        # Geschwindigkeit des Balls in X- und Y-Richtung.
         self.vx = self.speed * math.cos(angle)
         self.vy = self.speed * math.sin(angle)
 
+        # Radius des Balls.
         self.radius = radius
 
+        # Farbe des Balls.
         self.color = color
 
 
+    # Aktualisiert die Position des Balls basierend auf seiner Geschwindigkeit.
     def update(self):
         self.x += self.vx
         self.y += self.vy
 
 
+    # Zeichnet den Ball auf dem Bildschirm.
     def draw(self):
         arcade.draw_circle_filled(self.x, self.y, self.radius // 2, self.color)
 
         
 
         
-# Diese Klasse repräsentiert das Pong-Spiel.
+# Die Klasse `PongGame` repräsentiert das Hauptspiel.
 class PongGame(arcade.Window):
     
     def __init__(self, width=800, height=600, title=""):
@@ -119,11 +142,11 @@ class PongGame(arcade.Window):
     # Setzt das Spiel zurück und startet eine neue Runde.
     def setup(self):
 
-        # Schlägerpositionen initialisieren
+        # Schläger initialisieren
         self.paddle_left = Paddle(20, self.height // 2, 20, 100)
         self.paddle_right = Paddle(self.width - 20, self.height // 2, 20, 100)
         
-        # Ballposition initialisieren
+        # Ball initialisieren
         self.ball = Ball(self.width // 2, self.height // 2)
 
 
@@ -131,9 +154,9 @@ class PongGame(arcade.Window):
     def on_draw(self):
         arcade.start_render()
         
+        # Zeichnet die Schläger und den Ball.
         self.paddle_left.draw()
         self.paddle_right.draw()
-
         self.ball.draw()
         
         # Punktestände anzeigen
@@ -144,24 +167,22 @@ class PongGame(arcade.Window):
             f"{self.score_right}", 3 * self.width // 4, self.height - 40, arcade.color.WHITE, 20, anchor_x="center"
         )
 
-        #print(self.paddle_left.x, self.ball.x)
 
     # Aktualisiert den Spielzustand.
     def on_update(self, delta_time):
-
+        # Aktualisiert die Positionen der Schläger und des Balls.
         self.paddle_left.update()
         self.paddle_right.update()
         self.ball.update()
 
-        # Pralle an der Decke und dem Boden ab
+        # Ball prallt an der oberen und unteren Wand ab.
         if self.ball.y <= self.ball.radius  or self.ball.y >= self.height - self.ball.radius:
             self.ball.vy *= -1
 
-        # Pralle von Schläger ab
+        # Ball prallt an den Schlägern ab.
         if self.paddle_left.check_collision(self.ball) or self.paddle_right.check_collision(self.ball):
             self.ball.vx *= -1
             self.ball.vy += 0.1*(0.5 - random.random())
-
 
         # Punkt für den rechten Spieler
         if self.ball.x <= 0:
@@ -186,16 +207,13 @@ class PongGame(arcade.Window):
             self.paddle_right.vy = -self.paddle_right.speed
 
 
-
+    # Stoppt die Bewegung der Schläger, wenn die Tasten losgelassen werden.
     def on_key_release(self, key, modifiers):
         if key in [arcade.key.W, arcade.key.S]:
             self.paddle_left.vy = 0
         elif key in [arcade.key.UP, arcade.key.DOWN]:
             self.paddle_right.vy = 0
 
-
-
-        
 
 
 # Hauptprogramm starten
@@ -236,6 +254,10 @@ arcade.run()
 # Erweitere das Spiel, indem du eine KI für den rechten Spieler implementierst.
 # Die KI sollte den Schläger automatisch bewegen, um den Ball zu treffen.
 
+# Füge hier deine Lösung ein.
+
+
+
 
 # ___________
 #            \
@@ -244,6 +266,10 @@ arcade.run()
 #
 # Füge ein Punktelimit hinzu, bei dem das Spiel endet und der Gewinner angezeigt wird.
 
+# Füge hier deine Lösung ein.
+
+
+
 
 # ___________
 #            \
@@ -251,5 +277,34 @@ arcade.run()
 # __________/
 #
 # Füge Power-Ups hinzu, die den Ball schneller machen oder seine Richtung zufällig ändern.
+
+# Füge hier deine Lösung ein.
+
+
+
+
+#  ___ _  _ ___  ___ 
+# | __| \| |   \| __|
+# | _|| .` | |) | _| 
+# |___|_|\_|___/|___|
+#                
+# -=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=-=x=-=x=-=x=-=-=
+
+
+
+
+# >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+#  _    _   _                                  
+# | |  (_)_(_)___ _   _ _ __   __ _  ___ _ __  
+# | |   / _ \/ __| | | | '_ \ / _` |/ _ \ '_ \ 
+# | |__| (_) \__ \ |_| | | | | (_| |  __/ | | |
+# |_____\___/|___/\__,_|_| |_|\__, |\___|_| |_|
+#                             |___/            
+
+
+
+
+# >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
 

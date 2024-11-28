@@ -23,6 +23,7 @@
 
 
 import arcade
+import xml.dom.minidom
 
 
 # Diese Klasse repräsentiert eine animierte Spielfigur. 
@@ -31,7 +32,22 @@ class Character(arcade.Sprite):
     
     def __init__(self, textures_path, scale=1):
         super().__init__()
+        
+        document = xml.dom.minidom.parse("_assets/12.11/femaleAdventurer/character_femaleAdventurer_sheetHD.xml")
+        
+        textureAtlas = document.getElementsByTagName("TextureAtlas")[0]
+        subTextures = textureAtlas.getElementsByTagName("SubTexture")
 
+        for subTexture in subTextures:
+            name = subTexture.getAttribute('name')
+            x = subTexture.getAttribute('x')
+            y = subTexture.getAttribute('y')
+            width = subTexture.getAttribute('width')
+            height = subTexture.getAttribute('height')
+        
+
+
+        
         self.n_walking_textures = 8  # Anzahl der Texturen für die Laufanimation
         self.n_climbing_textures = 2  # Anzahl der Texturen für die Kletteranimation
         
@@ -77,7 +93,7 @@ class Character(arcade.Sprite):
             arcade.load_texture(path, flipped_horizontally=True)
         ]
 
-
+    
     # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand (Laufen, Springen, Klettern, Stehen).
     def update_animation(self, delta_time):
 

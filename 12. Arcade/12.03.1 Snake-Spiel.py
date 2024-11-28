@@ -1,13 +1,13 @@
 #              ____________________________
 #       ______|                            |_____
-#       \     |     12.4.1 SNAKE-SPIEL     |    /
+#       \     |     12.3.1 SNAKE-SPIEL     |    /
 #        )    |____________________________|   (
-#       /________)                     (________\     26.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#       /________)                     (________\     27.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Das Snake-Spiel ist ein Klassiker der Videospielgeschichte. Ursprünglich für 
 # einfache Geräte wie Mobiltelefone oder Taschenrechner entwickelt, erfreut sich 
 # das Spiel aufgrund seiner Einfachheit und hohen Wiederspielbarkeit bis heute 
-# großer Beliebtheit.
+# grosser Beliebtheit.
 
 # In diesem Kapitel lernst du, wie du ein Snake-Spiel mit `arcade` programmierst. 
 # Du wirst die grundlegende Spiellogik, das Bewegungssystem der Schlange, das 
@@ -30,12 +30,18 @@
 # Rasters belegen. Das Spielziel ist es, so viel Nahrung wie möglich zu fressen, 
 # ohne mit den Wänden oder dem eigenen Körper zu kollidieren.
 
+
 import arcade
 import random
 
 
 # Diese Klasse repräsentiert das Snake-Spiel.
 class SnakeGame(arcade.Window):
+
+    RIGHT = 0
+    UP = 1
+    LEFT = 2
+    DOWN = 3
     
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
@@ -64,10 +70,11 @@ class SnakeGame(arcade.Window):
             [self.width // 2, self.height // 2],  # Kopf der Schlange
         ]
         
-        self.direction = "UP"  # Anfangsrichtung der Schlange
+        self.direction = SnakeGame.UP  # Anfangsrichtung der Schlange
         self.spawn_food()  # Nahrung auf dem Spielfeld platzieren
         self.score = 0  # Punktestand zurücksetzen
         self.game_over = False  # Spielstatus zurücksetzen
+
 
     # Platziert die Nahrung an einer zufälligen Position auf dem Spielfeld.
     def spawn_food(self):
@@ -80,6 +87,7 @@ class SnakeGame(arcade.Window):
             if [x, y] not in self.snake:
                 self.food = [x, y]
                 break
+
 
     # Zeichnet alle Elemente des Spiels.
     def on_draw(self):
@@ -132,6 +140,7 @@ class SnakeGame(arcade.Window):
                 anchor_x="center"
             )
 
+
     # Bewegt die Schlange und überprüft Kollisionen.
     def on_update(self, delta_time):
         if self.game_over:
@@ -147,13 +156,13 @@ class SnakeGame(arcade.Window):
         head_x, head_y = self.snake[0]
 
         # Bewegung basierend auf der aktuellen Richtung
-        if self.direction == "UP":
+        if self.direction == SnakeGame.UP:
             head_y += self.tile_size
-        elif self.direction == "DOWN":
+        elif self.direction == SnakeGame.DOWN:
             head_y -= self.tile_size
-        elif self.direction == "LEFT":
+        elif self.direction == SnakeGame.LEFT:
             head_x -= self.tile_size
-        elif self.direction == "RIGHT":
+        elif self.direction == SnakeGame.RIGHT:
             head_x += self.tile_size
         
         # Neue Position des Kopfes hinzufügen
@@ -175,16 +184,17 @@ class SnakeGame(arcade.Window):
         ):
             self.game_over = True  # Spiel ist vorbei
 
+
     # Verarbeitet die Tasteneingaben für die Steuerung der Schlange.
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP and self.direction != "DOWN":
-            self.direction = "UP"
-        elif key == arcade.key.DOWN and self.direction != "UP":
-            self.direction = "DOWN"
-        elif key == arcade.key.LEFT and self.direction != "RIGHT":
-            self.direction = "LEFT"
-        elif key == arcade.key.RIGHT and self.direction != "LEFT":
-            self.direction = "RIGHT"
+        if key == arcade.key.UP and self.direction != SnakeGame.DOWN:
+            self.direction = SnakeGame.UP
+        elif key == arcade.key.DOWN and self.direction != SnakeGame.UP:
+            self.direction = SnakeGame.DOWN
+        elif key == arcade.key.LEFT and self.direction != SnakeGame.RIGHT:
+            self.direction = SnakeGame.LEFT
+        elif key == arcade.key.RIGHT and self.direction != SnakeGame.LEFT:
+            self.direction = SnakeGame.RIGHT
         
         # Neustart bei Game Over
         if self.game_over and key == arcade.key.R:
@@ -231,6 +241,10 @@ arcade.run()
 # Erweitere das Spiel, indem du Hindernisse auf dem Spielfeld hinzufügst.
 # Wenn die Schlange mit einem Hindernis kollidiert, endet das Spiel.
 
+# Füge hier deine Lösung ein.
+
+
+
 
 # ___________
 #            \
@@ -239,6 +253,10 @@ arcade.run()
 #
 # Implementiere einen Mechanismus, bei dem die Geschwindigkeit der Schlange
 # mit jedem eingesammelten Punkt zunimmt.
+
+# Füge hier deine Lösung ein.
+
+
 
 
 # ___________
@@ -249,4 +267,48 @@ arcade.run()
 # Füge verschiedene Power-Ups hinzu, z. B. eines, das die Schlange schneller 
 # macht, und eines, das sie für kurze Zeit unbesiegbar macht.
 
+# Füge hier deine Lösung ein.
+
+
+
+
+#            /^\/^\
+#          _|__|  O|
+# \/     /~     \_/ \
+#  \____|__________/  \
+#         \_______      \
+#                 `\     \                 \
+#                  |     |                  \
+#                 /      /                    \
+#                /     /                       \\
+#              /      /                         \ \
+#             /     /                            \  \
+#           /     /             _----_            \   \
+#          /     /           _-~      ~-_         |   |
+#         (      (        _-~    _--_    ~-_     _/   |
+#          \      ~-____-~    _-~    ~-_    ~-_-~    /
+#            ~-_           _-~          ~-_       _-~
+#               ~--______-~                ~-___-~
+#                         
+#  ___ _  _ ___  ___ 
+# | __| \| |   \| __|
+# | _|| .` | |) | _| 
+# |___|_|\_|___/|___|
+#                
+# -=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=-=x=-=x=-=x=-=-=
+
+
+
+
+# >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+#  _    _   _                                  
+# | |  (_)_(_)___ _   _ _ __   __ _  ___ _ __  
+# | |   / _ \/ __| | | | '_ \ / _` |/ _ \ '_ \ 
+# | |__| (_) \__ \ |_| | | | | (_| |  __/ | | |
+# |_____\___/|___/\__,_|_| |_|\__, |\___|_| |_|
+#                             |___/            
+
+
+
+# >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
 
