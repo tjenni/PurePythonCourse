@@ -31,31 +31,45 @@ import os
 
 # Klasse zur Verwaltung eines Tilesheets und zum Laden von Texturen
 class Tilesheet():
-    # Lädt ein Tilesheet basierend auf einer XML-Datei und speichert die Texturen.
+    # Initialisiert das Tilesheet und lädt Texturen basierend auf einer XML-Datei.
     def __init__(self, xml_file, load_pair=True):
-        self.textures = {}  # Dictionary für die geladenen Texturen
+        self.textures = {}  # Speichert die geladenen Texturen als Dictionary
+        self.n_textures = {}  # Speichert die Anzahl der Texturen pro Zustand
         
         try:
-            # XML-Dokument parsen
+            # XML-Dokument laden und parsen
             document = xml.dom.minidom.parse(xml_file)
         except Exception as e:
             raise FileNotFoundError(f"Die Datei {xml_file} konnte nicht geladen werden. Fehler: {e}")
         
-        # Hauptknoten des TextureAtlas
+        # Hauptknoten des TextureAtlas aus der XML-Datei
         textureAtlas = document.getElementsByTagName("TextureAtlas")[0]
         subTextures = textureAtlas.getElementsByTagName("SubTexture")
         
+        # Pfad zum Bild, das die Texturen enthält
         image_file = os.path.join(os.path.dirname(xml_file), textureAtlas.getAttribute('imagePath')) 
         
-        # Iteriere über alle SubTexturen im Tilesheet
+        # Iteriere über alle definierten SubTexturen im Tilesheet
         for subTexture in subTextures:
             name = subTexture.getAttribute('name')  # Name der Textur
+            
+            # Extrahiere die Zahl am Ende des Namens (z. B. "walk1" → "walk", 1)
+            nr = ''.join(filter(str.isdigit, name[::-1]))[::-1]
+            
+            # Zähle die Anzahl der Texturen pro Zustand
+            if nr.isdigit():  # Mehrere Texturen pro Zustand
+                id = name[:-len(nr)]
+                self.n_textures[id] = self.n_textures.get(id, 0) + 1
+            else:  # Eine Textur pro Zustand
+                self.n_textures[name] = 1
+            
+            # Lade die Textur-Parameter
             x = int(subTexture.getAttribute('x'))
             y = int(subTexture.getAttribute('y'))
             width = int(subTexture.getAttribute('width'))
             height = int(subTexture.getAttribute('height'))
             
-            # Lade entweder nur die normale Textur oder ein Texturpaar
+            # Lade entweder nur die normale Textur oder ein Texturpaar (normal + gespiegelt)
             if load_pair:
                 texture = self._load_texture_pair(image_file, x, y, width, height)
             else:
@@ -67,13 +81,13 @@ class Tilesheet():
             self.textures[name] = texture  # Speichere die Textur im Dictionary
 
 
-
     # Lädt ein Texturpaar: normale und horizontal gespiegelte Version.
     def _load_texture_pair(self, path, x, y, width, height):
         return [
-            arcade.load_texture(path, x, y, width, height),
-            arcade.load_texture(path, x, y, width, height, flipped_horizontally=True)
+            arcade.load_texture(path, x, y, width, height),  # Normale Textur
+            arcade.load_texture(path, x, y, width, height, flipped_horizontally=True)  # Gespiegelte Textur
         ]
+
 
 
 
@@ -82,7 +96,7 @@ class Character(arcade.Sprite):
     def __init__(self, xml_file, scale=1):
         super().__init__()
         self.scale = scale  # Skalierung des Sprites
-        self.tilesheet = Tilesheet(xml_file).textures  # Lade das Tilesheet
+        self.tilesheet = Tilesheet(xml_file)  # Lade das Tilesheet
 
 
 
@@ -110,8 +124,8 @@ class TilesheetDemo(arcade.Window):
         self.player.center_x = raster_size  # Startposition X
         self.player.center_y = self.height - raster_size  # Startposition Y
         
-        for id, tile in self.player.tilesheet.items():
-            self.player.texture = tile[0]  # Lade die normale Textur
+        for id, texture in self.player.tilesheet.textures.items():
+            self.player.texture = texture[0]  # Lade die normale Textur
             self.player.draw()  # Zeichne die Spielfigur
             
             self.player.center_x += raster_size  # Verschiebe die Position horizontal
@@ -311,14 +325,14 @@ class TilesheetDemo(arcade.Window):
     def on_draw(self):
         ...
 
-        for id, tile in self.player.tilesheet.items():
+        for id, texture in self.player.tilesheet.textures.items():
             
-            self.player.texture = tile[0]  # Lade die normale Textur
+            self.player.texture = texture[0]  # Lade die normale Textur
             self.player.draw()  # Zeichne die Spielfigur
             
             self.player.center_x += raster_size  # Verschiebe die Position horizontal
             
-            self.player.texture = tile[1]  # Lade die normale Textur
+            self.player.texture = texture[1]  # Lade die normale Textur
             self.player.draw()  # Zeichne die Spielfigur
             
             self.player.center_x += raster_size  # Verschiebe die Position horizontal

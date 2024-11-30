@@ -5,30 +5,21 @@
 #       /________)                        (________\     30.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
-# Animationen sind das Herzstück interaktiver Spiele, die Dynamik und Realismus erzeugen. 
-# Dieses Kapitel behandelt die Grundlagen zur Animation einer Spielfigur und deren 
-# Interaktion mit der Umgebung. 
+# Eine animierte Spielfigur ist entscheidend für die Dynamik und das immersive 
+# Erlebnis eines Spiels. Anstelle von statischen Bildern verwenden Animationen 
+# mehrere Frames, die je nach Spieleraktion angezeigt werden, um realistische 
+# Bewegungen zu erzeugen.
 #
-# Folgendes wirst du lernen:
-# 1. Erstellen von Animationen:
-#    Wie Animationen aus mehreren Frames für verschiedene Aktionen (z. B. Laufen, 
-#    Springen) erstellt werden.
+# In diesem Kapitel lernst du:
+# - Wie Animationen für eine Spielfigur erstellt und verwaltet werden.
 #
-# 2. Zustandsbasierte Animationen:
-#    Wie Animationen dynamisch basierend auf dem Zustand der Spielfigur (z. B. 
-#    Stehen, Gehen) aktualisiert werden.
+# - Wie die Animationen basierend auf Spieleraktionen wie Laufen, Springen 
+#   oder Stehen dynamisch angepasst werden.
 #
-# 3. Texturen effizient verwalten:
-#    Laden und Organisieren von Texturen in einem Tilesheet und Optimieren der 
-#    Darstellung durch gespiegelte Varianten.
+# - Wie Texturen effizient organisiert und geladen werden, um Animationen 
+#   zu optimieren.
 #
-# 4. Interaktion mit der Umgebung:
-#    Integration einer Physik-Engine, die Interaktionen wie Gravitation, Wände 
-#    und Leitern ermöglicht.
-#
-# Mit diesem Wissen kannst du realistische Bewegungen und Animationen in deinen 
-# eigenen Spielen implementieren und erweitern.
-
+# Diese Grundlagen bilden die Basis, um komplexere Animationen in Spielen zu integrieren.
 
 
 import arcade
@@ -121,7 +112,8 @@ class Character(arcade.Sprite):
         self.facing = Character.RIGHT  # Blickrichtung der Spielfigur
         self.can_jump = False  # Gibt an, ob die Spielfigur springen kann
         self.is_on_ladder = False  # Gibt an, ob die Spielfigur auf einer Leiter ist
-        
+        self.is_attacking = False
+
         self.scale = scale  # Skalierung der Spielfigur
         
         self.frame = 0  # Aktueller Animationsframe
@@ -179,27 +171,30 @@ class Character(arcade.Sprite):
             self.is_on_ladder = engine.is_on_ladder()
             self.can_jump = engine.can_jump() and not self.is_on_ladder
         
-        # Nur beim Frame null die Textur wechseln
+        # Nur bei bestimmten Frames die Textur wechseln
         if self.frame == 0:
             self.texture_idx += 1
 
         # Blickrichtung setzen
         if self.change_x < 0:
             self.facing = Character.LEFT
-
         elif self.change_x > 0:
             self.facing = Character.RIGHT
         
-        # Zustand setzen
         if self.is_on_ladder:
             self.state = Character.CLIMB
             
             if self.change_y == 0:
                 self.texture_idx = 0
-            
+           
+        elif not self.can_jump:
+            self.state = Character.JUMP
+        
+        elif self.is_attacking:
+            self.state = Character.ATTTACK
+        
         elif self.change_x == 0:
             self.state = Character.IDLE
-
         else:
             self.state = Character.WALK
         
@@ -310,34 +305,29 @@ if __name__ == "__main__":
 #                   /
 # Zusammenfassung  (
 # __________________\
+
+# In diesem Kapitel hast du gelernt, wie man eine Spielfigur animiert und die 
+# Animationen auf Spieleraktionen abstimmt. Hier die wichtigsten Punkte:
 #
-# In diesem Kapitel hast du gelernt, wie eine Spielfigur animiert und gesteuert werden kann:
+# 1. Animationen basieren auf verschiedenen Texturen:
+#    - Jede Aktion (z. B. Laufen, Springen, Klettern) hat eine eigene Gruppe 
+#      von Texturen.
+#    - Texturen werden sequentiell durchlaufen, um die Animation zu erzeugen.
 #
-# 1. Animationssteuerung:
-#    - Animationen werden durch Zustände wie `idle`, `walk` oder `jump` gesteuert.
+# 2. Dynamische Animation:
+#    - Animationen passen sich automatisch an den Zustand der Spielfigur an 
+#      (z. B. Stehen, Springen, auf einer Leiter sein).
 #
-#    - Verschiedene Frames werden verwendet, um flüssige Bewegungen zu erzeugen.
+# 3. Physik und Bewegung:
+#    - Die Physik-Engine wurde integriert, um realistische Bewegungen und 
+#      Interaktionen mit Wänden, Leitern und der Schwerkraft zu ermöglichen.
 #
-# 2. Dynamische Anpassungen:
-#    - Die Spielfigur wechselt ihre Animation automatisch, basierend auf ihrem 
-#      Zustand (z. B. Klettern, Springen).
+# 4. Texturverwaltung:
+#    - Texturen wurden mit einem flexiblen Schema organisiert und geladen, 
+#      einschließlich horizontal gespiegelter Varianten.
 #
-#    - Die Blickrichtung wird dynamisch angepasst (normal oder gespiegelt).
-#
-# 3. Texturverwaltung:
-#    - Ein Tilesheet wird verwendet, um alle Animationen einer Spielfigur effizient 
-#      zu laden und zu verwalten.
-#
-#    - Jede Aktion (z. B. Laufen) kann mehrere Texturen umfassen, die zyklisch durchlaufen werden.
-#
-# 4. Integration der Physik:
-#    - Eine Physik-Engine wurde integriert, um realistische Bewegungen zu ermöglichen.
-#
-#    - Spielfiguren können springen, auf Leitern klettern und mit Wänden interagieren.
-#
-# Dieses Kapitel hat dir die Grundlagen vermittelt, um Animationen in Spiele zu 
-# integrieren und sie dynamisch auf Aktionen abzustimmen. Mit diesen Konzepten 
-# kannst du komplexere Bewegungen und Interaktionen in deine Spiele einbauen.
+# Mit diesen Grundlagen kannst du Animationen in deinem Spiel erweitern und 
+# anpassen, z. B. durch Hinzufügen neuer Bewegungen oder Effekte.
 
 
 
@@ -355,10 +345,7 @@ if __name__ == "__main__":
 #
 # Füge der Spielfigur eine neue Animation hinzu: eine "Schlag"-Animation. 
 # Erstelle einen neuen Zustand, in dem der Spieler einen Schlag ausführt, wenn 
-# die Leertaste gedrückt wird. Lade die entsprechenden Texturen und passe 
-# die Animationen an.
-#
-# Hinweis: Erweitere die `Character`-Klasse und die Methode `update_animation()`.
+# die Leertaste gedrückt wird. Passe die Animationen an.
 #
 
 # Füge hier deine Lösung ein.
@@ -450,13 +437,13 @@ class Character(arcade.Sprite):
     # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand (Laufen, Springen, Klettern, Stehen).
     def update_animation(self, delta_time):
         ...
+
+        # Animation für die Leiter
+        ...
         
-        # Zustand setzen
-        if self.is_on_ladder:
-            ...
-   
-        elif self.is_attacking:
-            self.state = Character.ATTACK
+        # Animation für Schlagen
+        if self.is_attacking:
+            self.state = Character.ATTTACK
         
         ...
 
@@ -465,6 +452,7 @@ class Character(arcade.Sprite):
 class AnimatedPlayerDemo(arcade.Window):
 
     ...
+
 
     # Verarbeitet Tastendrücke.
     def on_key_press(self, key, modifiers):
@@ -478,7 +466,7 @@ class AnimatedPlayerDemo(arcade.Window):
     def on_key_release(self, key, modifiers):
         ...
 
-        if key == arcade.key.SPACE:
+        elif key == arcade.key.SPACE:
             self.player.is_attacking = False
 
 '''
@@ -527,15 +515,25 @@ class Character(arcade.Sprite):
     FALL = "fall"
     ...
     
+    def __init__(self, textures_path, scale=1):
+        ...
+ 
+        self.n_textures = {
+            Character.IDLE : 1,
+            Character.JUMP : 1,
+            Character.FALL : 1,
+            Character.WALK : 8,
+            Character.CLIMB : 2
+        }
 
     def update_animation(self, delta_time):
-        
         ...
         
-        if self.is_on_ladder:
-            ...
-                
-        elif int(self.change_y) < 0:
+        # Animation für Schlagen
+        ...
+        
+        # Animation fürs Fallen
+        if self.change_y < 0:
             self.state = Character.FALL
         
         ...
