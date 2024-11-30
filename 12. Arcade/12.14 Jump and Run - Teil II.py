@@ -77,15 +77,66 @@
 
 
 import arcade
+import xml.dom.minidom
+import os
+
+
+
+# Klasse zur Verwaltung eines Tilesheets und zum Laden von Texturen
+class Tilesheet():
+    # Lädt ein Tilesheet basierend auf einer XML-Datei und speichert die Texturen.
+    def __init__(self, xml_file, load_pair=True):
+        self.textures = {}  # Dictionary für die geladenen Texturen
+        
+        try:
+            # XML-Dokument parsen
+            document = xml.dom.minidom.parse(xml_file)
+        except Exception as e:
+            raise FileNotFoundError(f"Die Datei {xml_file} konnte nicht geladen werden. Fehler: {e}")
+        
+        # Hauptknoten des TextureAtlas
+        textureAtlas = document.getElementsByTagName("TextureAtlas")[0]
+        subTextures = textureAtlas.getElementsByTagName("SubTexture")
+        
+        image_file = os.path.join(os.path.dirname(xml_file), textureAtlas.getAttribute('imagePath')) 
+        
+        # Iteriere über alle SubTexturen im Tilesheet
+        for subTexture in subTextures:
+            name = subTexture.getAttribute('name')  # Name der Textur
+            x = int(subTexture.getAttribute('x'))
+            y = int(subTexture.getAttribute('y'))
+            width = int(subTexture.getAttribute('width'))
+            height = int(subTexture.getAttribute('height'))
+            
+            # Lade entweder nur die normale Textur oder ein Texturpaar
+            if load_pair:
+                texture = self._load_texture_pair(image_file, x, y, width, height)
+            else:
+                texture = arcade.load_texture(image_file, x, y, width, height)
+            
+            if name in self.textures:
+                raise ValueError(f"Duplikat gefunden: Texturname '{name}' existiert bereits.")
+            
+            self.textures[name] = texture  # Speichere die Textur im Dictionary
+
+
+
+    # Lädt ein Texturpaar: normale und horizontal gespiegelte Version.
+    def _load_texture_pair(self, path, x, y, width, height):
+        return [
+            arcade.load_texture(path, x, y, width, height),
+            arcade.load_texture(path, x, y, width, height, flipped_horizontally=True)
+        ]
+
 
 
 # Diese Klasse repräsentiert eine animierte Spielfigur. 
 # Sie verwaltet die Animationen für Laufen, Springen, Stehen und Klettern.
 class Character(arcade.Sprite):
     
-    def __init__(self, textures_path, scale=1):
+    def __init__(self, xml_file, scale=0.25):
         super().__init__()
-
+        
         self.n_walking_textures = 8  # Anzahl der Texturen für die Laufanimation
         self.n_climbing_textures = 2  # Anzahl der Texturen für die Kletteranimation
         
@@ -102,19 +153,23 @@ class Character(arcade.Sprite):
         
         # Lade alle Texturen für die Animationen
         self.all_textures = {}
-
+        
+        # Lade das Tilesheet für diesen Charakter
+        tilesheet = Tilesheet(xml_file)
+        textures = tilesheet.textures
+        
         # Lade die Texturen für Stehen und Springen
-        self.all_textures["idle"] = self._load_texture_pair(f"{textures_path}_idle.png")
-        self.all_textures["jump"] = self._load_texture_pair(f"{textures_path}_jump.png")
+        self.all_textures["idle"] = textures["idle"]
+        self.all_textures["jump"] = textures["jump"]
         
         # Lade die Texturen für die Laufanimation
         self.all_textures["walk"] = [
-            self._load_texture_pair(f"{textures_path}_walk{i}.png") for i in range(self.n_walking_textures)
+            textures[f"walk{i}"] for i in range(self.n_walking_textures)
         ]
         
         # Lade die Texturen für die Kletteranimation
         self.all_textures["climb"] = [
-            self._load_texture_pair(f"{textures_path}_climb{i}.png") for i in range(self.n_climbing_textures)
+            textures[f"climb{i}"] for i in range(self.n_climbing_textures)
         ]
 
         # Setze die Anfangstextur
@@ -124,16 +179,8 @@ class Character(arcade.Sprite):
         self.hit_box = self.texture.hit_box_points
  
 
-    # Lädt ein Texturpaar: eine normale und eine horizontal gespiegelt.
-    def _load_texture_pair(self, path):
-        return [
-            arcade.load_texture(path),
-            arcade.load_texture(path, flipped_horizontally=True)
-        ]
 
-
-    # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand (Laufen, 
-    # Springen, Klettern, Stehen).
+    # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand (Laufen, Springen, Klettern, Stehen).
     def update_animation(self, delta_time):
 
         self.frame = (self.frame + 1) % self.animation_speed
@@ -165,14 +212,12 @@ class Character(arcade.Sprite):
             self.texture = self.all_textures["idle"][self.face_direction]
             return
         
-        # Animation fürs Gehen
+        # Animation für Laufen
         if self.frame == 0:  # Aktualisiere die Textur nur bei bestimmten Frames
             self.current_texture += 1
         
         self.current_texture = self.current_texture % self.n_walking_textures
         self.texture = self.all_textures["walk"][self.current_texture][self.face_direction]
-
-
 
 
 
@@ -207,6 +252,7 @@ class InfoView(arcade.View):
             game_view = GameView()
             game_view.setup()
             self.window.show_view(game_view)
+
 
 
 # Diese Klasse repräsentiert die Hauptspiel-Logik, einschließlich der Spielerbewegung, 
@@ -253,7 +299,7 @@ class GameView(arcade.View):
         self.tile_scale = 0.5
 
         # Spieler-Sprite erstellen
-        self.player = Character("_assets/12.11/femaleAdventurer/character_femaleAdventurer", scale=self.tile_scale/1.5)
+        self.player = Character("_assets/12.11/femaleAdventurer.xml", scale=self.tile_scale/1.5)
         self.player.center_x = 196
         self.player.center_y = 100
         
@@ -342,9 +388,6 @@ class GameView(arcade.View):
         arcade.draw_text(f"Punkte: {self.score}", 15, self.window.height - 30, arcade.color.WHITE, 16)
 
 
-        
-            
-
     # Aktualisiert den Spielzustand und die Animation der Spielfigur.
     def on_update(self, delta_time):
 
@@ -412,7 +455,6 @@ class GameView(arcade.View):
             self.window.show_view(InfoView("GAME OVER"))
         
         
-
     # Verarbeitet Tastendrücke.
     def on_key_press(self, key, modifiers):
         if key == arcade.key.RIGHT:

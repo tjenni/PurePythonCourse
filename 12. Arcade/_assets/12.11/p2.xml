@@ -1,0 +1,18 @@
+<TextureAtlas imagePath="p2.png">
+    <SubTexture name="duck" x="355" y="95" width="67" height="72" />
+    <SubTexture name="front" x="0" y="190" width="66" height="92" />
+    <SubTexture name="hurt" x="426" y="0" width="67" height="92" />
+    <SubTexture name="jump" x="423" y="95" width="66" height="94" />
+    <SubTexture name="idle" x="67" y="190" width="66" height="92" />
+    <SubTexture name="walk01" x="0" y="0" width="70" height="94" />
+    <SubTexture name="walk02" x="71" y="0" width="70" height="94" />
+    <SubTexture name="walk03" x="142" y="0" width="70" height="94" />
+    <SubTexture name="walk04" x="0" y="95" width="70" height="94" />
+    <SubTexture name="walk05" x="71" y="95" width="70" height="94" />
+    <SubTexture name="walk06" x="142" y="95" width="70" height="94" />
+    <SubTexture name="walk07" x="213" y="0" width="70" height="94" />
+    <SubTexture name="walk08" x="284" y="0" width="70" height="94" />
+    <SubTexture name="walk09" x="213" y="95" width="70" height="94" />
+    <SubTexture name="walk10" x="355" y="0" width="70" height="94" />
+    <SubTexture name="walk11" x="284" y="95" width="70" height="94" />
+</TextureAtlas>

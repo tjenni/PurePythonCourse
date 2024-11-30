@@ -1,59 +1,74 @@
-#              _______________________________
-#       ______|                               |_____
-#       \     |   12.11 SPIELER ANIMIEREN     |    /
-#        )    |_______________________________|   (
-#       /________)                        (________\     22.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              _______________________
+#       ______|                       |_____
+#       \     |   12.11 TILESHEET     |    /
+#        )    |_______________________|   (
+#       /________)                (________\     30.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
+# Tilesheets sind ein wesentlicher Bestandteil der Spieleentwicklung. Sie bieten 
+# eine effiziente Möglichkeit, viele kleine Grafiken in einer einzigen Bilddatei 
+# zu speichern. Durch die Verwendung von XML-Dateien können die Position und 
+# Grösse einzelner Subtexturen im Tilesheet präzise definiert werden. Dieses 
+# Kapitel zeigt, wie Tilesheets mit Python und der Arcade-Bibliothek geladen 
+# und visualisiert werden können.
 
-# Eine animierte Spielfigur ist entscheidend für die Dynamik und das immersive 
-# Erlebnis eines Spiels. Anstelle von statischen Bildern verwenden Animationen 
-# mehrere Frames, die je nach Spieleraktion angezeigt werden, um realistische 
-# Bewegungen zu erzeugen.
-#
 # In diesem Kapitel lernst du:
-# - Wie Animationen für eine Spielfigur erstellt und verwaltet werden.
-#
-# - Wie die Animationen basierend auf Spieleraktionen wie Laufen, Springen 
-#   oder Stehen dynamisch angepasst werden.
-#
-# - Wie Texturen effizient organisiert und geladen werden, um Animationen 
-#   zu optimieren.
-#
-# Diese Grundlagen bilden die Basis, um komplexere Animationen in Spielen zu integrieren.
+# - Wie du ein Tilesheet analysieren und die Texturen in Python extrahieren kansnt.
+# 
+# - Wie du mit Arcade die geladenen Texturen in einem Raster darstellen.
+# 
+# - Den Nutzen von Texturpaaren (normal und gespiegelt) für Charakteranimationen.
 
+# Freie Grafiken und Spielelemente findest du zum Beispiel unter:
+#
+# - https://opengameart.org
+#
+# - https://kenney.nl
 
-# https://opengameart.org/content/platformer-art-deluxe
-# https://kenney.nl
 
 import arcade
 import xml.dom.minidom
+import os
 
-
+# Klasse zur Verwaltung eines Tilesheets und zum Laden von Texturen
 class Tilesheet():
-    def __init__(self, path, file, scale=1.0):
+    # Lädt ein Tilesheet basierend auf einer XML-Datei und speichert die Texturen.
+    def __init__(self, xml_file, load_pair=True):
+        self.textures = {}  # Dictionary für die geladenen Texturen
         
-        self.textures = {}
+        try:
+            # XML-Dokument parsen
+            document = xml.dom.minidom.parse(xml_file)
+        except Exception as e:
+            raise FileNotFoundError(f"Die Datei {xml_file} konnte nicht geladen werden. Fehler: {e}")
         
-        # Lade Tilesheet Bilder
-        document = xml.dom.minidom.parse(f"{path}{file}")
-        
+        # Hauptknoten des TextureAtlas
         textureAtlas = document.getElementsByTagName("TextureAtlas")[0]
         subTextures = textureAtlas.getElementsByTagName("SubTexture")
         
-        imagePath = textureAtlas.getAttribute('imagePath')
-
+        image_file = os.path.join(os.path.dirname(xml_file), textureAtlas.getAttribute('imagePath')) 
+        
+        # Iteriere über alle SubTexturen im Tilesheet
         for subTexture in subTextures:
-            name = subTexture.getAttribute('name')
+            name = subTexture.getAttribute('name')  # Name der Textur
             x = int(subTexture.getAttribute('x'))
             y = int(subTexture.getAttribute('y'))
             width = int(subTexture.getAttribute('width'))
             height = int(subTexture.getAttribute('height'))
             
-            texture = self._load_texture_pair(f"{path}{imagePath}", x, y, width, height)
-            self.textures[name] = texture
+            # Lade entweder nur die normale Textur oder ein Texturpaar
+            if load_pair:
+                texture = self._load_texture_pair(image_file, x, y, width, height)
+            else:
+                texture = arcade.load_texture(image_file, x, y, width, height)
+            
+            if name in self.textures:
+                raise ValueError(f"Duplikat gefunden: Texturname '{name}' existiert bereits.")
+            
+            self.textures[name] = texture  # Speichere die Textur im Dictionary
 
 
-    # Lädt ein Texturpaar: normal und horizontal gespiegelt.
+
+    # Lädt ein Texturpaar: normale und horizontal gespiegelte Version.
     def _load_texture_pair(self, path, x, y, width, height):
         return [
             arcade.load_texture(path, x, y, width, height),
@@ -62,223 +77,56 @@ class Tilesheet():
 
 
 
-
-# Diese Klasse repräsentiert eine animierte Spielfigur. 
-# Sie verwaltet die Animationen für Laufen, Springen, Stehen und Klettern.
+# Klasse zur Darstellung eines Charakters mit Texturen aus einem Tilesheet
 class Character(arcade.Sprite):
-    
-    def __init__(self, path, file, scale=0.25):
+    def __init__(self, xml_file, scale=1):
         super().__init__()
-        
-        self.n_walking_textures = 8  # Anzahl der Texturen für die Laufanimation
-        self.n_climbing_textures = 2  # Anzahl der Texturen für die Kletteranimation
-        
-        self.face_direction = 0  # Richtung der Spielfigur (0: rechts, 1: links)
-        self.can_jump = False  # Gibt an, ob die Spielfigur springen kann
-        self.is_on_ladder = False  # Gibt an, ob die Spielfigur auf einer Leiter ist
-
-        self.scale = scale  # Skalierung der Spielfigur
-        
-        self.frame = 0  # Animationsrahmenzähler
-        self.animation_speed = 2  # Geschwindigkeit der Animation
-        
-        self.current_texture = 0  # Aktuelle Textur der Animation
-        
-        # Lade alle Texturen für die Animationen
-        self.all_textures = {}
-        
-        # Lade das Tilesheet für diesen Charakter
-        tilesheet = Tilesheet(path, file)
-        textures = tilesheet.textures
-        
-        # Lade die Texturen für Stehen und Springen
-        self.all_textures["idle"] = textures["idle"]
-        self.all_textures["jump"] = textures["jump"]
-        
-        # Lade die Texturen für die Laufanimation
-        self.all_textures["walk"] = [
-            textures[f"walk{i}"] for i in range(self.n_walking_textures)
-        ]
-        
-        # Lade die Texturen für die Kletteranimation
-        self.all_textures["climb"] = [
-            textures[f"climb{i}"] for i in range(self.n_climbing_textures)
-        ]
-
-        # Setze die Anfangstextur
-        self.texture = self.all_textures["idle"][0]
-        
-        # Setze die Kollisionsbox basierend auf der Anfangstextur
-        self.hit_box = self.texture.hit_box_points
- 
-
-
-    # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand (Laufen, Springen, Klettern, Stehen).
-    def update_animation(self, delta_time):
-
-        self.frame = (self.frame + 1) % self.animation_speed
-
-        # Bestimme die Blickrichtung der Spielfigur
-        if self.change_x < 0:
-            self.face_direction = 1  # Blick nach links
-        elif self.change_x > 0:
-            self.face_direction = 0  # Blick nach rechts
-        
-        # Animation für die Leiter
-        if self.is_on_ladder:
-            if self.change_y == 0:  # Wenn die Figur nicht auf der Leiter bewegt wird
-                self.current_texture = 0
-            elif self.frame == 0:  # Aktualisiere die Textur nur bei bestimmten Frames
-                self.current_texture += 1
-            
-            self.current_texture = self.current_texture % self.n_climbing_textures
-            self.texture = self.all_textures["climb"][self.current_texture][self.face_direction]
-            return
-        
-        # Animation für Springen
-        if not self.can_jump:
-            self.texture = self.all_textures["jump"][self.face_direction]
-            return
-        
-        # Animation für Stehen
-        if self.change_x == 0 and self.change_y == 0:
-            self.texture = self.all_textures["idle"][self.face_direction]
-            return
-        
-        # Animation für Laufen
-        if self.frame == 0:  # Aktualisiere die Textur nur bei bestimmten Frames
-            self.current_texture += 1
-        
-        self.current_texture = self.current_texture % self.n_walking_textures
-        self.texture = self.all_textures["walk"][self.current_texture][self.face_direction]
+        self.scale = scale  # Skalierung des Sprites
+        self.tilesheet = Tilesheet(xml_file).textures  # Lade das Tilesheet
 
 
 
-class AnimatedPlayerDemo(arcade.Window):
+# Demo-Anwendung zur Anzeige aller Texturen eines Tilesheets
+class TilesheetDemo(arcade.Window):
 
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
-    
-        arcade.set_background_color(arcade.color.LIGHT_SKY_BLUE)
-
-        self.player = None  # Spielfigur
-        self.wall_list = None  # Liste der Wände (Boden)
-        self.ladder_list = None  # Liste der Leitern
-        self.physics_engine = None  # Physik-Engine
-        self.keys = {"UP": False, "DOWN": False, "LEFT": False, "RIGHT": False}  # Zustände der Tasten
+        arcade.set_background_color(arcade.color.LIGHT_SKY_BLUE)  # Setze den Hintergrund
+        
+        self.player = None  # Platzhalter für die Spielfigur
 
 
-    # Initialisiert die Spielumgebung, die Leitern und die Spielfigur.
+    # Initialisiert die Spielfigur und lädt die Texturen.
     def setup(self):
-
-        # Erstelle die Wände (Boden)
-        self.wall_list = arcade.SpriteList()
-        for x in range(0, 1600, 64):
-            wall = arcade.Sprite(":resources:images/tiles/grassMid.png", scale=0.5)
-            wall.center_x = x
-            wall.center_y = 32
-            self.wall_list.append(wall)
-
-        # Erstelle eine Schräge
-        for x in range(0, 512, 128):
-            wall = arcade.Sprite(":resources:images/tiles/grassMid.png", scale=0.5)
-            wall.center_x = 256 + x
-            wall.center_y = 32 + x
-            self.wall_list.append(wall)
-
-        # Erstelle Leitern
-        self.ladder_list = arcade.SpriteList()
-        for y in range(0, 384, 64):
-            ladder = arcade.Sprite(":resources:images/tiles/ladderMid.png", scale=0.5)
-            ladder.center_x = 704
-            ladder.center_y = 96 + y
-            self.ladder_list.append(ladder)
-
-        # Initialisiere die Spielfigur
-        self.player = Character("_assets/12.11/","character_femaleAdventurer_sheetHD.xml", scale=0.3)
-        self.player.center_x = 100
-        self.player.center_y = 100
-
-        # Initialisiere die Physik-Engine
-        self.physics_engine = arcade.PhysicsEnginePlatformer(
-            self.player,
-            gravity_constant=0.5,
-            walls=self.wall_list,
-            ladders=self.ladder_list
-        )
+        self.player = Character("_assets/12.11/femaleAdventurer.xml", scale=0.3)
 
 
-    # Zeichnet die Spielumgebung und die Spielfigur.
+    # Zeichnet alle Texturen des Tilesheets in einem Raster.
     def on_draw(self):
         arcade.start_render()
-        self.wall_list.draw()
-        self.ladder_list.draw()
-        self.player.draw()
-
-
-    # Aktualisiert den Spielzustand und die Animation der Spielfigur.
-    def on_update(self, delta_time):
-
-        # Bewegung der Spielfigur basierend auf Tasteneingaben
-        if self.keys["RIGHT"]:
-            self.player.change_x = 5
-        elif self.keys["LEFT"]:
-            self.player.change_x = -5
-        else:
-            self.player.change_x = 0
-
-        # Bewegung der Spielfigur auf der Leiter
-        if self.player.is_on_ladder:
-            if self.keys["UP"]:
-                self.player.change_y = 5
-            elif self.keys["DOWN"]:
-                self.player.change_y = -5
-            else:
-                self.player.change_y = 0
-
-        # Aktualisiere die Physik-Engine
-        self.physics_engine.update()
-
-        # Aktualisiere die Zustände der Spielfigur
-        self.player.is_on_ladder = self.physics_engine.is_on_ladder()
-        self.player.can_jump = self.physics_engine.can_jump() and not self.player.is_on_ladder
-
-        # Aktualisiere die Animation der Spielfigur
-        self.player.update_animation(delta_time)
-
-
-    # Verarbeitet Tastendrücke.
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.RIGHT:
-            self.keys["RIGHT"] = True
-        elif key == arcade.key.LEFT:
-            self.keys["LEFT"] = True
-        elif key == arcade.key.UP:
-            self.keys["UP"] = True
+        
+        raster_size = 80
+        
+        self.player.center_x = raster_size  # Startposition X
+        self.player.center_y = self.height - raster_size  # Startposition Y
+        
+        for id, tile in self.player.tilesheet.items():
+            self.player.texture = tile[0]  # Lade die normale Textur
+            self.player.draw()  # Zeichne die Spielfigur
             
-            if self.player.can_jump:
-                self.player.change_y = 12
-
-        elif key == arcade.key.DOWN:
-            self.keys["DOWN"] = True
-
-
-    # Verarbeitet das Loslassen von Tasten.
-    def on_key_release(self, key, modifiers):
-        if key == arcade.key.RIGHT:
-            self.keys["RIGHT"] = False
-        elif key == arcade.key.LEFT:
-            self.keys["LEFT"] = False
-        elif key == arcade.key.UP:
-            self.keys["UP"] = False
-        elif key == arcade.key.DOWN:
-            self.keys["DOWN"] = False
+            self.player.center_x += raster_size  # Verschiebe die Position horizontal
+            
+            # Brich die Zeile um, wenn die Fensterbreite überschritten wird
+            if self.player.center_x > self.width - raster_size:
+                self.player.center_x = raster_size
+                self.player.center_y -= raster_size  # Verschiebe die Position vertikal
 
 
-# Hauptprogramm
-window = AnimatedPlayerDemo(title="Player Animation Demo")
+# Starte die Anwendung
+window = TilesheetDemo(title="Tilesheet Demo")
 window.setup()
 arcade.run()
+
 
 
 
@@ -286,37 +134,23 @@ arcade.run()
 #                   /
 # Zusammenfassung  (
 # __________________\
-
-# In diesem Kapitel hast du gelernt, wie man eine Spielfigur animiert und die 
-# Animationen auf Spieleraktionen abstimmt. Hier die wichtigsten Punkte:
 #
-# 1. Animationen basieren auf verschiedenen Texturen:
-#    - Jede Aktion (z. B. Laufen, Springen, Klettern) hat eine eigene Gruppe 
-#      von Texturen.
-#    - Texturen werden sequentiell durchlaufen, um die Animation zu erzeugen.
 #
-# 2. Dynamische Animation:
-#    - Animationen passen sich automatisch an den Zustand der Spielfigur an 
-#      (z. B. Stehen, Springen, auf einer Leiter sein).
+# In diesem Kapitel hast du gelernt:
 #
-# 3. Physik und Bewegung:
-#    - Die Physik-Engine wurde integriert, um realistische Bewegungen und 
-#      Interaktionen mit Wänden, Leitern und der Schwerkraft zu ermöglichen.
+# 1.  Tilesheets laden: Mit der Klasse Tilesheet können Sie eine XML-Datei 
+#     parsen und die definierten Subtexturen extrahieren.
+#  
+# 2.  Texturen darstellen: Die Klasse Character verwendet das Tilesheet, um 
+#     Texturen für ein Arcade-Sprite zu verwalten.
 #
-# 4. Texturverwaltung:
-#    - Texturen wurden mit einem flexiblen Schema organisiert und geladen, 
-#      einschließlich horizontal gespiegelter Varianten.
+# 3.  Rasterdarstellung: Die Demo-Anwendung zeigt, wie Sie alle geladenen 
+#     Texturen in einem Raster anzeigen können.
 #
-# Mit diesen Grundlagen kannst du Animationen in deinem Spiel erweitern und 
-# anpassen, z. B. durch Hinzufügen neuer Bewegungen oder Effekte.
+# Die vorgestellte Methode bietet eine strukturierte und flexible Möglichkeit, 
+# grosse Mengen von Grafiken effizient in Arcade-Spielen zu verwenden.
 
 
-
-
-# ____________________________
-#                            /
-# Übungsaufgaben            (
-# ___________________________\
 
 
 # ___________
@@ -324,10 +158,9 @@ arcade.run()
 # Aufgabe 1  /
 # __________/
 #
-# Füge der Spielfigur eine neue Animation hinzu: eine "Schlag"-Animation. 
-# Erstelle einen neuen Zustand, in dem der Spieler einen Schlag ausführt, wenn 
-# die Leertaste gedrückt wird. Lade die entsprechenden Texturen und passe 
-# die Animationen an.
+#
+# Im Ordner `_assets/12.11` hat es weitere Tilesheets. Lade ein anderes 
+# Tileset, indem du den Pfad in der Funktion setup() veränderst.
 
 # Füge hier deine Lösung ein.
 
@@ -339,13 +172,11 @@ arcade.run()
 # Aufgabe 2  /
 # __________/
 #
-# Erstelle eine neue Spielfigur mit einer anderen Animation. Lade dafür 
-# Texturen eines anderen Charakters und teste die Animationen für Laufen, 
-# Springen und Stehen.
 #
-# Hinweis: Verwende die `Character`-Klasse, aber initialisiere sie mit 
-# einem anderen `textures_path`.
-
+# Ändere das Programm so, dass nur Texturen mit einem bestimmten Namen 
+# angezeigt werden. Zeige nur Texturen an, deren Name mit `walk` beginnt.
+#
+# Hinweis: Verwende die Methode startswith() für String-Filterung.
 
 # Füge hier deine Lösung ein.
 
@@ -357,15 +188,42 @@ arcade.run()
 # Aufgabe 3  /
 # __________/
 #
-# Füge eine Animationssequenz hinzu, die abläuft, wenn der Spieler hinunterfällt. 
-# Lade eine spezielle Animation für den "Fall"-Zustand und wechsle in diesen Zustand, 
-# wenn die Spielfigur nach unten fällt.
+
+# Modifiziere das Programm, sodass jede Textur sowohl in normaler als auch in 
+# gespiegelter Form dargestellt wird.
+
+# Hinweis: Nutze den Index tile[1] für die gespiegelte Textur.
 
 # Füge hier deine Lösung ein.
 
 
 
-
+#                        ____
+#                   ____ \__ \
+#                   \__ \__/ / __
+#                   __/ ____ \ \ \    ____
+#                  / __ \__ \ \/ / __ \__ \
+#             ____ \ \ \__/ / __ \/ / __/ / __
+#        ____ \__ \ \/ ____ \/ / __/ / __ \ \ \
+#        \__ \__/ / __ \__ \__/ / __ \ \ \ \/
+#        __/ ____ \ \ \__/ ____ \ \ \ \/ / __
+#       / __ \__ \ \/ ____ \__ \ \/ / __ \/ /
+#       \ \ \__/ / __ \__ \__/ / __ \ \ \__/          Kachelmuster.
+#        \/ ____ \/ / __/ ____ \ \ \ \/ ____
+#           \__ \__/ / __ \__ \ \/ / __ \__ \
+#           __/ ____ \ \ \__/ / __ \/ / __/ / __
+#          / __ \__ \ \/ ____ \/ / __/ / __ \/ /
+#          \/ / __/ / __ \__ \__/ / __ \/ / __/
+#          __/ / __ \ \ \__/ ____ \ \ \__/ / __
+#         / __ \ \ \ \/ ____ \__ \ \/ ____ \/ /
+#         \ \ \ \/ / __ \__ \__/ / __ \__ \__/
+#          \/ / __ \/ / __/ ____ \ \ \__/
+#             \ \ \__/ / __ \__ \ \/
+#              \/      \ \ \__/ / __
+#                       \/ ____ \/ /
+#                          \__ \__/
+#                          __/
+#  
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -390,89 +248,16 @@ arcade.run()
 # Aufgabe 1  /
 # __________/
 #
-# Füge der Spielfigur eine neue Animation hinzu: eine "Schlag"-Animation. 
-# Erstelle einen neuen Zustand, in dem der Spieler einen Schlag ausführt, wenn 
-# die Leertaste gedrückt wird. Lade die entsprechenden Texturen und passe 
-# die Animationen an.
 #
-# Hinweis: Erweitere die `Character`-Klasse und die Methode `update_animation()`.
+# Im Ordner `_assets/12.11` hat es weitere Tilesheets. Lade ein anderes 
+# Tileset, indem du den Pfad in der Funktion setup() veränderst.
 
 '''
-
-class Character(arcade.Sprite):
-    
-    def __init__(self, textures_path, scale=1):
-        ...
-
-        self.n_attack_textures = 3  # Anzahl der Texturen für die Schlaganimation
-        ...
-
-        self.is_attacking = False  # Gibt an, ob die Spielfigur zuschlägt
-        
-        ...
-
-        # Lade die Texturen für die Schlaganimation
-        self.all_textures["attack"] = [
-            self._load_texture_pair(f"{textures_path}_attack{i}.png") for i in range(self.n_attack_textures)
-        ]
-
-        # Setze die Anfangstextur
-        ...
- 
-
+class TilesheetDemo(arcade.Window):
     ...
-
-
-    # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand (Laufen, Springen, Klettern, Stehen).
-    def update_animation(self, delta_time):
-        ...
-
-        # Animation für die Leiter
-        ...
-        
-        # Animation für Schlagen
-        if self.is_attacking:
-            if self.frame == 0:  # Aktualisiere die Textur nur bei bestimmten Frames
-                self.current_texture += 1
-            
-            self.current_texture = self.current_texture % self.n_attack_textures
-            self.texture = self.all_textures["attack"][self.current_texture][self.face_direction]
-            return
-        
-        # Animation für Springen
-        ...
-
-
-
-class AnimatedPlayerDemo(arcade.Window):
-
-    ...
-
-    # Initialisiert die Spielumgebung, die Leitern und die Spielfigur.
     def setup(self):
-        ...
-
-        # Initialisiere die Spielfigur
-        self.player = Character("_assets/12.11/femaleAdventurer/character_femaleAdventurer", scale=0.25)
-        
-        ...
-
-
-    # Verarbeitet Tastendrücke.
-    def on_key_press(self, key, modifiers):
-        ...
-
-        elif key == arcade.key.SPACE:
-            self.player.is_attacking = True
-
-
-    # Verarbeitet das Loslassen von Tasten.
-    def on_key_release(self, key, modifiers):
-        ...
-
-        elif key == arcade.key.SPACE:
-            self.player.is_attacking = False
-
+        # Lade ein anderes Tilesheet, z. B. ein Zombie-Tilesheet
+        self.player = Character("_assets/12.11/zombie.xml", scale=0.3)
 '''
 
 
@@ -483,15 +268,25 @@ class AnimatedPlayerDemo(arcade.Window):
 # Aufgabe 2  /
 # __________/
 #
-# Erstelle eine neue Spielfigur mit einer anderen Animation. Lade dafür 
-# Texturen eines anderen Charakters und teste die Animationen für Laufen, 
-# Springen und Stehen.
 #
-# Hinweis: Verwende die `Character`-Klasse, aber initialisiere sie mit 
-# einem anderen `textures_path`.
+# Ändere das Programm so, dass nur Texturen mit einem bestimmten Namen 
+# angezeigt werden. Zeige nur Texturen an, deren Name mit `walk` beginnt.
+#
+# Hinweis: Verwende die Methode startswith() für String-Filterung.
 
 '''
-        self.player = Character("_assets/12.11/Robot/character_robot", scale=0.25)
+class TilesheetDemo(arcade.Window):
+    ...
+
+    # Zeichnet alle Texturen des Tilesheets in einem Raster.
+    def on_draw(self):
+        
+        ...
+
+        for id, tile in self.player.tilesheet.items():
+            
+            if not id.startswith("walk"):
+                continue
 '''
 
 
@@ -502,55 +297,34 @@ class AnimatedPlayerDemo(arcade.Window):
 # Aufgabe 3  /
 # __________/
 #
-# Füge eine Animationssequenz hinzu, die abläuft, wenn der Spieler hinunterfällt. 
-# Lade eine spezielle Animation für den "Fall"-Zustand und wechsle in diesen Zustand, 
-# wenn die Spielfigur nach unten fällt.
 
+# Modifiziere das Programm, sodass jede Textur sowohl in normaler als auch in 
+# gespiegelter Form dargestellt wird.
+
+# Hinweis: Nutze den Index tile[1] für die gespiegelte Textur.
 
 '''
-
-import arcade
-
-
-class Character(arcade.Sprite):
-    
-    def __init__(self, textures_path, scale=1):
-        super().__init__()
-
-        ...
-
-        self.all_textures["jump"] = self._load_texture_pair(f"{textures_path}_jump.png")
-
-        ...
- 
-
-    def update_animation(self, delta_time):
-        
-        ...
-        
-        # Animation fürs Fallen
-        if self.change_y < 0:
-            self.texture = self.all_textures["fall"][self.face_direction]
-            return
-        
-        ...
-
-
-
-class AnimatedPlayerDemo(arcade.Window):
-
+class TilesheetDemo(arcade.Window):
     ...
 
-    # Initialisiert die Spielumgebung, die Leitern und die Spielfigur.
-    def setup(self):
+    # Zeichnet alle Texturen des Tilesheets in einem Raster.
+    def on_draw(self):
         ...
 
-        # Initialisiere die Spielfigur
-        self.player = Character("_assets/12.11/femaleAdventurer/character_femaleAdventurer", scale=0.25)
-        
-        ...
+        for id, tile in self.player.tilesheet.items():
+            
+            self.player.texture = tile[0]  # Lade die normale Textur
+            self.player.draw()  # Zeichne die Spielfigur
+            
+            self.player.center_x += raster_size  # Verschiebe die Position horizontal
+            
+            self.player.texture = tile[1]  # Lade die normale Textur
+            self.player.draw()  # Zeichne die Spielfigur
+            
+            self.player.center_x += raster_size  # Verschiebe die Position horizontal
 
-
+            ...
+            
 '''
 
 

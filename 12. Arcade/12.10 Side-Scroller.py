@@ -76,6 +76,13 @@ class SideScrollingDemo(arcade.Window):
             wall.center_y = 32
             self.wall_list.append(wall)
             
+        # Erstelle eine Schräge
+        for x in range(0, 512, 128):
+            wall = arcade.Sprite(":resources:images/tiles/grassMid.png", scale=0.5)
+            wall.center_x = 256 + x
+            wall.center_y = 32 + x
+            self.wall_list.append(wall)
+            
         # Physik-Engine initialisieren
         self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, gravity_constant=0.5, walls=self.wall_list)
 
