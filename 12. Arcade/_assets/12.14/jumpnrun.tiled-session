@@ -3,9 +3,10 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "level_1.tmx",
     "expandedProjectPaths": [
     ],
+    "file.lastUsedOpenFilter": "Alle Dateien (*)",
     "fileStates": {
         "/Users/thomasjenni/Library/Mobile Documents/.Trash/dungeon_tiles.tsx": {
             "scaleInDock": 1
@@ -22,11 +23,11 @@
             "scaleInDock": 1
         },
         "/Users/thomasjenni/Library/Mobile Documents/com~apple~CloudDocs/_git/PurePythonCourse/12. Arcade/_assets/12.15/level_1.tmx": {
-            "scale": 0.866875,
+            "scale": 0.5875,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 239.94232155731797,
-                "y": 160.3460706560923
+                "x": 208.5106382978723,
+                "y": 616.1702127659574
             }
         },
         "/Users/thomasjenni/Library/Mobile Documents/com~apple~CloudDocs/_git/PurePythonCourse/12. Arcade/_assets/12.15/level_1_with_keys.tmx": {
@@ -45,6 +46,9 @@
                 "y": 160.3460706560923
             }
         },
+        "Tiles.tsx": {
+            "scaleInDock": 1
+        },
         "Tileset.tsx": {
             "scaleInDock": 0.4553,
             "scaleInEditor": 0.39
@@ -53,8 +57,8 @@
             "scale": 0.3728,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 6400.214592274678,
-                "y": 1920.6008583690987
+                "x": 2603.272532188841,
+                "y": 3076.7167381974245
             }
         }
     },
@@ -65,14 +69,15 @@
     "map.tileWidth": 128,
     "map.width": 100,
     "openFiles": [
+        "level_1.tmx"
     ],
     "project": "jumpnrun.tiled-project",
     "recentFiles": [
-        "/Users/thomasjenni/Library/Mobile Documents/.Trash/level_1.tmx",
+        "level_1.tmx",
         "/Users/thomasjenni/Library/Mobile Documents/com~apple~CloudDocs/_git/PurePythonCourse/12. Arcade/_assets/12.15/level_1.tmx",
+        "/Users/thomasjenni/Library/Mobile Documents/.Trash/level_1.tmx",
         "/Users/thomasjenni/Library/Mobile Documents/com~apple~CloudDocs/_git/PurePythonCourse/12. Arcade/_assets/12.15/level_1_with_keys.tmx",
         "/Users/thomasjenni/Library/Mobile Documents/com~apple~CloudDocs/_git/PurePythonCourse/12. Arcade/_assets/12.15/level_1_with_traps.tmx",
-        "level_1.tmx",
         "Tileset.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",

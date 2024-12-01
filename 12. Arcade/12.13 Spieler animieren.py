@@ -196,6 +196,9 @@ class Character(arcade.Sprite):
             
             if self.change_y == 0:
                 self.texture_idx = 0
+                
+        elif not self.can_jump:
+            self.state = Character.JUMP
             
         elif self.change_x == 0:
             self.state = Character.IDLE

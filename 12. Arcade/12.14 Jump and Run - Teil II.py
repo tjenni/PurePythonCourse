@@ -78,37 +78,51 @@
 
 import arcade
 import xml.dom.minidom
+import collections
 import os
-
 
 
 # Klasse zur Verwaltung eines Tilesheets und zum Laden von Texturen
 class Tilesheet():
-    # Lädt ein Tilesheet basierend auf einer XML-Datei und speichert die Texturen.
+    # Initialisiert das Tilesheet und lädt Texturen basierend auf einer XML-Datei.
     def __init__(self, xml_file, load_pair=True):
-        self.textures = {}  # Dictionary für die geladenen Texturen
+        self.textures = {}  # Speichert die geladenen Texturen als Dictionary
+        self.n_textures = {}  # Speichert die Anzahl der Texturen pro Zustand
         
         try:
-            # XML-Dokument parsen
+            # XML-Dokument laden und parsen
             document = xml.dom.minidom.parse(xml_file)
         except Exception as e:
             raise FileNotFoundError(f"Die Datei {xml_file} konnte nicht geladen werden. Fehler: {e}")
         
-        # Hauptknoten des TextureAtlas
+        # Hauptknoten des TextureAtlas aus der XML-Datei
         textureAtlas = document.getElementsByTagName("TextureAtlas")[0]
         subTextures = textureAtlas.getElementsByTagName("SubTexture")
         
+        # Pfad zum Bild, das die Texturen enthält
         image_file = os.path.join(os.path.dirname(xml_file), textureAtlas.getAttribute('imagePath')) 
         
-        # Iteriere über alle SubTexturen im Tilesheet
+        # Iteriere über alle definierten SubTexturen im Tilesheet
         for subTexture in subTextures:
             name = subTexture.getAttribute('name')  # Name der Textur
+            
+            # Extrahiere die Zahl am Ende des Namens (z. B. "walk1" → "walk", 1)
+            nr = ''.join(filter(str.isdigit, name[::-1]))[::-1]
+            
+            # Zähle die Anzahl der Texturen pro Zustand
+            if nr.isdigit():  # Mehrere Texturen pro Zustand
+                id = name[:-len(nr)]
+                self.n_textures[id] = self.n_textures.get(id, 0) + 1
+            else:  # Eine Textur pro Zustand
+                self.n_textures[name] = 1
+            
+            # Lade die Textur-Parameter
             x = int(subTexture.getAttribute('x'))
             y = int(subTexture.getAttribute('y'))
             width = int(subTexture.getAttribute('width'))
             height = int(subTexture.getAttribute('height'))
             
-            # Lade entweder nur die normale Textur oder ein Texturpaar
+            # Lade entweder nur die normale Textur oder ein Texturpaar (normal + gespiegelt)
             if load_pair:
                 texture = self._load_texture_pair(image_file, x, y, width, height)
             else:
@@ -120,104 +134,124 @@ class Tilesheet():
             self.textures[name] = texture  # Speichere die Textur im Dictionary
 
 
-
     # Lädt ein Texturpaar: normale und horizontal gespiegelte Version.
     def _load_texture_pair(self, path, x, y, width, height):
         return [
-            arcade.load_texture(path, x, y, width, height),
-            arcade.load_texture(path, x, y, width, height, flipped_horizontally=True)
+            arcade.load_texture(path, x, y, width, height),  # Normale Textur
+            arcade.load_texture(path, x, y, width, height, flipped_horizontally=True)  # Gespiegelte Textur
         ]
 
 
 
-# Diese Klasse repräsentiert eine animierte Spielfigur. 
-# Sie verwaltet die Animationen für Laufen, Springen, Stehen und Klettern.
+# Diese Klasse repräsentiert eine animierte Spielfigur.
+# Sie verwaltet die Animationen und Zustände wie Laufen, Springen, Stehen und Klettern.
 class Character(arcade.Sprite):
+    # Richtungs- und Zustandskonstanten für die Spielfigur
+    RIGHT = 0
+    LEFT = 1
+    UP = 2
+    DOWN = 3
+    
+    IDLE = 'idle'
+    WALK = 'walk'
+    JUMP = 'jump'
+    CLIMB = 'climb'
     
     def __init__(self, xml_file, scale=0.25):
         super().__init__()
         
-        self.n_walking_textures = 8  # Anzahl der Texturen für die Laufanimation
-        self.n_climbing_textures = 2  # Anzahl der Texturen für die Kletteranimation
+        self.speed = 5  # Bewegungsgeschwindigkeit
+        self.jump_impulse = 12  # Sprungkraft
         
-        self.face_direction = 0  # Richtung der Spielfigur (0: rechts, 1: links)
+        self.facing = Character.RIGHT  # Blickrichtung der Spielfigur
         self.can_jump = False  # Gibt an, ob die Spielfigur springen kann
         self.is_on_ladder = False  # Gibt an, ob die Spielfigur auf einer Leiter ist
-
+        
         self.scale = scale  # Skalierung der Spielfigur
         
-        self.frame = 0  # Animationsrahmenzähler
-        self.animation_speed = 2  # Geschwindigkeit der Animation
+        self.frame = 0  # Aktueller Animationsframe
+        self.texture_idx = 0  # Index der aktuellen Textur in der Animation
+        self.frames_per_texture = 2  # Anzahl der Frames pro Textur
         
-        self.current_texture = 0  # Aktuelle Textur der Animation
+        # Lade das Tilesheet für die Animationen
+        self.tilesheet = Tilesheet(xml_file)
+        self.state = Character.IDLE  # Initialzustand der Spielfigur
         
-        # Lade alle Texturen für die Animationen
-        self.all_textures = {}
-        
-        # Lade das Tilesheet für diesen Charakter
-        tilesheet = Tilesheet(xml_file)
-        textures = tilesheet.textures
-        
-        # Lade die Texturen für Stehen und Springen
-        self.all_textures["idle"] = textures["idle"]
-        self.all_textures["jump"] = textures["jump"]
-        
-        # Lade die Texturen für die Laufanimation
-        self.all_textures["walk"] = [
-            textures[f"walk{i}"] for i in range(self.n_walking_textures)
-        ]
-        
-        # Lade die Texturen für die Kletteranimation
-        self.all_textures["climb"] = [
-            textures[f"climb{i}"] for i in range(self.n_climbing_textures)
-        ]
-
         # Setze die Anfangstextur
-        self.texture = self.all_textures["idle"][0]
+        self.update_texture()
+    
+
+    # Aktualisiert die aktuelle Textur der Spielfigur basierend auf Zustand und Blickrichtung
+    def update_texture(self):
+        # Bestimme die Richtung (normal oder gespiegelt)
+        facing_idx = 1 if self.facing == Character.LEFT else 0
         
-        # Setze die Kollisionsbox basierend auf der Anfangstextur
-        self.hit_box = self.texture.hit_box_points
- 
+        # Bestimme die richtige Textur basierend auf Zustand und Texturindex
+        n = self.tilesheet.n_textures[self.state]
+        self.texture_idx %= n
+        texture_key = f"{self.state}{self.texture_idx}" if n > 1 else self.state
+        
+        self.texture = self.tilesheet.textures[texture_key][facing_idx]
+        self.hit_box = self.texture.hit_box_points  # Aktualisiere die Kollisionsbox
+    
+
+    # Bewegt die Spielfigur in eine bestimmte Richtung mit optionaler Geschwindigkeit
+    def move(self, direction=None, speed=None):
+        speed = self.speed if speed is None else speed
+        if direction == Character.RIGHT:
+            self.change_x = speed
+        elif direction == Character.LEFT:
+            self.change_x = -speed
+        elif direction == Character.UP:
+            self.change_y = speed
+        elif direction == Character.DOWN:
+            self.change_y = -speed
+    
+
+    # Führt einen Sprung aus, wenn erlaubt
+    def jump(self):
+        if self.can_jump:
+            self.change_y = self.jump_impulse
 
 
-    # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand (Laufen, Springen, Klettern, Stehen).
+    # Aktualisiert die Animation der Spielfigur basierend auf ihrem Zustand
     def update_animation(self, delta_time):
+        self.frame = (self.frame + 1) % self.frames_per_texture  # Animationsframe erhöhen
+        
+        # Zustände aktualisieren
+        if len(self.physics_engines) > 0:
+            engine = self.physics_engines[0]
+            self.is_on_ladder = engine.is_on_ladder()
+            self.can_jump = engine.can_jump() and not self.is_on_ladder
+        
+        # Nur beim Frame null die Textur wechseln
+        if self.frame == 0:
+            self.texture_idx += 1
 
-        self.frame = (self.frame + 1) % self.animation_speed
-
-        # Bestimme die Blickrichtung der Spielfigur
+        # Blickrichtung setzen
         if self.change_x < 0:
-            self.face_direction = 1  # Blick nach links
+            self.facing = Character.LEFT
+
         elif self.change_x > 0:
-            self.face_direction = 0  # Blick nach rechts
+            self.facing = Character.RIGHT
         
-        # Animation für die Leiter
+        # Zustand setzen
         if self.is_on_ladder:
-            if self.change_y == 0:  # Wenn die Figur nicht auf der Leiter bewegt wird
-                self.current_texture = 0
-            elif self.frame == 0:  # Aktualisiere die Textur nur bei bestimmten Frames
-                self.current_texture += 1
+            self.state = Character.CLIMB
             
-            self.current_texture = self.current_texture % self.n_climbing_textures
-            self.texture = self.all_textures["climb"][self.current_texture][self.face_direction]
-            return
+            if self.change_y == 0:
+                self.texture_idx = 0
+                
+        elif not self.can_jump:
+            self.state = Character.JUMP
+            
+        elif self.change_x == 0:
+            self.state = Character.IDLE
+
+        else:
+            self.state = Character.WALK
         
-        # Animation für Springen
-        if not self.can_jump:
-            self.texture = self.all_textures["jump"][self.face_direction]
-            return
-        
-        # Animation für Stehen
-        if self.change_x == 0 and self.change_y == 0:
-            self.texture = self.all_textures["idle"][self.face_direction]
-            return
-        
-        # Animation für Laufen
-        if self.frame == 0:  # Aktualisiere die Textur nur bei bestimmten Frames
-            self.current_texture += 1
-        
-        self.current_texture = self.current_texture % self.n_walking_textures
-        self.texture = self.all_textures["walk"][self.current_texture][self.face_direction]
+        self.update_texture()  # Textur aktualisieren
 
 
 
@@ -277,9 +311,10 @@ class GameView(arcade.View):
 
         # Größe jeder Kachel in Pixel
         self.tile_size = 64
-        self.keys = {"UP": False, "DOWN": False, "LEFT": False, "RIGHT": False}  # Zustände der Tasten
         
         self.tile_offset = (0, 0)     # Offset für die Tilemap
+        
+        self.keys = collections.defaultdict(lambda: False)  # Tastenstatus
         
     # Aktualisiert die Spielkamera, sodass sie der Spielfigur folgt.
     def update_camera(self):
@@ -304,7 +339,7 @@ class GameView(arcade.View):
         self.player.center_y = 100
         
         # Lade die Tilemap aus einer .tmx-Datei
-        map_name = "_assets/12.12/level_1.tmx"  # Pfad zur .tmx-Datei
+        map_name = "_assets/12.14/level_1.tmx"  # Pfad zur .tmx-Datei
         
         
         # Optionen für die Tilemap-Ebenen
@@ -313,10 +348,19 @@ class GameView(arcade.View):
                 "use_spatial_hash": True,
                 "offset": self.tile_offset
             },
-            "Floor": {
+            "Ladders": {
                 "offset": self.tile_offset
             },
-            "Door": {
+            "Traps": {
+                "offset": self.tile_offset
+            },
+            "Coins": {
+                "offset": self.tile_offset
+            },
+            "Doors": {
+                "offset": self.tile_offset
+            },
+            "Background": {
                 "offset": self.tile_offset
             }
         }
@@ -327,7 +371,6 @@ class GameView(arcade.View):
         # Erstelle die Szene basierend auf der geladenen Tilemap
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
         
-
         # Sounds laden
         self.coin_sound = arcade.load_sound(":resources:sounds/coin2.wav")
         self.jump_sound = arcade.load_sound(":resources:sounds/jump3.wav")
@@ -337,42 +380,14 @@ class GameView(arcade.View):
         self.scene.add_sprite("Player", self.player)
 
         # Physik-Engine initialisieren
-        self.physics_engine = arcade.PhysicsEnginePlatformer(self.player, gravity_constant=0.5, walls=self.scene["Walls"], ladders=self.scene["Ladders"])
-
-
-    # Fügt eine neue Kachel an der angegebenen Position hinzu.
-    def add_tile(self, column, row, tile_id):
-
-        if self.tiles[tile_id] is None:  # Keine Aktion, wenn die ID leer ist
-            return
+        self.physics_engine = arcade.PhysicsEnginePlatformer(
+            self.player,
+            gravity_constant=0.5,
+            walls=self.scene["Walls"],
+            ladders=self.scene["Ladders"]
+        )
         
-        # Lade die Textur und ermittele den Kacheltyp
-        texture = self.tiles[tile_id][0]
-        sprite_type = self.tiles[tile_id][1]
-                
-        # Erstelle ein neues Sprite für die Kachel
-        sprite = arcade.Sprite(texture, scale=0.5)
-        sprite.center_x = column * self.tile_size + self.tile_size // 2
-        sprite.center_y = (len(self.tilemaps[self.level-1]) - 1 - row) * self.tile_size + self.tile_size // 2
-        sprite.row = row
-        sprite.column = column
-        sprite.id = tile_id
-        
-        # Füge das Sprite zur entsprechenden Sprite-Liste hinzu
-        self.sprite_lists[sprite_type].append(sprite)
-
-
-    # Erstellt die Sprite-Listen basierend auf der Tilemap.
-    def create_sprite_lists(self, tilemap):
-        
-        # Lösche bestehende Sprites in allen Listen
-        for sprite_list in self.sprite_lists.values():
-            sprite_list.clear()
-        
-        # Durchlaufe die Tilemap und füge Sprites hinzu
-        for i, row in enumerate(tilemap):
-            for j, tile_id in enumerate(row):
-                self.add_tile(j, i, tile_id)
+        self.player.register_physics_engine(self.physics_engine)  # Physik-Engine der Spielfigur hinzufügen
 
     
     # Zeichnet die Szene und die Punktzahl.
@@ -391,34 +406,31 @@ class GameView(arcade.View):
     # Aktualisiert den Spielzustand und die Animation der Spielfigur.
     def on_update(self, delta_time):
 
-        # Bewegung der Spielfigur basierend auf Tasteneingaben
-        if self.keys["RIGHT"]:
-            self.player.change_x = 5
-        elif self.keys["LEFT"]:
-            self.player.change_x = -5
+        # Bewege die Spielfigur basierend auf Tasteneingaben
+        if self.keys[arcade.key.RIGHT]:
+            self.player.move(Character.RIGHT)  # Bewegung nach rechts
+        elif self.keys[arcade.key.LEFT]:
+            self.player.move(Character.LEFT)  # Bewegung nach links
         else:
-            self.player.change_x = 0
-
-        # Bewegung der Spielfigur auf der Leiter
+            self.player.move(Character.RIGHT, 0)  # Keine horizontale Bewegung
+        
+        # Bewegung auf der Leiter
         if self.player.is_on_ladder:
-            if self.keys["UP"]:
-                self.player.change_y = 5
-            elif self.keys["DOWN"]:
-                self.player.change_y = -5
+            if self.keys[arcade.key.UP]:
+                self.player.move(Character.UP)  # Bewegung nach oben
+            elif self.keys[arcade.key.DOWN]:
+                self.player.move(Character.DOWN)  # Bewegung nach unten
             else:
-                self.player.change_y = 0
+                self.player.move(Character.UP, 0)  # Keine vertikale Bewegung
+
 
         # Aktualisiere die Physik-Engine
         self.physics_engine.update()
         
-        
+        # Aktualisiere die Kamera
         self.update_camera()
     
         
-        # Aktualisiere die Zustände der Spielfigur
-        self.player.is_on_ladder = self.physics_engine.is_on_ladder()
-        self.player.can_jump = self.physics_engine.can_jump() and not self.player.is_on_ladder
-
         # Aktualisiere die Animation der Spielfigur
         self.player.update_animation(delta_time)
         
@@ -455,32 +467,16 @@ class GameView(arcade.View):
             self.window.show_view(InfoView("GAME OVER"))
         
         
-    # Verarbeitet Tastendrücke.
+    # Verarbeitet Tastendrücke
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.RIGHT:
-            self.keys["RIGHT"] = True
-        elif key == arcade.key.LEFT:
-            self.keys["LEFT"] = True
-        elif key == arcade.key.UP:
-            self.keys["UP"] = True
-            
-            if self.player.can_jump:
-                self.player.change_y = 12
-
-        elif key == arcade.key.DOWN:
-            self.keys["DOWN"] = True
+        self.keys[key] = True  # Markiere die Taste als gedrückt
+        if key == arcade.key.UP:  # Sprungaktion
+            self.player.jump()
 
 
-    # Verarbeitet das Loslassen von Tasten.
+    # Verarbeitet das Loslassen von Tasten
     def on_key_release(self, key, modifiers):
-        if key == arcade.key.RIGHT:
-            self.keys["RIGHT"] = False
-        elif key == arcade.key.LEFT:
-            self.keys["LEFT"] = False
-        elif key == arcade.key.UP:
-            self.keys["UP"] = False
-        elif key == arcade.key.DOWN:
-            self.keys["DOWN"] = False
+        self.keys[key] = False  # Markiere die Taste als losgelassen
 
 
 # Hauptprogramm
