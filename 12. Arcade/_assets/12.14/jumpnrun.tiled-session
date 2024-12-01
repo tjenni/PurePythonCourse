@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "level_1.tmx",
+    "activeFile": "",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "Alle Dateien (*)",
@@ -69,7 +69,6 @@
     "map.tileWidth": 128,
     "map.width": 100,
     "openFiles": [
-        "level_1.tmx"
     ],
     "project": "jumpnrun.tiled-project",
     "recentFiles": [
