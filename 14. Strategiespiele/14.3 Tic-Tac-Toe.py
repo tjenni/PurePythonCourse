@@ -14,68 +14,95 @@
 # KI-Strategien hinzuzufügen.
 
 
+
+
 # _____________________________
 #                             /
 # Regeln von Tic-Tac-Toe     (
 # ____________________________\
 
 # - Tic-Tac-Toe wird auf einem 3x3-Gitter gespielt.
+#
 # - Zwei Spieler (X und O) setzen abwechselnd ihre Markierungen auf leere Felder.
+#
 # - Ziel ist es, eine horizontale, vertikale oder diagonale Linie mit drei
 #   eigenen Markierungen zu bilden.
+#
 # - Das Spiel endet unentschieden, wenn alle Felder belegt sind und kein Spieler
 #   eine Linie bilden konnte.
 
 
-# ____________________________
-#                             /
+
+
+# _____________________________
+#                              /
 # Implementierung des Spiels  (
-# ____________________________\
+# _____________________________\
 
 # Im folgenden Beispiel wird Tic-Tac-Toe in der Konsole gespielt. Ein Spieler
 # tritt gegen eine einfache KI an, die zufällig gültige Züge auswählt.
 
+
 import random
 
-def print_board(board):
-    """
-    Gibt das Spielfeld aus.
-    """
+# Gibt das Spielfeld aus.
+def print_board(board, plain=False):
+    
+    # Ersetze die Zahlen in board mit Text
+    new_board = []
     for row in board:
-        print(" | ".join(row))
-        print("-" * 5)
+        new_row = []
+        new_board.append(new_row)
+        
+        for cell in row:
+            if plain:
+                new_row.append(f" {cell} ")
+            elif cell == 1:
+                new_row.append(f" X ")
+            elif cell == -1:
+                new_row.append(f" O ")
+            else:
+                new_row.append(f"   ")
+    
+    # Gib das Brett auf der Konsole aus
+    print()
+    
+    for i, row in enumerate(new_board):
+        line = "|".join(row)
+        print(line)
+        
+        if i < len(new_board) - 1:
+            print("-"*len(line))
+            
+    print()
+    
 
-
+# Prüft, ob ein Spieler gewonnen hat.
 def check_winner(board):
-    """
-    Prüft, ob ein Spieler gewonnen hat.
-    """
     # Horizontale und vertikale Linien
     for i in range(3):
-        if board[i][0] == board[i][1] == board[i][2] and board[i][0] != " ":
+        if board[i][0] == board[i][1] and board[i][1] == board[i][2] and board[i][0] != 0:
             return board[i][0]
-        if board[0][i] == board[1][i] == board[2][i] and board[0][i] != " ":
+        if board[0][i] == board[1][i] and board[1][i] == board[2][i] and board[0][i] != 0:
             return board[0][i]
 
     # Diagonale Linien
-    if board[0][0] == board[1][1] == board[2][2] and board[0][0] != " ":
+    if board[0][0] == board[1][1] and  board[1][1] == board[2][2] and board[0][0] != 0:
         return board[0][0]
-    if board[0][2] == board[1][1] == board[2][0] and board[0][2] != " ":
+    if board[0][2] == board[1][1] and  board[1][1] == board[2][0] and board[0][2] != 0:
         return board[0][2]
 
     return None
 
 
-def player_turn(board):
-    """
-    Führt den Zug des Spielers aus.
-    """
+# Führt den Zug des Spielers aus.
+def player_turn(board, id=1):
     while True:
         try:
             move = int(input("Wähle ein Feld (1-9): ")) - 1
             row, col = divmod(move, 3)
-            if board[row][col] == " ":
-                board[row][col] = "X"
+            if board[row][col] == 0:
+                board[row][col] = id
                 return
             else:
                 print("Dieses Feld ist bereits belegt. Wähle ein anderes.")
@@ -83,84 +110,85 @@ def player_turn(board):
             print("Ungültige Eingabe. Wähle eine Zahl zwischen 1 und 9.")
 
 
-def ai_turn(board):
-    """
-    Führt den Zug der KI aus. Wählt ein zufälliges, freies Feld.
-    """
+
+# Führt den Zug der KI aus. Wählt ein zufälliges, freies Feld.
+def ai_random(board, id=-1, verbose=True):
     while True:
         row = random.randint(0, 2)
         col = random.randint(0, 2)
-        if board[row][col] == " ":
-            board[row][col] = "O"
-            print(f"Die KI wählt Feld {row * 3 + col + 1}.")
+        if board[row][col] == 0:
+            board[row][col] = id
+            if verbose:
+                print(f"Die KI wählt Feld {row * 3 + col + 1}.")
             return
 
 
-def tic_tac_toe():
-    """
-    Hauptspielschleife für Tic-Tac-Toe.
-    """
-    print("Willkommen zu Tic-Tac-Toe!")
-    print("Spieler ist 'X', KI ist 'O'.")
-    print("Das Spielfeld hat folgende Nummerierung:")
-    print("1 | 2 | 3\n4 | 5 | 6\n7 | 8 | 9\n")
+# Hauptspielschleife für Tic-Tac-Toe.
+def tic_tac_toe(verbose=True):
+    
+    if verbose:
+        print("Tic-Tac-Toe")
+        print("===========")
+        print("Spieler ist 'X', KI ist 'O'.")
+        print("Das Spielfeld hat folgende Nummerierung:")
+        print_board([[1,2,3],[4,5,6],[7,8,9]], True)
 
     # Spielfeld initialisieren
-    board = [[" " for _ in range(3)] for _ in range(3)]
+    board = [[0 for _ in range(3)] for _ in range(3)]
 
     # Spielschleife
     for turn in range(9):
-        print_board(board)
+        if verbose:
+            print(f"\nZug {turn+1}")
+            print_board(board)
 
         if turn % 2 == 0:
-            print("Dein Zug:")
-            player_turn(board)
+            player_turn(board, 1)
         else:
-            print("Zug der KI:")
-            ai_turn(board)
+            ai_random(board, -1, verbose)
 
         winner = check_winner(board)
         if winner:
-            print_board(board)
-            print(f"{winner} hat gewonnen!")
-            return
+            if verbose:
+                print_board(board)
+                if winner == 1:
+                    print("X hat gewonnen!")
+                else:
+                    print("O hat gewonnen!")
+                
+            return winner
 
     print_board(board)
     print("Das Spiel endet unentschieden.")
+    return 0
 
 
 # Hauptprogramm starten
-if __name__ == "__main__":
-    tic_tac_toe()
+
+score = {"Spieler": 0, "KI": 0, "Unentschieden":0}
+round = 1
+while round <= 10:
+    winner = tic_tac_toe()
+
+    if winner == 1:
+        score["Spieler"] += 1
+    elif winner == -1:
+        score["KI"] += 1
+    else:
+        score["Unentschieden"] += 1
+    
+    print(f"\nPUNKTESTAND Runde {round}")
+    for name, points in score.items():
+        print(f"{name}: {points}")
+        
+    print()
+    round += 1
 
 
 
 
-# ____________________________
-#                             /
-# Erweiterungsmöglichkeiten  (
-# ____________________________\
 
-# 1. **Minimax-Algorithmus für die KI:**
-#    - Implementiere eine KI, die den optimalen Zug mithilfe des Minimax-Algorithmus berechnet.
-#    - Diese Technik bewertet alle möglichen Züge und wählt den besten aus.
 
-# 2. **Grafische Oberfläche:**
-#    - Nutze `arcade`, um das Spielfeld grafisch darzustellen.
-#    - Erlaube dem Spieler, Felder durch Klicken mit der Maus auszuwählen.
-
-# 3. **Variationen des Spiels:**
-#    - Ändere die Spielfeldgröße (z. B. 4x4 oder 5x5).
-#    - Füge neue Siegbedingungen hinzu, wie z. B. vier Markierungen in einer Reihe.
-
-# 4. **Spieler vs. Spieler:**
-#    - Erstelle einen Modus, in dem zwei Spieler auf demselben Gerät spielen können.
-
-# 5. **Netzwerkspiel:**
-#    - Implementiere einen Online-Modus, in dem Spieler gegeneinander antreten können.
-
-# 6. **Zeitlimit:**
-#    - Füge eine Zeitbegrenzung für jeden Zug hinzu, um das Spiel dynamischer zu gestalten.
 
 
 
@@ -172,13 +200,50 @@ if __name__ == "__main__":
 
 # In diesem Kapitel hast du gelernt, wie man Tic-Tac-Toe umsetzt:
 #
-# 1. **Regeln und Spielablauf:** Spieler und KI setzen abwechselnd Markierungen auf ein 3x3-Gitter.
-# 2. **Textbasierte Implementierung:** Du hast ein simples Tic-Tac-Toe-Spiel in der Konsole erstellt.
-# 3. **Spielmechaniken:** Funktionen zur Spieler- und KI-Interaktion, zur Spielfeldanzeige und zur Siegprüfung.
+# 1. Regeln und Spielablauf: 
+#    Spieler und KI setzen abwechselnd Markierungen auf ein 3x3-Gitter.
+#
+# 2. Textbasierte Implementierung: 
+#    Du hast ein simples Tic-Tac-Toe-Spiel in der Konsole erstellt.
+#
+# 3. Spielmechaniken: 
+#    Funktionen zur Spieler- und KI-Interaktion, zur Spielfeldanzeige und zur Siegprüfung.
 
 # Tic-Tac-Toe bietet eine ideale Grundlage, um KI-Konzepte wie den Minimax-Algorithmus zu erlernen
 # und Strategien für optimale Spielweisen zu entwickeln. Mit diesen Grundlagen kannst du das Spiel
 # erweitern und anpassen.
+
+
+
+
+# ____________________________
+#                             /
+# Erweiterungsmöglichkeiten  (
+# ____________________________\
+
+# 1. Minimax-Algorithmus für die KI:
+#    - Implementiere eine KI, die den optimalen Zug mithilfe des Minimax-Algorithmus berechnet.
+#      
+#    - Diese Technik bewertet alle möglichen Züge und wählt den besten aus.
+
+# 2. Grafische Oberfläche:
+#    - Nutze `arcade`, um das Spielfeld grafisch darzustellen.
+#
+#    - Erlaube dem Spieler, Felder durch Klicken mit der Maus auszuwählen.
+
+# 3. Variationen des Spiels:
+#    - Ändere die Spielfeldgröße (z. B. 4x4 oder 5x5).
+#
+#    - Füge neue Siegbedingungen hinzu, wie z. B. vier Markierungen in einer Reihe.
+
+# 4. Spieler vs. Spieler:
+#    - Erstelle einen Modus, in dem zwei Spieler auf demselben Gerät spielen können.
+
+# 5. Netzwerkspiel:
+#    - Implementiere einen Online-Modus, in dem Spieler gegeneinander antreten können.
+
+# 6. Zeitlimit:
+#    - Füge eine Zeitbegrenzung für jeden Zug hinzu, um das Spiel dynamischer zu gestalten.
 
 
 
@@ -194,24 +259,12 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Füge eine Siegbedingung für ein größeres Spielfeld (z. B. 4x4 oder 5x5) hinzu.
-# Schreibe eine Funktion `check_winner_large(board, n)`, die überprüft, ob ein Spieler
-# n Markierungen in einer Reihe hat.
+# Lass zwei Random-KIs 500 Partien gegeneinander spielen. 
 
 
-# ___________
-#            \
-# Aufgabe 2  /
-# __________/
-#
-# Implementiere den Minimax-Algorithmus für die KI. Die KI soll den optimalen Zug
-# basierend auf allen möglichen Szenarien berechnen.
 
 
-# ___________
-#            \
-# Aufgabe 3  /
-# __________/
-#
-# Erstelle eine grafische Version von Tic-Tac-Toe mit `arcade`. Zeichne das Spielfeld
-# und die Markierungen und erlaube dem Spieler, Züge mit der Maus auszuführen.
+
+
+
+
