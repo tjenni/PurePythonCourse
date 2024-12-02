@@ -45,38 +45,20 @@
 
 import random
 
-# Gibt das Spielfeld aus.
-def print_board(board, plain=False):
-    
-    # Ersetze die Zahlen in board mit Text
-    new_board = []
-    for row in board:
-        new_row = []
-        new_board.append(new_row)
-        
-        for cell in row:
-            if plain:
-                new_row.append(f" {cell} ")
-            elif cell == 1:
-                new_row.append(f" X ")
-            elif cell == -1:
-                new_row.append(f" O ")
-            else:
-                new_row.append(f"   ")
-    
-    # Gib das Brett auf der Konsole aus
-    print()
-    
-    for i, row in enumerate(new_board):
-        line = "|".join(row)
-        print(line)
-        
-        if i < len(new_board) - 1:
-            print("-"*len(line))
-            
-    print()
-    
 
+
+# Gibt das Spielfeld aus.
+def print_board(board):
+    tags = {1: "X", 0: " ", -1: "O"}
+    row_separator = "-" * (len(board[0]) * 4 - 1)
+
+    output = "\n".join(
+        "|".join(f" {tags[cell]} " for cell in row) + ("\n" + row_separator if i < len(board) - 1 else "")
+        for i, row in enumerate(board)
+    )
+    print("\n"+output+"\n")
+            
+            
 # Prüft, ob ein Spieler gewonnen hat.
 def check_winner(board):
     # Horizontale und vertikale Linien
@@ -96,13 +78,13 @@ def check_winner(board):
 
 
 # Führt den Zug des Spielers aus.
-def player_turn(board, id=1):
+def player_turn(board):
     while True:
         try:
             move = int(input("Wähle ein Feld (1-9): ")) - 1
             row, col = divmod(move, 3)
             if board[row][col] == 0:
-                board[row][col] = id
+                board[row][col] = 1
                 return
             else:
                 print("Dieses Feld ist bereits belegt. Wähle ein anderes.")
@@ -130,9 +112,14 @@ def tic_tac_toe(verbose=True):
         print("Tic-Tac-Toe")
         print("===========")
         print("Spieler ist 'X', KI ist 'O'.")
-        print("Das Spielfeld hat folgende Nummerierung:")
-        print_board([[1,2,3],[4,5,6],[7,8,9]], True)
-
+        print("Das Spielfeld hat folgende Nummerierung:\n")
+        
+        print(" 1 | 2 | 3 ")
+        print("-----------")
+        print(" 4 | 5 | 6 ")
+        print("-----------")
+        print(" 7 | 8 | 9 ")
+        
     # Spielfeld initialisieren
     board = [[0 for _ in range(3)] for _ in range(3)]
 
@@ -143,7 +130,7 @@ def tic_tac_toe(verbose=True):
             print_board(board)
 
         if turn % 2 == 0:
-            player_turn(board, 1)
+            player_turn(board)
         else:
             ai_random(board, -1, verbose)
 

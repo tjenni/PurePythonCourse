@@ -249,7 +249,7 @@ class AnimationWindow(arcade.Window):
             body = Body([i/4, 0], [0, 0], mass=0.1, radius=0.1, fixed_x=True, color=arcade.color.RED)
             
             if last_body is not None:
-                spring = Spring(last_body, body, k=30.0, damping=1)
+                spring = Spring(last_body, body, k=20.0, damping=1, length=0)
                 self.interactions.append(spring)
                 
             self.bodies.append(body)
