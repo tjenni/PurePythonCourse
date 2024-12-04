@@ -13,19 +13,19 @@
 # Funktionsweise         (
 # ________________________\
 
-# 1. **Ziel:** 
+# 1. Ziel: 
 #    - Reduziere die Anzahl der untersuchten Spielzüge, indem bereits bekannte
 #      schlechtere Züge ausgeschlossen werden.
 
-# 2. **Alpha und Beta:**
+# 2. Alpha und Beta:
 #    - Alpha repräsentiert den besten Wert, den der Maximizer garantieren kann.
 #    - Beta repräsentiert den besten Wert, den der Minimizer garantieren kann.
 
-# 3. **Pruning:** 
+# 3. Pruning: 
 #    - Sobald ein Knoten gefunden wird, der schlechter ist als ein zuvor analysierter
 #      Knoten (basierend auf Alpha und Beta), werden weitere Knoten ignoriert.
 
-# 4. **Effizienz:** 
+# 4. Effizienz: 
 #    - Alpha-Beta-Pruning kann die Berechnung auf bis zu die Hälfte der Knoten
 #      reduzieren, die im ursprünglichen Minimax-Algorithmus untersucht werden.
 
@@ -40,58 +40,52 @@
 import math
 
 def print_board(board):
-    """
-    Gibt das Spielfeld aus.
-    """
-    for row in board:
-        print(" | ".join(row))
-        print("-" * 5)
+    tags = {1: "X", 0: " ", -1: "O"}
+    row_separator = "-" * (len(board[0]) * 4 - 1)
+
+    output = "\n".join(
+        "|".join(f" {tags[cell]} " for cell in row) + ("\n" + row_separator if i < len(board) - 1 else "")
+        for i, row in enumerate(board)
+    )
+    print("\n"+output+"\n")
 
 
+# Prüft, ob ein Spieler gewonnen hat.
 def check_winner(board):
-    """
-    Prüft, ob ein Spieler gewonnen hat.
-    """
     for i in range(3):
-        if board[i][0] == board[i][1] == board[i][2] and board[i][0] != " ":
+        if board[i][0] == board[i][1] == board[i][2] and board[i][0] != 0:
             return board[i][0]
-        if board[0][i] == board[1][i] == board[2][i] and board[0][i] != " ":
+        if board[0][i] == board[1][i] == board[2][i] and board[0][i] != 0:
             return board[0][i]
 
-    if board[0][0] == board[1][1] == board[2][2] and board[0][0] != " ":
+    if board[0][0] == board[1][1] == board[2][2] and board[0][0] != 0:
         return board[0][0]
-    if board[0][2] == board[1][1] == board[2][0] and board[0][2] != " ":
+    if board[0][2] == board[1][1] == board[2][0] and board[0][2] != 0:
         return board[0][2]
 
     return None
 
 
+# Bewertet den aktuellen Zustand des Spielfelds.
 def evaluate(board):
-    """
-    Bewertet den aktuellen Zustand des Spielfelds.
-    """
     winner = check_winner(board)
-    if winner == "X":
+    if winner == 1:
         return -10
-    elif winner == "O":
+    elif winner == -1:
         return 10
     return 0
 
 
+# Prüft, ob noch Züge möglich sind.
 def is_moves_left(board):
-    """
-    Prüft, ob noch Züge möglich sind.
-    """
     for row in board:
-        if " " in row:
+        if 0 in row:
             return True
     return False
 
 
+# Minimax-Algorithmus mit Alpha-Beta-Pruning.
 def alpha_beta_pruning(board, depth, alpha, beta, is_maximizing):
-    """
-    Minimax-Algorithmus mit Alpha-Beta-Pruning.
-    """
     score = evaluate(board)
 
     if score == 10 or score == -10:
@@ -103,12 +97,12 @@ def alpha_beta_pruning(board, depth, alpha, beta, is_maximizing):
         best = -math.inf
         for i in range(3):
             for j in range(3):
-                if board[i][j] == " ":
-                    board[i][j] = "O"
+                if board[i][j] == 0:
+                    board[i][j] = -1
                     value = alpha_beta_pruning(board, depth + 1, alpha, beta, False)
                     best = max(best, value)
                     alpha = max(alpha, best)
-                    board[i][j] = " "
+                    board[i][j] = 0
                     if beta <= alpha:
                         break
         return best
@@ -116,30 +110,28 @@ def alpha_beta_pruning(board, depth, alpha, beta, is_maximizing):
         best = math.inf
         for i in range(3):
             for j in range(3):
-                if board[i][j] == " ":
-                    board[i][j] = "X"
+                if board[i][j] == 0:
+                    board[i][j] = 1
                     value = alpha_beta_pruning(board, depth + 1, alpha, beta, True)
                     best = min(best, value)
                     beta = min(beta, best)
-                    board[i][j] = " "
+                    board[i][j] = 0
                     if beta <= alpha:
                         break
         return best
 
 
+# Findet den besten Zug für die KI mit Alpha-Beta-Pruning.
 def find_best_move_alpha_beta(board):
-    """
-    Findet den besten Zug für die KI mit Alpha-Beta-Pruning.
-    """
     best_value = -math.inf
     best_move = (-1, -1)
 
     for i in range(3):
         for j in range(3):
-            if board[i][j] == " ":
-                board[i][j] = "O"
+            if board[i][j] == 0:
+                board[i][j] = -1
                 move_value = alpha_beta_pruning(board, 0, -math.inf, math.inf, False)
-                board[i][j] = " "
+                board[i][j] = 0
                 if move_value > best_value:
                     best_value = move_value
                     best_move = (i, j)
@@ -148,15 +140,17 @@ def find_best_move_alpha_beta(board):
 
 
 def tic_tac_toe_with_alpha_beta():
-    """
-    Hauptspielschleife mit unbesiegbarer KI und Alpha-Beta-Pruning.
-    """
     print("Willkommen zu Tic-Tac-Toe mit KI und Alpha-Beta-Pruning!")
     print("Spieler ist 'X', KI ist 'O'.")
     print("Das Spielfeld hat folgende Nummerierung:")
-    print("1 | 2 | 3\n4 | 5 | 6\n7 | 8 | 9\n")
 
-    board = [[" " for _ in range(3)] for _ in range(3)]
+    print(" 1 | 2 | 3 ")
+    print("-----------")
+    print(" 4 | 5 | 6 ")
+    print("-----------")
+    print(" 7 | 8 | 9 ")
+
+    board = [[0 for _ in range(3)] for _ in range(3)]
 
     for turn in range(9):
         print_board(board)
@@ -167,8 +161,8 @@ def tic_tac_toe_with_alpha_beta():
                 try:
                     move = int(input("Wähle ein Feld (1-9): ")) - 1
                     row, col = divmod(move, 3)
-                    if board[row][col] == " ":
-                        board[row][col] = "X"
+                    if board[row][col] == 0:
+                        board[row][col] = 1
                         break
                     else:
                         print("Dieses Feld ist bereits belegt.")
@@ -177,21 +171,46 @@ def tic_tac_toe_with_alpha_beta():
         else:
             print("Zug der KI:")
             best_move = find_best_move_alpha_beta(board)
-            board[best_move[0]][best_move[1]] = "O"
+            board[best_move[0]][best_move[1]] = -1
 
         winner = check_winner(board)
-        if winner:
+        if winner != 0 and verbose:
             print_board(board)
-            print(f"{winner} hat gewonnen!")
-            return
+            
+            if winner == 1:
+                print("X hat gewonnen!")
+            elif winner == -1:
+                print("O hat gewonnen!")
+                
+            return winner
 
-    print_board(board)
-    print("Das Spiel endet unentschieden.")
+    if verbose:
+        print_board(board)
+        print("Das Spiel endet unentschieden.")
+        
+    return 0
 
 
-# Hauptprogramm starten
-if __name__ == "__main__":
-    tic_tac_toe_with_alpha_beta()
+# Hauptprogramm
+score = {"Spieler": 0, "KI": 0, "Unentschieden":0}
+round = 1
+while round <= 10:
+    winner = tic_tac_toe_with_alpha_beta()
+
+    if winner == 1:
+        score["Spieler"] += 1
+    elif winner == -1:
+        score["KI"] += 1
+    else:
+        score["Unentschieden"] += 1
+    
+    print(f"\nPUNKTESTAND Runde {round}")
+    for name, points in score.items():
+        print(f"{name}: {points}")
+        
+    print()
+    round += 1
+
 
 
 # ___________________
@@ -202,13 +221,13 @@ if __name__ == "__main__":
 # In diesem Kapitel hast du gelernt, wie Alpha-Beta-Pruning den Minimax-Algorithmus 
 # optimiert:
 #
-# 1. **Effizienz:** Durch Pruning werden unnötige Berechnungen vermieden, indem 
+# 1. Effizienz: Durch Pruning werden unnötige Berechnungen vermieden, indem 
 #    schlecht bewertete Züge ausgeschlossen werden.
 #
-# 2. **Alpha und Beta:** Alpha repräsentiert den besten Wert für den Maximizer, Beta 
+# 2. Alpha und Beta: Alpha repräsentiert den besten Wert für den Maximizer, Beta 
 #    den besten Wert für den Minimizer.
 #
-# 3. **Flexibilität:** Alpha-Beta-Pruning ist eine universelle Technik, die in vielen
+# 3. Flexibilität: Alpha-Beta-Pruning ist eine universelle Technik, die in vielen
 #    Entscheidungsbäumen verwendet werden kann.
 
 # Alpha-Beta-Pruning ist besonders bei Spielen mit vielen möglichen Zügen (z. B. Schach)

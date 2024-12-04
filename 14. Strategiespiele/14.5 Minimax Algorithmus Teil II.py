@@ -1,8 +1,8 @@
-#              _________________________________________
-#       ______|                                         |_____
-#       \     |   14.3 MINIMAX ALGORITHMUS - Teil 1     |    /
-#        )    |_________________________________________|   (
-#       /________)                                  (________\     22.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ________________________________
+#       ______|                                |_____
+#       \     |   14.3 MINIMAX ALGORITHMUS     |    /
+#        )    |________________________________|   (
+#       /________)                          (________\     22.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Der Minimax-Algorithmus ist eine Methode der Entscheidungsfindung in Spielen mit zwei
 # Spielern, die sich abwechseln. Er analysiert alle möglichen Züge und versucht, den
@@ -33,8 +33,6 @@
 #      indem unnötige Züge ausgeschlossen werden, siehe nächstes Kapitel.
 
 
-
-
 # ____________________________________
 #                                    /
 # Erklärung des Minimax-Algorithmus (
@@ -58,20 +56,20 @@
 # Das Brett sieht aktuell wie folgt aus: 
 # 
 # Start)
-#  X | O | O  
+#  X | O |   
 # -----------
-#  O | X | 
+#  O | X | O 
 # -----------
-#  X |   |  
+#  X |   |   
 # 
-# Die KI `O` simuliert alle möglichen Züge für die freien Felder.
+# Die KI simuliert alle möglichen Züge für die freien Felder.
 # 
 # 1)              2)              3)
-#    X | O | O       X | O | O       X | O | O  
+#    X | O | O       X | O |         X | O |   
 #   -----------     -----------     -----------
-#    O | X | O       O | X |         O | X |   
+#    O | X | O       O | X | O       O | X | O 
 #   -----------     -----------     -----------
-#    X |   |         X | O |         X |   | O
+#    X |   |         X |   | O       X | O |   
 # 
 # Ausgehend von diesen drei Zügen, ergeben sich dann für X die folgenden Möglichkeiten:
 #
@@ -83,27 +81,26 @@
 #    X | X |         X |   | X 
 #
 # 2.1)            2.2)           
-#    X | O | O       X | O | O
+#    X | O | X       X | O |  
 #   -----------     -----------
-#    O | X | X       O | X |   
-#   -----------     -----------
-#    X | O |         X | O | X 
-#
-# 3.1)            3.2)           
-#    X | O | O       X | O | O 
-#   -----------     -----------
-#    O | X | X       O | X |   
+#    O | X | O       O | X | O 
 #   -----------     -----------
 #    X |   | O       X | X | O 
 #
+# 3.1)            3.2)           
+#    X | O | X       X | O |  
+#   -----------     -----------
+#    O | X | O       O | X | O 
+#   -----------     -----------
+#    X | O |         X | O | X 
+#
 # Bewertung:
 #
-# - Die Züge 1.1), 3.2) bringen für die KI `O` den Gewinn. Sie werden daher mit +10 bewertet.
+# - Die Züge 1.1), 2.2) bringen für die KI `O` den Gewinn. Sie werden daher mit +10 bewertet.
 #
-# - Die Züge 1.2), 2.2)bringen für den Spieler `X` den Gewinn. Sie werden mit -10 bewertet.
-# 
-# - Die Züge 2.1), 3.1) führen zu einem Unentschieden und ergeben 0 Punkte.
-
+# - Die Züge 1.2), 2.1) bringen für den Spieler `X` den Gewinn. Sie werden mit -10 bewertet.
+#
+# - Die Züge 3.1) und 3.2) enden unentschieden und erhalten die Bewertung 0.
 #
 # Die KI wählt nun die Züge aus, welcher für den Spieler `X` am besten sind. Das sind die Züge 
 # mit einer möglichst kleinen Zahl. Am besten sieht man das an dem Spielbaum. 
@@ -112,14 +109,17 @@
 #           ____________/|\____________
 #          /             |             \
 #         |              |              |
-#        (1) -10        (2) -10        (3) -10          O wählt den grössten Wert. (Maximizer)
+#        (1) -10        (2) -10        (3) 0          O wählt den grössten Wert. (Maximizer)
 #        / \            / \            / \
 #       /   \          /   \          /   \
 #   (1.1)  (1.2)    (2.1) (2.2)    (3.1) (3.2)        X wählt den kleinesten Wert. (Minimizer)
-#    +10    -10      -10   -10       -10     +10
+#    +10    -10      -10   +10       0     0
 #
 # Nun weiss die KI, dass sie das Spiel nicht gewinnen kann. Bei Zug 1 und 2, wird der Spieler
 # gewinnen. Sie entscheidet sich daher für den Zug 3. 
+
+
+
 
 
 
@@ -146,6 +146,8 @@ def print_board(board):
     )
     print("\n"+output+"\n")
            
+
+
 
 # Prüft, ob ein Spieler gewonnen hat.
 def check_winner(board):
@@ -183,7 +185,7 @@ def is_moves_left(board):
 
 
 # Minimax-Algorithmus zur Bewertung aller möglichen Züge.
-def minimax(board, depth, is_maximizing, move=""):
+def minimax(board, depth, is_maximizing):
 
     score = evaluate(board),
 
@@ -191,39 +193,27 @@ def minimax(board, depth, is_maximizing, move=""):
         return score
     if not is_moves_left(board):
         return 0
-    
-    if depth >= 0:
-        print(f"{move})")
-        print_board(board)
 
     # Suche den Zug mit der maximalen Bewertung
     if is_maximizing:
         best = -math.inf
-        k = 1
         for i in range(3):
             for j in range(3):
                 if board[i][j] == 0:
                     board[i][j] = -1
-                    best = max(best, minimax(board, depth + 1, not is_maximizing, move+f".{k}"))
+                    best = max(best, minimax(board, depth + 1, not is_maximizing))
                     board[i][j] = 0
-                    k += 1
-
-        print(best)
         return best
 
     # Suche den Zug mit der minimalen Bewertung
     else:
         best = math.inf
-        k = 1
         for i in range(3):
             for j in range(3):
                 if board[i][j] == 0:
                     board[i][j] = 1
-                    best = min(best, minimax(board, depth + 1, not is_maximizing, move+f".{k}"))
+                    best = min(best, minimax(board, depth + 1, not is_maximizing))
                     board[i][j] = 0
-                    k += 1
-
-        print(best)
         return best
 
 
@@ -231,15 +221,13 @@ def minimax(board, depth, is_maximizing, move=""):
 def find_best_move(board):
     best_value = -math.inf
     best_move = (-1, -1)
-    
-    k = 1
+
     for i in range(3):
         for j in range(3):
             if board[i][j] == 0:
                 board[i][j] = -1
-                move_value = minimax(board, 0, False, f"{k}")
+                move_value = minimax(board, 0, False)
                 board[i][j] = 0
-                k += 1
                 if move_value > best_value:
                     best_value = move_value
                     best_move = (i, j)
@@ -261,6 +249,18 @@ def player_turn(board):
         except (ValueError, IndexError):
             print("Ungültige Eingabe. Wähle eine Zahl zwischen 1 und 9.")
 
+
+# Führt den Zug der KI aus. Wählt ein zufälliges, freies Feld.
+def ai_random(board, id=-1, verbose=True):
+    while True:
+        row = random.randint(0, 2)
+        col = random.randint(0, 2)
+        if board[row][col] == 0:
+            board[row][col] = id
+            if verbose:
+                print(f"Die KI wählt Feld {row * 3 + col + 1}.")
+            return
+        
         
 
 def tic_tac_toe(verbose=True):
@@ -275,22 +275,11 @@ def tic_tac_toe(verbose=True):
         print(" 4 | 5 | 6 ")
         print("-----------")
         print(" 7 | 8 | 9 ")
-        print()
 
-    # board = [[0 for _ in range(3)] for _ in range(3)]
-    board = [[  1, -1,  -1],
-             [ -1,  0,  0],
-             [  1,  0,  0]]
-
-#  X | O | O  
-# -----------
-#  O | X | 
-# -----------
-#  X |   |  
+    board = [[0 for _ in range(3)] for _ in range(3)]
 
     for turn in range(9):
         if verbose:
-            print(f"---------- Zug {turn+1} ------------")
             print_board(board)
 
         if turn % 2 == 0:
