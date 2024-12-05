@@ -1,8 +1,8 @@
-#              ________________________________
-#       ______|                                |_____
-#       \     |   14.3 MINIMAX ALGORITHMUS     |    /
-#        )    |________________________________|   (
-#       /________)                          (________\     22.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              _________________________________________
+#       ______|                                         |_____
+#       \     |   14.5 MINIMAX ALGORITHMUS - Teil 2     |    /
+#        )    |_________________________________________|   (
+#       /________)                                  (________\     5.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Der Minimax-Algorithmus ist eine Methode der Entscheidungsfindung in Spielen mit zwei
 # Spielern, die sich abwechseln. Er analysiert alle möglichen Züge und versucht, den
@@ -10,130 +10,16 @@
 # kann der Minimax-Algorithmus verwendet werden, um eine unbesiegbare KI zu erstellen.
 
 
-# ________________________
-#                        /
-# Funktionsweise         (
-# ________________________\
-
-# 1. Ziel: 
-#    - Der Algorithmus maximiert die Punkte für den eigenen Spieler (Maximizer) und
-#      minimiert die Punkte für den Gegner (Minimizer).
-
-# 2. Bewertung:
-#    - Gewinnt der Maximizer, wird ein positiver Wert zurückgegeben (z. B. +10).
-#    - Gewinnt der Minimizer, wird ein negativer Wert zurückgegeben (z. B. -10).
-#    - Ein Unentschieden wird mit 0 bewertet.
-
-# 3. Rekursion: 
-#    - Der Algorithmus simuliert alle möglichen Züge, bewertet deren Ergebnis und wählt
-#      den Zug mit der besten Bewertung.
-
-# 4. Optimierung: 
-#    - Mithilfe von Alpha-Beta-Pruning kann der Algorithmus effizienter gestaltet werden,
-#      indem unnötige Züge ausgeschlossen werden, siehe nächstes Kapitel.
-
-
-# ____________________________________
-#                                    /
-# Erklärung des Minimax-Algorithmus (
-# ___________________________________\
-
-# Der Minimax-Algorithmus ist eine rekursive Methode zur Entscheidungsfindung:
-#
-# - Rekursion: Simuliert alle möglichen Züge und geht tiefer in das Spiel, 
-#   bis ein Endzustand (Gewinn, Verlust, Unentschieden) erreicht wird.
-#
-# - Bewertung: Jeder Endzustand wird mit einer Punktzahl bewertet:
-#    - Gewinn für die KI: +10
-#    - Gewinn für den Spieler: -10
-#    - Unentschieden: 0
-#
-# - Maximierung und Minimierung: 
-#    - Die KI (Maximizer) versucht, die Punktzahl zu maximieren.
-#    - Der Spieler (Minimizer) versucht, die Punktzahl der KI zu minimieren.
-
-# Betrachten wir ein Beispiel: Die KI spielt `O` und ist am Zug.
-# Das Brett sieht aktuell wie folgt aus: 
-# 
-# Start)
-#  X | O |   
-# -----------
-#  O | X | O 
-# -----------
-#  X |   |   
-# 
-# Die KI simuliert alle möglichen Züge für die freien Felder.
-# 
-# 1)              2)              3)
-#    X | O | O       X | O |         X | O |   
-#   -----------     -----------     -----------
-#    O | X | O       O | X | O       O | X | O 
-#   -----------     -----------     -----------
-#    X |   |         X |   | O       X | O |   
-# 
-# Ausgehend von diesen drei Zügen, ergeben sich dann für X die folgenden Möglichkeiten:
-#
-# 1.1)            1.2)                       
-#    X | O | O       X | O | O 
-#   -----------     -----------
-#    O | X | O       O | X | O 
-#   -----------     -----------
-#    X | X |         X |   | X 
-#
-# 2.1)            2.2)           
-#    X | O | X       X | O |  
-#   -----------     -----------
-#    O | X | O       O | X | O 
-#   -----------     -----------
-#    X |   | O       X | X | O 
-#
-# 3.1)            3.2)           
-#    X | O | X       X | O |  
-#   -----------     -----------
-#    O | X | O       O | X | O 
-#   -----------     -----------
-#    X | O |         X | O | X 
-#
-# Bewertung:
-#
-# - Die Züge 1.1), 2.2) bringen für die KI `O` den Gewinn. Sie werden daher mit +10 bewertet.
-#
-# - Die Züge 1.2), 2.1) bringen für den Spieler `X` den Gewinn. Sie werden mit -10 bewertet.
-#
-# - Die Züge 3.1) und 3.2) enden unentschieden und erhalten die Bewertung 0.
-#
-# Die KI wählt nun die Züge aus, welcher für den Spieler `X` am besten sind. Das sind die Züge 
-# mit einer möglichst kleinen Zahl. Am besten sieht man das an dem Spielbaum. 
-#
-#                      Start  
-#           ____________/|\____________
-#          /             |             \
-#         |              |              |
-#        (1) -10        (2) -10        (3) 0          O wählt den grössten Wert. (Maximizer)
-#        / \            / \            / \
-#       /   \          /   \          /   \
-#   (1.1)  (1.2)    (2.1) (2.2)    (3.1) (3.2)        X wählt den kleinesten Wert. (Minimizer)
-#    +10    -10      -10   +10       0     0
-#
-# Nun weiss die KI, dass sie das Spiel nicht gewinnen kann. Bei Zug 1 und 2, wird der Spieler
-# gewinnen. Sie entscheidet sich daher für den Zug 3. 
-
-
-
-
-
-
-
-# ________________________________
-#                                /
-# Implementierung in Tic-Tac-Toe (
-# ________________________________\
+# __________________________________
+#                                  /
+# Implementierung mit Tic-Tac-Toe (
+# _________________________________\
 
 # Im folgenden Beispiel implementieren wir den Minimax-Algorithmus, um eine unbesiegbare
 # KI für Tic-Tac-Toe zu erstellen. Die KI bewertet alle möglichen Züge und wählt den besten.
 
-
 import math
+
 
 # Gibt das Spielfeld aus.
 def print_board(board):
@@ -146,7 +32,6 @@ def print_board(board):
     )
     print("\n"+output+"\n")
            
-
 
 
 # Prüft, ob ein Spieler gewonnen hat.
@@ -166,6 +51,7 @@ def check_winner(board):
     return 0
 
 
+
 # Bewertet den aktuellen Zustand des Spielfelds.
 def evaluate(board):
     winner = check_winner(board)
@@ -176,12 +62,14 @@ def evaluate(board):
     return 0
 
 
+
 # Prüft, ob noch Züge möglich sind.
 def is_moves_left(board):
     for row in board:
         if 0 in row:
             return True
     return False
+
 
 
 # Minimax-Algorithmus zur Bewertung aller möglichen Züge.
@@ -217,6 +105,7 @@ def minimax(board, depth, is_maximizing):
         return best
 
 
+
 # Findet den besten Zug für die KI.
 def find_best_move(board):
     best_value = -math.inf
@@ -235,6 +124,7 @@ def find_best_move(board):
     return best_move
 
 
+
 # Führt den Zug des Spielers aus.
 def player_turn(board):
     while True:
@@ -250,19 +140,8 @@ def player_turn(board):
             print("Ungültige Eingabe. Wähle eine Zahl zwischen 1 und 9.")
 
 
-# Führt den Zug der KI aus. Wählt ein zufälliges, freies Feld.
-def ai_random(board, id=-1, verbose=True):
-    while True:
-        row = random.randint(0, 2)
-        col = random.randint(0, 2)
-        if board[row][col] == 0:
-            board[row][col] = id
-            if verbose:
-                print(f"Die KI wählt Feld {row * 3 + col + 1}.")
-            return
         
-        
-
+# Spiel
 def tic_tac_toe(verbose=True):
     
     if verbose:
@@ -310,8 +189,6 @@ def tic_tac_toe(verbose=True):
     return 0
         
         
-                
-
 
 # Hauptprogramm
 score = {"Spieler": 0, "KI": 0, "Unentschieden":0}
@@ -334,22 +211,6 @@ while round <= 10:
     round += 1
 
 
-# ___________________
-#                   /
-# Zusammenfassung  (
-# __________________\
-
-# In diesem Kapitel hast du gelernt, wie der Minimax-Algorithmus funktioniert und wie
-# er in Tic-Tac-Toe angewendet wird:
-#
-# 1. **Grundkonzepte:** Maximieren der eigenen Punkte und Minimieren der Punkte des Gegners.
-# 2. **Rekursive Bewertung:** Simulieren aller möglichen Züge, um den besten Zug zu finden.
-# 3. **Bewertung des Spiels:** Gewinner und Unentschieden werden bewertet, um den Algorithmus
-#    zu steuern.
-
-# Der Minimax-Algorithmus ist eine grundlegende Technik, die in vielen Spielen mit
-# vollständiger Information (z. B. Schach) verwendet wird. Du kannst diesen Algorithmus
-# erweitern, um komplexere Spiele zu lösen.
 
 
 # ____________________________

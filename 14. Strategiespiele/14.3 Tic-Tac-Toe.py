@@ -1,6 +1,6 @@
 #              ____________________________
 #       ______|                            |_____
-#       \     |    14.2 TIC-TAC-TOE        |    /
+#       \     |    14.3 TIC-TAC-TOE        |    /
 #        )    |____________________________|   (
 #       /________)                      (________\     22.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 

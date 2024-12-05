@@ -1,8 +1,8 @@
-#              _______________________________________
-#       ______|                                       |_____
-#       \     |     14.2 MEHRZEILIGES NIM SPIEL       |    /
-#        )    |_______________________________________|   (
-#       /________)                                (________\     1.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ____________________________________
+#       ______|                                    |_____
+#       \     |    14.2 MEHRZEILIGES NIM SPIEL     |    /
+#        )    |____________________________________|   (
+#       /________)                             (________\     1.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Nim mit mehreren Stapeln erweitert die Strategien und erfordert ein besseres 
 # Verständnis der Spielmechanik. Spieler können nun von beliebigen Stapeln Objekte 
