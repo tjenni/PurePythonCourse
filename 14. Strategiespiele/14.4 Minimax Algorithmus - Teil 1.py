@@ -153,7 +153,7 @@ import math
 
 def print_board(board):
     """Gibt das Tic-Tac-Toe-Spielfeld formatiert auf der Konsole aus."""
-    tags = {1: "X", 0: " ", -1: "O"}
+    tags = {1: "O", 0: " ", -1: "X"}
     row_separator = "-" * (len(board[0]) * 4 - 1)
 
     # Erzeuge den auszugebenden Text für das Brett
@@ -170,7 +170,7 @@ def print_board(board):
 
 def check_winner(board):
     """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück:
-       1 für 'X', -1 für 'O', 0 für keinen Gewinner."""
+       1 für 'O', -1 für 'X', 0 für keinen Gewinner."""
     # Zeilen überprüfen
     for i in range(3):
         if board[i][0] == board[i][1] == board[i][2] != 0:
@@ -197,9 +197,9 @@ def evaluate(board):
        0 für niemanden."""
     winner = check_winner(board)
     if winner == 1:
-        return -10
-    elif winner == -1:
         return 10
+    elif winner == -1:
+        return -10
     return 0
 
 
@@ -239,7 +239,7 @@ def minimax(board, depth, is_maximizing, move_path=""):
         for i in range(3):
             for j in range(3):
                 if board[i][j] == 0:
-                    board[i][j] = -1
+                    board[i][j] = 1
                     # Neue Tiefe, erweitere den move_path um ".ZugNr"
                     child_path = f"{move_path}.{move_index}"
                     val = minimax(board, depth + 1, not is_maximizing, child_path)
@@ -255,7 +255,7 @@ def minimax(board, depth, is_maximizing, move_path=""):
         for i in range(3):
             for j in range(3):
                 if board[i][j] == 0:
-                    board[i][j] = 1
+                    board[i][j] = -1
                     child_path = f"{move_path}.{move_index}"
                     val = minimax(board, depth + 1, not is_maximizing, child_path)
                     board[i][j] = 0
@@ -277,7 +277,7 @@ def find_best_move(board):
     for i in range(3):
         for j in range(3):
             if board[i][j] == 0:
-                board[i][j] = -1
+                board[i][j] = 1
                 move_value = minimax(board, 0, False, f"{k}")
                 board[i][j] = 0
                 k += 1
@@ -296,7 +296,7 @@ def player_turn(board):
             move = int(input("Wähle ein Feld (1-9): ")) - 1
             row, col = divmod(move, 3)
             if board[row][col] == 0:
-                board[row][col] = 1
+                board[row][col] = -1
                 return
             else:
                 print("Dieses Feld ist bereits belegt. Wähle ein anderes.")
@@ -321,9 +321,9 @@ def tic_tac_toe():
     print(" 7 | 8 | 9 ")
     print()
 
-    board = [[  1, -1,  -1],
-             [ -1,  0,  0],
-             [  1,  0,  0]]
+    board = [[ -1,  1,  1],
+             [  1,  0,  0],
+             [ -1,  0,  0]]
 
     for turn in range(9):
         
@@ -337,16 +337,16 @@ def tic_tac_toe():
         else:
             print("Zug der KI:")
             best_move = find_best_move(board)
-            board[best_move[0]][best_move[1]] = -1
+            board[best_move[0]][best_move[1]] = 1
 
         winner = check_winner(board)
         if winner != 0:
             print_board(board)
             
             if winner == 1:
-                print("X hat gewonnen!")
-            elif winner == -1:
                 print("O hat gewonnen!")
+            else:
+                print("X hat gewonnen!")
             
             return winner
 

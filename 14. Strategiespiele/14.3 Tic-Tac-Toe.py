@@ -47,7 +47,7 @@ import random
 
 def print_board(board):
     """Gibt das Tic-Tac-Toe-Spielfeld formatiert auf der Konsole aus."""
-    tags = {1: "X", 0: " ", -1: "O"}
+    tags = {1: "O", 0: " ", -1: "X"}
     row_separator = "-" * (len(board[0]) * 4 - 1)
 
     # Erzeuge den auszugebenden Text für das Brett
@@ -65,7 +65,7 @@ def print_board(board):
    
 def check_winner(board):
     """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück:
-       1 für 'X', -1 für 'O', 0 für keinen Gewinner."""
+       -1 für 'X', 1 für 'O', 0 für keinen Gewinner."""
     # Zeilen überprüfen
     for i in range(3):
         if board[i][0] == board[i][1] == board[i][2] != 0:
@@ -93,7 +93,7 @@ def player_turn(board):
             move = int(input("Wähle ein Feld (1-9): ")) - 1
             row, col = divmod(move, 3)
             if board[row][col] == 0:
-                board[row][col] = 1
+                board[row][col] = -1
                 return
             else:
                 print("Dieses Feld ist bereits belegt. Wähle ein anderes.")
@@ -102,7 +102,7 @@ def player_turn(board):
 
 
 
-def ai_random(board, id=-1, verbose=True):
+def ai_random(board, id=1, verbose=True):
     """Funktion für die zufällige KI"""
     while True:
         row = random.randint(0, 2)
@@ -144,16 +144,16 @@ def tic_tac_toe(verbose=True):
         if turn % 2 == 0:
             player_turn(board)
         else:
-            ai_random(board, -1, verbose)
+            ai_random(board, 1, verbose)
 
         winner = check_winner(board)
         if winner:
             if verbose:
                 print_board(board)
                 if winner == 1:
-                    print("X hat gewonnen!")
-                else:
                     print("O hat gewonnen!")
+                else:
+                    print("X hat gewonnen!")
                 
             return winner
 
@@ -171,9 +171,9 @@ def simulate_player_vs_minimax(rounds=10):
         result = tic_tac_toe()
         
         if result == 1:
-            score["Spieler"] += 1
-        elif result == -1:
             score["KI"] += 1
+        elif result == -1:
+            score["Spieler"] += 1
         else:
             score["Unentschieden"] += 1
 

@@ -35,7 +35,7 @@ import math
 
 def print_board(board):
     """Gibt das Tic-Tac-Toe-Spielfeld formatiert auf der Konsole aus."""
-    tags = {1: "X", 0: " ", -1: "O"}
+    tags = {1: "O", 0: " ", -1: "X"}
     row_separator = "-" * (len(board[0]) * 4 - 1)
 
     # Erzeuge den auszugebenden Text für das Brett
@@ -53,7 +53,7 @@ def print_board(board):
 
 def check_winner(board):
     """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück:
-       1 für 'X', -1 für 'O', 0 für keinen Gewinner."""
+       1 für 'O', -1 für 'X', 0 für keinen Gewinner."""
     # Zeilen überprüfen
     for i in range(3):
         if board[i][0] == board[i][1] == board[i][2] != 0:
@@ -81,9 +81,9 @@ def evaluate(board):
        0 für niemanden."""
     winner = check_winner(board)
     if winner == 1:
-        return -10
-    elif winner == -1:
         return 10
+    elif winner == -1:
+        return -10
     return 0
 
 
@@ -109,7 +109,7 @@ def minimax(board, depth, is_maximizing):
         for i in range(3):
             for j in range(3):
                 if board[i][j] == 0:
-                    board[i][j] = -1  # KI-Zug platzieren
+                    board[i][j] = 1  # KI-Zug platzieren
                     best = max(best, minimax(board, depth + 1, False))
                     board[i][j] = 0  # Zug zurücknehmen
         return best
@@ -119,7 +119,7 @@ def minimax(board, depth, is_maximizing):
         for i in range(3):
             for j in range(3):
                 if board[i][j] == 0:
-                    board[i][j] = 1  # Spielerzug platzieren
+                    board[i][j] = -1  # Spielerzug platzieren
                     best = min(best, minimax(board, depth + 1, True))
                     board[i][j] = 0  # Zug zurücknehmen
         return best
@@ -133,7 +133,7 @@ def find_best_move(board):
     for i in range(3):
         for j in range(3):
             if board[i][j] == 0:
-                board[i][j] = -1
+                board[i][j] = 1
                 move_value = minimax(board, 0, False)
                 board[i][j] = 0
                 if move_value > best_value:
@@ -150,7 +150,7 @@ def player_turn(board):
             move = int(input("Wähle ein Feld (1-9): ")) - 1
             row, col = divmod(move, 3)
             if 0 <= row < 3 and 0 <= col < 3 and board[row][col] == 0:
-                board[row][col] = 1
+                board[row][col] = -1
                 return
             else:
                 print("Ungültiger Zug. Versuche es erneut.")
@@ -190,22 +190,24 @@ def tic_tac_toe(verbose=True):
             if verbose:
                 print("Zug der KI:")
             best_move = find_best_move(board)
-            board[best_move[0]][best_move[1]] = -1
+            board[best_move[0]][best_move[1]] = 1
 
         winner = check_winner(board)
         if winner != 0:
             if verbose:
                 print_board(board)
                 if winner == 1:
-                    print("X hat gewonnen!")
-                else:
                     print("O hat gewonnen!")
+                else:
+                    print("X hat gewonnen!")
+
             return winner
 
     if verbose:
         print_board(board)
         print("Das Spiel endet unentschieden.")
     return 0
+
 
 
 def simulate_player_vs_minimax(rounds=10):
@@ -216,9 +218,9 @@ def simulate_player_vs_minimax(rounds=10):
         result = tic_tac_toe()
 
         if result == 1:
-            score["Spieler"] += 1
-        elif result == -1:
             score["KI"] += 1
+        elif result == -1:
+            score["Spieler"] += 1
         else:
             score["Unentschieden"] += 1
 
@@ -330,7 +332,7 @@ def minimax_with_depth(board, depth, max_depth, is_maximizing):
         for i in range(3):
             for j in range(3):
                 if board[i][j] == 0:
-                    board[i][j] = -1
+                    board[i][j] = 1
                     best = max(best, minimax_with_depth(board, depth + 1, max_depth, False))
                     board[i][j] = 0
         return best
@@ -339,7 +341,7 @@ def minimax_with_depth(board, depth, max_depth, is_maximizing):
         for i in range(3):
             for j in range(3):
                 if board[i][j] == 0:
-                    board[i][j] = 1
+                    board[i][j] = -1
                     best = min(best, minimax_with_depth(board, depth + 1, max_depth, True))
                     board[i][j] = 0
         return best
@@ -352,7 +354,7 @@ def find_best_move_with_depth(board, max_depth):
     for i in range(3):
         for j in range(3):
             if board[i][j] == 0:
-                board[i][j] = -1
+                board[i][j] = 1
                 move_value = minimax_with_depth(board, 0, max_depth, False)
                 board[i][j] = 0
                 if move_value > best_value:
