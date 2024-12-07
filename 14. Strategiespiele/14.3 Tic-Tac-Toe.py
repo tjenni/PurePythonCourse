@@ -1,8 +1,8 @@
-#              ____________________________
-#       ______|                            |_____
-#       \     |    14.3 TIC-TAC-TOE        |    /
-#        )    |____________________________|   (
-#       /________)                      (________\     22.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              __________________________
+#       ______|                          |_____
+#       \     |    14.3 TIC-TAC-TOE      |    /
+#        )    |__________________________|   (
+#       /________)                   (________\     7.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Tic-Tac-Toe, auch bekannt als „Kreis und Kreuz“, ist eines der bekanntesten
 # Strategiespiele der Welt. Es bietet eine einfache Möglichkeit, grundlegende
@@ -12,8 +12,6 @@
 # In diesem Kapitel lernst du, wie du Tic-Tac-Toe in Python umsetzt. Wir starten
 # mit einer textbasierten Version des Spiels und erweitern sie, um einfache
 # KI-Strategien hinzuzufügen.
-
-
 
 
 # _____________________________
@@ -47,38 +45,49 @@ import random
 
 
 
-# Gibt das Spielfeld aus.
 def print_board(board):
+    """Gibt das Tic-Tac-Toe-Spielfeld formatiert auf der Konsole aus."""
     tags = {1: "X", 0: " ", -1: "O"}
     row_separator = "-" * (len(board[0]) * 4 - 1)
 
-    output = "\n".join(
-        "|".join(f" {tags[cell]} " for cell in row) + ("\n" + row_separator if i < len(board) - 1 else "")
-        for i, row in enumerate(board)
-    )
-    print("\n"+output+"\n")
+    # Erzeuge den auszugebenden Text für das Brett
+    rows = []
+    for i, row in enumerate(board):
+        row_text = "|".join(f" {tags[cell]} " for cell in row)
+        if i < len(board) - 1:
+            row_text += "\n" + row_separator
+        rows.append(row_text)
+
+    output = "\n".join(rows)
+    print("\n" + output + "\n")
             
-            
-# Prüft, ob ein Spieler gewonnen hat.
+
+   
 def check_winner(board):
-    # Horizontale und vertikale Linien
+    """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück:
+       1 für 'X', -1 für 'O', 0 für keinen Gewinner."""
+    # Zeilen überprüfen
     for i in range(3):
-        if board[i][0] == board[i][1] and board[i][1] == board[i][2] and board[i][0] != 0:
+        if board[i][0] == board[i][1] == board[i][2] != 0:
             return board[i][0]
-        if board[0][i] == board[1][i] and board[1][i] == board[2][i] and board[0][i] != 0:
+
+    # Spalten überprüfen
+    for i in range(3):
+        if board[0][i] == board[1][i] == board[2][i] != 0:
             return board[0][i]
 
-    # Diagonale Linien
-    if board[0][0] == board[1][1] and  board[1][1] == board[2][2] and board[0][0] != 0:
+    # Diagonalen überprüfen
+    if board[0][0] == board[1][1] == board[2][2] != 0:
         return board[0][0]
-    if board[0][2] == board[1][1] and  board[1][1] == board[2][0] and board[0][2] != 0:
+    if board[0][2] == board[1][1] == board[2][0] != 0:
         return board[0][2]
 
-    return None
+    return 0
 
 
-# Führt den Zug des Spielers aus.
+
 def player_turn(board):
+    """Lässt den Spieler 'X' einen Zug machen, indem er eine Zahl (1-9) eingibt."""
     while True:
         try:
             move = int(input("Wähle ein Feld (1-9): ")) - 1
@@ -93,8 +102,8 @@ def player_turn(board):
 
 
 
-# Führt den Zug der KI aus. Wählt ein zufälliges, freies Feld.
 def ai_random(board, id=-1, verbose=True):
+    """Funktion für die zufällige KI"""
     while True:
         row = random.randint(0, 2)
         col = random.randint(0, 2)
@@ -105,8 +114,11 @@ def ai_random(board, id=-1, verbose=True):
             return
 
 
-# Hauptspielschleife für Tic-Tac-Toe.
+
 def tic_tac_toe(verbose=True):
+    """Führt ein vollständiges Tic-Tac-Toe-Spiel durch.
+       Spieler ist 'X', KI ist 'O'.
+       Der Spieler beginnt."""
     
     if verbose:
         print("Tic-Tac-Toe")
@@ -150,32 +162,31 @@ def tic_tac_toe(verbose=True):
     return 0
 
 
-# Hauptprogramm starten
 
-score = {"Spieler": 0, "KI": 0, "Unentschieden":0}
-round = 1
-while round <= 10:
-    winner = tic_tac_toe()
+def simulate_player_vs_minimax(rounds=10):
+    """Simulation mehrer Runden."""
 
-    if winner == 1:
-        score["Spieler"] += 1
-    elif winner == -1:
-        score["KI"] += 1
-    else:
-        score["Unentschieden"] += 1
-    
-    print(f"\nPUNKTESTAND Runde {round}")
-    for name, points in score.items():
-        print(f"{name}: {points}")
+    score = {"Spieler": 0, "KI": 0, "Unentschieden": 0}
+    for game in range(1, 11):
+        result = tic_tac_toe()
         
-    print()
-    round += 1
+        if result == 1:
+            score["Spieler"] += 1
+        elif result == -1:
+            score["KI"] += 1
+        else:
+            score["Unentschieden"] += 1
+
+        print(f"\nErgebnisse nach Runde {game}:")
+        for name, punkte in score.items():
+            print(f"{name}: {punkte}")
+        print()
 
 
 
-
-
-
+# Hauptprogramm starten
+if __name__ == "__main__":
+    simulate_player_vs_minimax()
 
 
 
@@ -246,12 +257,105 @@ while round <= 10:
 # Aufgabe 1  /
 # __________/
 #
-# Lass zwei Random-KIs 500 Partien gegeneinander spielen. 
+# Schreibe eine Funktion `choose_side()`, mit der der Spieler auswählen kann, 
+# ob er als 'X' oder als 'O' spielen möchte. Verwende diese Funktion vor dem Start 
+# des Spiels, um festzulegen, wer zuerst zieht.
+
+
+# Füge hier deine Lösung ein.
 
 
 
 
+# ___________
+#            \
+# Aufgabe 2  /
+# __________/
+#
+# Füge nach jedem Spiel eine Ausgabe hinzu, in der die Gesamtanzahl der 
+# gespielten Züge angezeigt wird. So kann der Spieler am Ende sehen, 
+# wie lange die Partie gedauert hat.
+
+
+# Füge hier deine Lösung ein.
 
 
 
+
+# ___________
+#            \
+# Aufgabe 3  /
+# __________/
+#
+# Simuliere 500 Partien zwischen zwei Random-KI's.
+
+
+# Füge hier deine Lösung ein.
+
+
+
+
+#  ___ _  _ ___  ___ 
+# | __| \| |   \| __|
+# | _|| .` | |) | _| 
+# |___|_|\_|___/|___|
+#                
+# -=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=-=x=-=x=-=x=-=-=
+
+
+
+
+# >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+#  _    _   _                                  
+# | |  (_)_(_)___ _   _ _ __   __ _  ___ _ __  
+# | |   / _ \/ __| | | | '_ \ / _` |/ _ \ '_ \ 
+# | |__| (_) \__ \ |_| | | | | (_| |  __/ | | |
+# |_____\___/|___/\__,_|_| |_|\__, |\___|_| |_|
+#                             |___/            
+
+
+# ___________
+#            \
+# Aufgabe 1  /
+# __________/
+#
+# Schreibe eine Funktion `choose_side()`, mit der der Spieler auswählen kann, 
+# ob er als 'X' oder als 'O' spielen möchte. Verwende diese Funktion vor dem Start 
+# des Spiels, um festzulegen, wer zuerst zieht.
+
+
+# Füge hier deine Lösung ein.
+
+
+
+
+# ___________
+#            \
+# Aufgabe 2  /
+# __________/
+#
+# Füge nach jedem Spiel eine Ausgabe hinzu, in der die Gesamtanzahl der 
+# gespielten Züge angezeigt wird. So kann der Spieler am Ende sehen, 
+# wie lange die Partie gedauert hat.
+
+
+# Füge hier deine Lösung ein.
+
+
+
+
+# ___________
+#            \
+# Aufgabe 3  /
+# __________/
+#
+# Simuliere 500 Partien zwischen zwei Random-KI's.
+
+
+# Füge hier deine Lösung ein.
+
+
+
+
+# >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
 

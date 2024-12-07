@@ -2,37 +2,15 @@
 #       ______|                                         |_____
 #       \     |   14.4 MINIMAX ALGORITHMUS - Teil 1     |    /
 #        )    |_________________________________________|   (
-#       /________)                                  (________\     5.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#       /________)                                  (________\     7.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-# Der Minimax-Algorithmus ist eine Methode der Entscheidungsfindung in Spielen mit zwei
-# Spielern, die sich abwechseln. Er analysiert alle möglichen Züge und versucht, den
-# optimalen Zug zu finden, indem er die Züge des Gegners vorhersieht. In Tic-Tac-Toe 
-# kann der Minimax-Algorithmus verwendet werden, um eine unbesiegbare KI zu erstellen.
+# Der Minimax-Algorithmus ist ein rekursives Verfahren, mit dem zwei Spieler 
+# abwechselnd agieren. Dabei versucht der eine Spieler (Maximizer) seine Gewinnchancen 
+# zu maximieren, während der andere (Minimizer) diese minimiert.
 
-
-# ________________________
-#                        /
-# Funktionsweise         (
-# ________________________\
-
-# 1. Ziel: 
-#    - Der Algorithmus maximiert die Punkte für den eigenen Spieler (Maximizer) und
-#      minimiert die Punkte für den Gegner (Minimizer).
-
-# 2. Bewertung:
-#    - Gewinnt der Maximizer, wird ein positiver Wert zurückgegeben (z. B. +10).
-#    - Gewinnt der Minimizer, wird ein negativer Wert zurückgegeben (z. B. -10).
-#    - Ein Unentschieden wird mit 0 bewertet.
-
-# 3. Rekursion: 
-#    - Der Algorithmus simuliert alle möglichen Züge, bewertet deren Ergebnis und wählt
-#      den Zug mit der besten Bewertung.
-
-# 4. Optimierung: 
-#    - Mithilfe von Alpha-Beta-Pruning kann der Algorithmus effizienter gestaltet werden,
-#      indem unnötige Züge ausgeschlossen werden, siehe nächstes Kapitel.
-
-
+# Der Algorithmus analysiert alle möglichen Züge und versucht, den optimalen Zug zu 
+# finden, indem er die Züge des Gegners vorhersieht. In Tic-Tac-Toe kann der 
+# Minimax-Algorithmus verwendet werden, um eine unbesiegbare KI zu erstellen.
 
 
 # ____________________________________
@@ -40,24 +18,30 @@
 # Erklärung des Minimax-Algorithmus (
 # ___________________________________\
 
-# Der Minimax-Algorithmus ist eine rekursive Methode zur Entscheidungsfindung:
+# Der Minimax-Algorithmus ist eine rekursive Methode zur Entscheidungsfindung.
+# Das Ziel ist es, am Ende einen Zug auszuwählen, welcher aus Sicht der KI (Maximizer) 
+# optimal ist, unter der Annahme, dass der Gegner (Minimizer) ebenfalls optimal spielt.
 #
-# - Rekursion: Simuliert alle möglichen Züge und geht tiefer in das Spiel, 
-#   bis ein Endzustand (Gewinn, Verlust, Unentschieden) erreicht wird.
+# - Rekursion: 
+#   Simuliert alle möglichen Züge und geht tiefer in das Spiel, bis ein Endzustand 
+#   (Gewinn, Verlust, Unentschieden) erreicht wird.
 #
-# - Bewertung: Jeder Endzustand wird mit einer Punktzahl bewertet:
+# - Bewertung
+#   Jeder Endzustand wird mit einer Punktzahl bewertet. Wir nutzen +10, -10 und 0 
+#   als einfache Punkteskala. +10 bedeutet ein eindeutiger Vorteil für die KI, -10 
+#   ein Verlust, und 0 ein neutraler Ausgang wie ein Unentschieden.
 #    - Gewinn für die KI: +10
 #    - Gewinn für den Spieler: -10
 #    - Unentschieden: 0
 #
-# - Maximierung und Minimierung: 
-#    - Die künstliche Intelligenz KI (Maximizer) versucht, die Punktzahl zu maximieren.
-#    - Der Spieler (Minimizer) versucht, die Punktzahl der KI zu minimieren.
+# - Maximierung und Minimierung
+#   Die künstliche Intelligenz KI (Maximizer) versucht, die Punktzahl zu maximieren.
+#   Der Spieler (Minimizer) versucht, die Punktzahl der KI zu minimieren.
 
 # Betrachten wir ein Beispiel: Die KI spielt `O` und ist am Zug.
 # Das Brett sieht aktuell wie folgt aus: 
 # 
-# Start)
+# (Start)
 #  X | O | O  
 # -----------
 #  O | X | 
@@ -66,7 +50,7 @@
 # 
 # Die KI `O` simuliert alle möglichen Züge für die freien Felder.
 # 
-# 1)              2)              3)
+# (1)            (2)             (3)
 #    X | O | O       X | O | O       X | O | O  
 #   -----------     -----------     -----------
 #    O | X | O       O | X |         O | X |   
@@ -76,21 +60,21 @@
 # Ausgehend von diesen drei Zügen, ergeben sich dann für X die folgenden 
 # sechs Möglichkeiten:
 #
-# 1.1)            1.2)                       
+# (1.1)           (1.2)                       
 #    X | O | O       X | O | O 
 #   -----------     -----------
 #    O | X | O       O | X | O 
 #   -----------     -----------
 #    X | X |         X |   | X 
 #
-# 2.1)            2.2)           
+# (2.1)           (2.2)           
 #    X | O | O       X | O | O
 #   -----------     -----------
 #    O | X | X       O | X |   
 #   -----------     -----------
 #    X | O |         X | O | X 
 #
-# 3.1)            3.2)           
+# (3.1)           (3.2)           
 #    X | O | O       X | O | O 
 #   -----------     -----------
 #    O | X | X       O | X |   
@@ -152,6 +136,9 @@
 # grössten Punktzahl entscheiden. Damit vermeided die KI eine Niederlage und 
 # erreicht ein Unentschieden. 
 
+# Die KI ist der Maximizer (will also hohe Punktzahlen erreichen), während der menschliche 
+# Spieler der Minimizer ist. 
+
 
 
 # _________________________________
@@ -164,37 +151,50 @@
 
 import math
 
-# Gibt das Spielfeld aus.
 def print_board(board):
+    """Gibt das Tic-Tac-Toe-Spielfeld formatiert auf der Konsole aus."""
     tags = {1: "X", 0: " ", -1: "O"}
     row_separator = "-" * (len(board[0]) * 4 - 1)
 
-    output = "\n".join(
-        "|".join(f" {tags[cell]} " for cell in row) + ("\n" + row_separator if i < len(board) - 1 else "")
-        for i, row in enumerate(board)
-    )
-    print("\n"+output+"\n")
+    # Erzeuge den auszugebenden Text für das Brett
+    rows = []
+    for i, row in enumerate(board):
+        row_text = "|".join(f" {tags[cell]} " for cell in row)
+        if i < len(board) - 1:
+            row_text += "\n" + row_separator
+        rows.append(row_text)
+
+    output = "\n".join(rows)
+    print("\n" + output + "\n")
            
 
-# Prüft, ob ein Spieler gewonnen hat.
 def check_winner(board):
-    
+    """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück:
+       1 für 'X', -1 für 'O', 0 für keinen Gewinner."""
+    # Zeilen überprüfen
     for i in range(3):
-        if board[i][0] == board[i][1] == board[i][2] and board[i][0] != 0:
+        if board[i][0] == board[i][1] == board[i][2] != 0:
             return board[i][0]
-        if board[0][i] == board[1][i] == board[2][i] and board[0][i] != 0:
+
+    # Spalten überprüfen
+    for i in range(3):
+        if board[0][i] == board[1][i] == board[2][i] != 0:
             return board[0][i]
 
-    if board[0][0] == board[1][1] == board[2][2] and board[0][0] != 0:
+    # Diagonalen überprüfen
+    if board[0][0] == board[1][1] == board[2][2] != 0:
         return board[0][0]
-    if board[0][2] == board[1][1] == board[2][0] and board[0][2] != 0:
+    if board[0][2] == board[1][1] == board[2][0] != 0:
         return board[0][2]
 
     return 0
 
 
-# Bewertet den aktuellen Zustand des Spielfelds.
 def evaluate(board):
+    """Bewertet den Zustand des Boards:
+       +10 für 'O' Gewinn (KI),
+       -10 für 'X' Gewinn (Spieler),
+       0 für niemanden."""
     winner = check_winner(board)
     if winner == 1:
         return -10
@@ -211,49 +211,65 @@ def is_moves_left(board):
     return False
 
 
-# Minimax-Algorithmus zur Bewertung aller möglichen Züge.
-def minimax(board, depth, is_maximizing, move=""):
 
+def minimax(board, depth, is_maximizing, move_path=""):
+    """Implementiert den Minimax-Algorithmus, um die Spielzüge zu bewerten."""
+    
+    indent = "  " * depth  # 2 Leerzeichen pro Tiefe für bessere Übersicht
+    
     score = evaluate(board)
     if score in [10, -10] or not is_moves_left(board):
+        # Endzustand erreicht
+        print(f"{indent}{move_path} Endzustand: score={score}")
         return score
     
-    if depth >= 0:
-        if is_maximizing:
-            print(f"{move}) Player")
-        else:
-            print(f"{move}) KI")
+    # Wer ist am Zug? KI (is_maximizing=True) = "O", sonst "X"
+    if is_maximizing:
+        current_player = "O"
+    else:
+        current_player = "X"
+    
+    if depth == 0:
         print_board(board)
+    print(f"{indent}{move_path} Tiefe={depth}, Spieler={current_player}")
 
-    # Suche den Zug mit der maximalen Bewertung
     if is_maximizing:
         best = -math.inf
-        k = 1
+        move_index = 1
         for i in range(3):
             for j in range(3):
                 if board[i][j] == 0:
                     board[i][j] = -1
-                    best = max(best, minimax(board, depth + 1, not is_maximizing, move+f".{k}"))
+                    # Neue Tiefe, erweitere den move_path um ".ZugNr"
+                    child_path = f"{move_path}.{move_index}"
+                    val = minimax(board, depth + 1, not is_maximizing, child_path)
                     board[i][j] = 0
-                    k += 1
+                    print(f"{indent}{child_path} Zug O->({i},{j}), Wert={val}")
+                    best = max(best, val)
+                    move_index += 1
+        print(f"{indent}{move_path} Bester Wert für O (Maximizer) an Tiefe {depth}: {best}")
         return best
-
-    # Suche den Zug mit der minimalen Bewertung
     else:
         best = math.inf
-        k = 1
+        move_index = 1
         for i in range(3):
             for j in range(3):
                 if board[i][j] == 0:
                     board[i][j] = 1
-                    best = min(best, minimax(board, depth + 1, not is_maximizing, move+f".{k}"))
+                    child_path = f"{move_path}.{move_index}"
+                    val = minimax(board, depth + 1, not is_maximizing, child_path)
                     board[i][j] = 0
-                    k += 1
+                    print(f"{indent}{child_path} Zug X->({i},{j}), Wert={val}")
+                    best = min(best, val)
+                    move_index += 1
+        print(f"{indent}{move_path} Bester Wert für X (Minimizer) an Tiefe {depth}: {best}")
         return best
 
 
-# Findet den besten Zug für die KI.
+
 def find_best_move(board):
+    """Findet den besten Zug für die KI mittels Minimax."""
+
     best_value = -math.inf
     best_move = (-1, -1)
     
@@ -272,8 +288,9 @@ def find_best_move(board):
     return best_move
 
 
-# Führt den Zug des Spielers aus.
+
 def player_turn(board):
+    """Lässt den Spieler 'X' einen Zug machen, indem er eine Zahl (1-9) eingibt."""
     while True:
         try:
             move = int(input("Wähle ein Feld (1-9): ")) - 1
@@ -286,10 +303,13 @@ def player_turn(board):
         except (ValueError, IndexError):
             print("Ungültige Eingabe. Wähle eine Zahl zwischen 1 und 9.")
 
-        
+
 
 def tic_tac_toe():
-    
+    """Führt ein vollständiges Tic-Tac-Toe-Spiel durch.
+       Spieler ist 'X', KI ist 'O'.
+       Der Spieler beginnt."""
+
     print("Willkommen zu Tic-Tac-Toe mit unbesiegbarer KI!")
     print("Spieler ist 'X', KI ist 'O'.")
     print("Das Spielfeld hat folgende Nummerierung:")
@@ -300,8 +320,6 @@ def tic_tac_toe():
     print("-----------")
     print(" 7 | 8 | 9 ")
     print()
-
-    # board = [[0 for _ in range(3)] for _ in range(3)]
 
     board = [[  1, -1,  -1],
              [ -1,  0,  0],
@@ -337,11 +355,10 @@ def tic_tac_toe():
             print("Das Spiel endet unentschieden.")
             
             return 0
-        
 
-
-# Hauptprogramm
-tic_tac_toe()
+# Hauptprogramm starten
+if __name__ == "__main__":
+    tic_tac_toe()
 
 
 
@@ -350,6 +367,11 @@ tic_tac_toe()
 #                   /
 # Zusammenfassung  (
 # __________________\
+
+# Zusammengefasst nutzt Minimax eine Baumdarstellung aller zukünftigen Züge, bewertet 
+# jeden Endzustand und wählt dann - abhängig von der Spielerrolle (Maximizer oder Minimizer) 
+# - den optimalen Zug aus. Damit erreicht man in Spielen wie Tic-Tac-Toe eine unbesiegbare KI, 
+# solange der Suchraum vollständig berechnet werden kann.
 
 # In diesem Kapitel hast du gelernt, wie der Minimax-Algorithmus funktioniert und wie
 # er in Tic-Tac-Toe angewendet wird:
@@ -385,49 +407,6 @@ tic_tac_toe()
 
 
 # Füge hier deine Lösung ein.
-
-
-
-
-# ___________
-#            \
-# Aufgabe 2  /
-# __________/
-#
-# Erstelle eine neue Funktion `tic_tac_toe_ki_vs_ki()`, in der zwei Minimax-KIs gegeneinander spielen.
-# Beide KIs sollen den Minimax-Algorithmus verwenden, jedoch mit unterschiedlicher Bewertungstiefe:
-# - Die erste KI soll den Spielbaum bis zu einer Tiefe von 3 betrachten.
-# - Die zweite KI soll den Spielbaum bis zu einer Tiefe von 5 betrachten.
-#
-# Lass die beiden KIs 100 Spiele gegeneinander spielen und bestimme die Ergebnisse:
-# - Welche KI gewinnt häufiger?
-# - Wie viele Spiele enden unentschieden?
-#
-# Hinweis: Passe die `minimax()`-Funktion so an, dass sie die maximale Rekursionstiefe berücksichtigt.
-
-
-# Füge hier deine Lösung ein.
-
-
-
-
-# ___________
-#            \
-# Aufgabe 3  /
-# __________/
-#
-# Schreibe eine Funktion `evaluate_v2(board)`, die die Bewertung des Spielfelds
-# verbessert. Zusätzlich zu Gewinn, Verlust oder Unentschieden soll die Funktion
-# auch berücksichtigen:
-# 
-# - Wie viele Züge nötig sind, um zu gewinnen oder zu verlieren.
-# - Ein schnellerer Sieg oder ein langsamerer Verlust soll eine höhere Bewertung erhalten.
-#
-# Implementiere diese Funktion und ersetze die bisherige `evaluate(board)`-Funktion.
-
-
-# Füge hier deine Lösung ein.
-
 
 
 
@@ -475,16 +454,21 @@ tic_tac_toe()
 '''
 import random
 
-# Funktion für die zufällige KI
+...
+
+
 def ai_random(board):
+    """Funktion für die zufällige KI"""
     while True:
         row = random.randint(0, 2)
         col = random.randint(0, 2)
         if board[row][col] == 0:
             return row, col
 
-# Funktion, die die zufällige KI gegen die Minimax-KI antreten lässt
+
+
 def simulate_random_vs_minimax(rounds=100):
+    """Funktion, die die zufällige KI gegen die Minimax-KI antreten lässt."""
     results = {"Random KI": 0, "Minimax KI": 0, "Draw": 0}
 
     for _ in range(rounds):
@@ -518,171 +502,6 @@ print(simulate_random_vs_minimax())
 '''
 
 
-
-# ___________
-#            \
-# Aufgabe 2  /
-# __________/
-#
-# Erstelle eine neue Funktion `tic_tac_toe_ki_vs_ki()`, in der zwei Minimax-KIs gegeneinander spielen.
-# Beide KIs sollen den Minimax-Algorithmus verwenden, jedoch mit unterschiedlicher Bewertungstiefe:
-# - Die erste KI soll den Spielbaum bis zu einer Tiefe von 3 betrachten.
-# - Die zweite KI soll den Spielbaum bis zu einer Tiefe von 5 betrachten.
-#
-# Lass die beiden KIs 100 Spiele gegeneinander spielen und bestimme die Ergebnisse:
-# - Welche KI gewinnt häufiger?
-# - Wie viele Spiele enden unentschieden?
-#
-# Hinweis: Passe die `minimax()`-Funktion so an, dass sie die maximale Rekursionstiefe berücksichtigt.
-
-
-'''
-# Angepasster Minimax-Algorithmus mit Tiefe
-def minimax_with_depth(board, depth, max_depth, is_maximizing):
-    score = evaluate(board)
-
-    if score in [10, -10] or not is_moves_left(board) or depth == max_depth:
-        return score
-
-    if is_maximizing:
-        best = -math.inf
-        for i in range(3):
-            for j in range(3):
-                if board[i][j] == 0:
-                    board[i][j] = -1
-                    best = max(best, minimax_with_depth(board, depth + 1, max_depth, False))
-                    board[i][j] = 0
-        return best
-    else:
-        best = math.inf
-        for i in range(3):
-            for j in range(3):
-                if board[i][j] == 0:
-                    board[i][j] = 1
-                    best = min(best, minimax_with_depth(board, depth + 1, max_depth, True))
-                    board[i][j] = 0
-        return best
-
-# Funktion für die KI mit Tiefe
-def find_best_move_with_depth(board, max_depth):
-    best_value = -math.inf
-    best_move = (-1, -1)
-
-    for i in range(3):
-        for j in range(3):
-            if board[i][j] == 0:
-                board[i][j] = -1
-                move_value = minimax_with_depth(board, 0, max_depth, False)
-                board[i][j] = 0
-                if move_value > best_value:
-                    best_value = move_value
-                    best_move = (i, j)
-
-    return best_move
-
-# Simulation der Minimax-KIs mit unterschiedlicher Tiefe
-def simulate_minimax_vs_minimax(depth1, depth2, rounds=100):
-    results = {f"Minimax KI (Tiefe {depth1})": 0, f"Minimax KI (Tiefe {depth2})": 0, "Draw": 0}
-
-    for _ in range(rounds):
-        board = [[0 for _ in range(3)] for _ in range(3)]
-
-        for turn in range(9):
-            if turn % 2 == 0:
-                move = find_best_move_with_depth(board, depth1)
-                board[move[0]][move[1]] = 1
-            else:
-                move = find_best_move_with_depth(board, depth2)
-                board[move[0]][move[1]] = -1
-
-            winner = check_winner(board)
-            if winner == 1:
-                results[f"Minimax KI (Tiefe {depth1})"] += 1
-                break
-            elif winner == -1:
-                results[f"Minimax KI (Tiefe {depth2})"] += 1
-                break
-
-        if not any(0 in row for row in board):
-            results["Draw"] += 1
-
-    return results
-
-# Simulation starten
-print(simulate_minimax_vs_minimax(3, 5))
-'''
-
-
-
-
-# ___________
-#            \
-# Aufgabe 3  /
-# __________/
-#
-# Schreibe eine Funktion `evaluate_v2(board)`, die die Bewertung des Spielfelds
-# verbessert. Zusätzlich zu Gewinn, Verlust oder Unentschieden soll die Funktion
-# auch berücksichtigen:
-# 
-# - Wie viele Züge nötig sind, um zu gewinnen oder zu verlieren.
-# - Ein schnellerer Sieg oder ein langsamerer Verlust soll eine höhere Bewertung erhalten.
-#
-# Implementiere diese Funktion und ersetze die bisherige `evaluate(board)`-Funktion.
-
-
-'''
-# Erweiterte Bewertungsfunktion
-def evaluate_v2(board, depth):
-    winner = check_winner(board)
-    if winner == 1:
-        return -10 + depth  # Schnellerer Verlust weniger schwerwiegend
-    elif winner == -1:
-        return 10 - depth  # Schnellerer Sieg besser bewertet
-    return 0
-
-# Anpassung von minimax(), um evaluate_v2() zu verwenden
-def minimax_with_evaluate_v2(board, depth, is_maximizing):
-    score = evaluate_v2(board, depth)
-
-    if score in [10, -10] or not is_moves_left(board):
-        return score
-
-    if is_maximizing:
-        best = -math.inf
-        for i in range(3):
-            for j in range(3):
-                if board[i][j] == 0:
-                    board[i][j] = -1
-                    best = max(best, minimax_with_evaluate_v2(board, depth + 1, False))
-                    board[i][j] = 0
-        return best
-    else:
-        best = math.inf
-        for i in range(3):
-            for j in range(3):
-                if board[i][j] == 0:
-                    board[i][j] = 1
-                    best = min(best, minimax_with_evaluate_v2(board, depth + 1, True))
-                    board[i][j] = 0
-        return best
-
-# Neue KI mit evaluate_v2 verwenden
-def find_best_move_with_evaluate_v2(board):
-    best_value = -math.inf
-    best_move = (-1, -1)
-
-    for i in range(3):
-        for j in range(3):
-            if board[i][j] == 0:
-                board[i][j] = -1
-                move_value = minimax_with_evaluate_v2(board, 0, False)
-                board[i][j] = 0
-                if move_value > best_value:
-                    best_value = move_value
-                    best_move = (i, j)
-
-    return best_move
-'''
-
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
+
 
