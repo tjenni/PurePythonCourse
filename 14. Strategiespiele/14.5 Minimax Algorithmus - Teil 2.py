@@ -53,21 +53,19 @@ def print_board(board):
 
 def check_winner(board):
     """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück:
-       1 für 'O', -1 für 'X', 0 für keinen Gewinner."""
-    # Zeilen überprüfen
+       -1 für 'X', 1 für 'O', 0 für keinen Gewinner."""
     for i in range(3):
-        if board[i][0] == board[i][1] == board[i][2] != 0:
+        # Zeilen überprüfen
+        if abs(board[i][0] + board[i][1] + board[i][2]) == 3:
             return board[i][0]
-
-    # Spalten überprüfen
-    for i in range(3):
-        if board[0][i] == board[1][i] == board[2][i] != 0:
+        # Spalten überprüfen
+        if abs(board[0][i] + board[1][i] + board[2][i]) == 3:
             return board[0][i]
 
     # Diagonalen überprüfen
-    if board[0][0] == board[1][1] == board[2][2] != 0:
+    if abs(board[0][0] + board[1][1] + board[2][2]) == 3:
         return board[0][0]
-    if board[0][2] == board[1][1] == board[2][0] != 0:
+    if abs(board[0][2] + board[1][1] + board[2][0]) == 3:
         return board[0][2]
 
     return 0
@@ -125,7 +123,7 @@ def minimax(board, depth, is_maximizing):
         return best
 
 
-def find_best_move(board):
+def find_best_move(board, id):
     """Findet den besten Zug für die KI mittels Minimax."""
     best_value = -math.inf
     best_move = (-1, -1)
@@ -133,7 +131,7 @@ def find_best_move(board):
     for i in range(3):
         for j in range(3):
             if board[i][j] == 0:
-                board[i][j] = 1
+                board[i][j] = id
                 move_value = minimax(board, 0, False)
                 board[i][j] = 0
                 if move_value > best_value:

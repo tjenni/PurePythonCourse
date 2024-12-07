@@ -31,6 +31,56 @@
 
 
 
+# _____________________________
+#                             /
+# Kodierung des Spielfelds   (
+# ____________________________\
+
+# In unserem Tic-Tac-Toe-Spiel werden die Spieler und das Spielfeld wie folgt kodiert:
+
+#  1  : Die künstliche Intelligenz (O)
+# -1  : Der menschliche Spieler (X)
+#  0  : Ein leeres Feld
+
+# Diese Zahlenwerte haben mehrere Vorteile:
+
+# 1. Mathematische Verarbeitung:
+#    Gewinnkombinationen lassen sich leicht überprüfen, da ihre Summe eindeutig ist.
+#    Beispiel: Drei aufeinanderfolgende 1-Werte ergeben 3 (KI gewinnt),
+#    während drei (-1)-Werte -3 ergeben (Spieler gewinnt).
+
+# 2. Kompakte Darstellung:
+#    Das Spielfeld wird als Liste von Listen gespeichert, was speichereffizient ist
+#    und gut in Schleifen verarbeitet werden kann.
+
+# 3. Flexibilität:
+#    Diese Kodierung lässt sich problemlos auf größere Spielfelder erweitern,
+#    z. B. für ein 4x4- oder 5x5-Spiel.
+
+# Beispiel: Eine Spielsituation wird wie folgt kodiert:
+'''
+board = [
+    [1, -1,  0],
+    [0,  1,  0],
+    [-1,  0,  1]
+]
+'''
+# Diese Matrix repräsentiert das Spielfeld:
+# X | O |  
+# --+---+--
+#   | X |  
+# --+---+--
+# O |   | X
+
+# Hinweis:
+# Um diese interne Kodierung für den Benutzer verständlich zu machen,
+# wird die Spielfeldanzeige durch die Funktion `print_board` so angepasst,
+# dass die Zahlenwerte wie folgt übersetzt werden:
+#   -  1  → "O"
+#   - -1  → "X"
+#   -  0  → " " (leeres Feld)
+
+
 
 # _____________________________
 #                              /
@@ -39,15 +89,15 @@
 
 # Im folgenden Beispiel wird Tic-Tac-Toe in der Konsole gespielt. Ein Spieler
 # tritt gegen eine einfache KI an, die zufällig gültige Züge auswählt.
+# Das Spielfeld wird durch eine Liste von Listen 
 
 
 import random
 
 
 
-def print_board(board):
+def print_board(board, tags):
     """Gibt das Tic-Tac-Toe-Spielfeld formatiert auf der Konsole aus."""
-    tags = {1: "O", 0: " ", -1: "X"}
     row_separator = "-" * (len(board[0]) * 4 - 1)
 
     # Erzeuge den auszugebenden Text für das Brett
@@ -62,38 +112,36 @@ def print_board(board):
     print("\n" + output + "\n")
             
 
-   
+
 def check_winner(board):
     """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück:
        -1 für 'X', 1 für 'O', 0 für keinen Gewinner."""
-    # Zeilen überprüfen
     for i in range(3):
-        if board[i][0] == board[i][1] == board[i][2] != 0:
+        # Zeilen überprüfen
+        if abs(board[i][0] + board[i][1] + board[i][2]) == 3:
             return board[i][0]
-
-    # Spalten überprüfen
-    for i in range(3):
-        if board[0][i] == board[1][i] == board[2][i] != 0:
+        # Spalten überprüfen
+        if abs(board[0][i] + board[1][i] + board[2][i]) == 3:
             return board[0][i]
 
     # Diagonalen überprüfen
-    if board[0][0] == board[1][1] == board[2][2] != 0:
+    if abs(board[0][0] + board[1][1] + board[2][2]) == 3:
         return board[0][0]
-    if board[0][2] == board[1][1] == board[2][0] != 0:
+    if abs(board[0][2] + board[1][1] + board[2][0]) == 3:
         return board[0][2]
 
     return 0
 
 
 
-def player_turn(board):
+def player_turn(board, id=-1):
     """Lässt den Spieler 'X' einen Zug machen, indem er eine Zahl (1-9) eingibt."""
     while True:
         try:
             move = int(input("Wähle ein Feld (1-9): ")) - 1
             row, col = divmod(move, 3)
             if board[row][col] == 0:
-                board[row][col] = -1
+                board[row][col] = id
                 return
             else:
                 print("Dieses Feld ist bereits belegt. Wähle ein anderes.")
@@ -115,15 +163,25 @@ def ai_random(board, id=1, verbose=True):
 
 
 
-def tic_tac_toe(verbose=True):
+def tic_tac_toe(tags=None, verbose=True):
     """Führt ein vollständiges Tic-Tac-Toe-Spiel durch.
        Spieler ist 'X', KI ist 'O'.
        Der Spieler beginnt."""
     
+    # Zustände der Felder
+    if tags is None:
+        tags = {1: "O", 0: " ", -1: "X"}
+    
+    # ID von Spieler und KI
+    player_id, ai_id = (-1, 1)
+
+    # Spielfeld initialisieren
+    board = [[0,0,0],[0,0,0],[0,0,0]]
+
     if verbose:
         print("Tic-Tac-Toe")
         print("===========")
-        print("Spieler ist 'X', KI ist 'O'.")
+        print(f"Spieler ist '{tags[-1]}', KI ist '{tags[1]}'.")
         print("Das Spielfeld hat folgende Nummerierung:\n")
         
         print(" 1 | 2 | 3 ")
@@ -131,39 +189,36 @@ def tic_tac_toe(verbose=True):
         print(" 4 | 5 | 6 ")
         print("-----------")
         print(" 7 | 8 | 9 ")
-        
-    # Spielfeld initialisieren
-    board = [[0 for _ in range(3)] for _ in range(3)]
-
+    
     # Spielschleife
     for turn in range(9):
         if verbose:
             print(f"\nZug {turn+1}")
-            print_board(board)
+            print_board(board, tags)
 
         if turn % 2 == 0:
-            player_turn(board)
+            player_turn(board, player_id)
         else:
-            ai_random(board, 1, verbose)
+            ai_random(board, ai_id)
 
         winner = check_winner(board)
         if winner:
             if verbose:
-                print_board(board)
+                print_board(board, tags)
                 if winner == 1:
-                    print("O hat gewonnen!")
+                    print(f"{tags[1]} hat gewonnen!")
                 else:
-                    print("X hat gewonnen!")
+                    print(f"{tags[-1]} hat gewonnen!")
                 
             return winner
 
-    print_board(board)
+    print_board(board, tags)
     print("Das Spiel endet unentschieden.")
     return 0
 
 
 
-def simulate_player_vs_minimax(rounds=10):
+def simulate_player_vs_random(rounds=10):
     """Simulation mehrer Runden."""
 
     score = {"Spieler": 0, "KI": 0, "Unentschieden": 0}
@@ -186,7 +241,7 @@ def simulate_player_vs_minimax(rounds=10):
 
 # Hauptprogramm starten
 if __name__ == "__main__":
-    simulate_player_vs_minimax()
+    simulate_player_vs_random()
 
 
 
@@ -207,41 +262,9 @@ if __name__ == "__main__":
 # 3. Spielmechaniken: 
 #    Funktionen zur Spieler- und KI-Interaktion, zur Spielfeldanzeige und zur Siegprüfung.
 
-# Tic-Tac-Toe bietet eine ideale Grundlage, um KI-Konzepte wie den Minimax-Algorithmus zu erlernen
-# und Strategien für optimale Spielweisen zu entwickeln. Mit diesen Grundlagen kannst du das Spiel
-# erweitern und anpassen.
-
-
-
-
-# ____________________________
-#                             /
-# Erweiterungsmöglichkeiten  (
-# ____________________________\
-
-# 1. Minimax-Algorithmus für die KI:
-#    - Implementiere eine KI, die den optimalen Zug mithilfe des Minimax-Algorithmus berechnet.
-#      
-#    - Diese Technik bewertet alle möglichen Züge und wählt den besten aus.
-
-# 2. Grafische Oberfläche:
-#    - Nutze `arcade`, um das Spielfeld grafisch darzustellen.
-#
-#    - Erlaube dem Spieler, Felder durch Klicken mit der Maus auszuwählen.
-
-# 3. Variationen des Spiels:
-#    - Ändere die Spielfeldgröße (z. B. 4x4 oder 5x5).
-#
-#    - Füge neue Siegbedingungen hinzu, wie z. B. vier Markierungen in einer Reihe.
-
-# 4. Spieler vs. Spieler:
-#    - Erstelle einen Modus, in dem zwei Spieler auf demselben Gerät spielen können.
-
-# 5. Netzwerkspiel:
-#    - Implementiere einen Online-Modus, in dem Spieler gegeneinander antreten können.
-
-# 6. Zeitlimit:
-#    - Füge eine Zeitbegrenzung für jeden Zug hinzu, um das Spiel dynamischer zu gestalten.
+# Tic-Tac-Toe bietet eine ideale Grundlage, um KI-Konzepte wie den Minimax-Algorithmus 
+# zu erlernenund Strategien für optimale Spielweisen zu entwickeln. Mit diesen Grundlagen 
+# kannst du das Spiel erweitern und anpassen.
 
 
 
@@ -287,7 +310,12 @@ if __name__ == "__main__":
 # Aufgabe 3  /
 # __________/
 #
-# Simuliere 500 Partien zwischen zwei Random-KI's.
+# Implementiere eine Funktion `simulate_random_vs_random(n)`, die `n` Spiele ohne 
+# Benutzereingabe durchführt (zum Beispiel KI gegen KI) und am Ende eine 
+# Statistik der Gewinne, Niederlagen und Unentschieden ausgibt. Lasse dabei 
+# die Minimax-KI gegen sich selbst oder gegen eine andere Strategie spielen. 
+# Bestimme, wie sich die Ergebnisse im Vergleich zu einer kleineren oder 
+# größeren Anzahl von Spielen verändern.
 
 
 # Füge hier deine Lösung ein.
@@ -295,6 +323,14 @@ if __name__ == "__main__":
 
 
 
+
+#  ╭━━━━╮╱╱╱╭━━━━╮╱╱╱╱╱╭━━━━╮
+#  ┃╭╮╭╮┃╱╱╱┃╭╮╭╮┃╱╱╱╱╱┃╭╮╭╮┃
+#  ╰╯┃┃┣╋━━╮╰╯┃┃┣┻━┳━━╮╰╯┃┃┣┻━┳━━╮
+#  ╱╱┃┃┣┫╭━╯╱╱┃┃┃╭╮┃╭━╯╱╱┃┃┃╭╮┃┃━┫
+#  ╱╱┃┃┃┃╰━╮╱╱┃┃┃╭╮┃╰━╮╱╱┃┃┃╰╯┃┃━┫
+#  ╱╱╰╯╰┻━━╯╱╱╰╯╰╯╰┻━━╯╱╱╰╯╰━━┻━━╯
+#  
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -324,7 +360,28 @@ if __name__ == "__main__":
 # des Spiels, um festzulegen, wer zuerst zieht.
 
 
-# Füge hier deine Lösung ein.
+'''
+def choose_side():
+    while True:
+        side = input("Möchtest du als 'X' oder als 'O' spielen? ").upper()
+        if side in ['X', 'O']:
+            print(f"Du spielst als '{side}'.")
+            if side == 'X':
+                return (-1, 1)
+            else:
+                return (1, -1)
+        else:
+            print("Ungültige Eingabe. Bitte gib 'X' oder 'O' ein.")
+
+
+def tic_tac_toe(verbose=True):
+    ...
+
+    player_id, ai_id = choose_side()
+
+
+
+'''
 
 
 
@@ -349,11 +406,15 @@ if __name__ == "__main__":
 # Aufgabe 3  /
 # __________/
 #
-# Simuliere 500 Partien zwischen zwei Random-KI's.
+# Implementiere eine Funktion `simulate_random_vs_random(n)`, die `n` Spiele ohne 
+# Benutzereingabe durchführt (zum Beispiel KI gegen KI) und am Ende eine 
+# Statistik der Gewinne, Niederlagen und Unentschieden ausgibt. Lasse dabei 
+# die Minimax-KI gegen sich selbst oder gegen eine andere Strategie spielen. 
+# Bestimme, wie sich die Ergebnisse im Vergleich zu einer kleineren oder 
+# größeren Anzahl von Spielen verändern.
 
 
 # Füge hier deine Lösung ein.
-
 
 
 

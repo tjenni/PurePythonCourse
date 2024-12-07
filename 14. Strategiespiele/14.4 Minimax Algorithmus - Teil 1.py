@@ -170,21 +170,19 @@ def print_board(board):
 
 def check_winner(board):
     """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück:
-       1 für 'O', -1 für 'X', 0 für keinen Gewinner."""
-    # Zeilen überprüfen
+       -1 für 'X', 1 für 'O', 0 für keinen Gewinner."""
     for i in range(3):
-        if board[i][0] == board[i][1] == board[i][2] != 0:
+        # Zeilen überprüfen
+        if abs(board[i][0] + board[i][1] + board[i][2]) == 3:
             return board[i][0]
-
-    # Spalten überprüfen
-    for i in range(3):
-        if board[0][i] == board[1][i] == board[2][i] != 0:
+        # Spalten überprüfen
+        if abs(board[0][i] + board[1][i] + board[2][i]) == 3:
             return board[0][i]
 
     # Diagonalen überprüfen
-    if board[0][0] == board[1][1] == board[2][2] != 0:
+    if abs(board[0][0] + board[1][1] + board[2][2]) == 3:
         return board[0][0]
-    if board[0][2] == board[1][1] == board[2][0] != 0:
+    if abs(board[0][2] + board[1][1] + board[2][0]) == 3:
         return board[0][2]
 
     return 0
@@ -267,7 +265,7 @@ def minimax(board, depth, is_maximizing, move_path=""):
 
 
 
-def find_best_move(board):
+def find_best_move(board, id=1):
     """Findet den besten Zug für die KI mittels Minimax."""
 
     best_value = -math.inf
@@ -277,7 +275,7 @@ def find_best_move(board):
     for i in range(3):
         for j in range(3):
             if board[i][j] == 0:
-                board[i][j] = 1
+                board[i][j] = id
                 move_value = minimax(board, 0, False, f"{k}")
                 board[i][j] = 0
                 k += 1
@@ -289,14 +287,14 @@ def find_best_move(board):
 
 
 
-def player_turn(board):
+def player_turn(board, id=-1):
     """Lässt den Spieler 'X' einen Zug machen, indem er eine Zahl (1-9) eingibt."""
     while True:
         try:
             move = int(input("Wähle ein Feld (1-9): ")) - 1
             row, col = divmod(move, 3)
             if board[row][col] == 0:
-                board[row][col] = -1
+                board[row][col] = id
                 return
             else:
                 print("Dieses Feld ist bereits belegt. Wähle ein anderes.")
@@ -305,13 +303,21 @@ def player_turn(board):
 
 
 
-def tic_tac_toe():
+def tic_tac_toe(tags=None):
     """Führt ein vollständiges Tic-Tac-Toe-Spiel durch.
        Spieler ist 'X', KI ist 'O'.
        Der Spieler beginnt."""
 
+    # Zustände der Felder
+    if tags is None:
+        tags = {1: "O", 0: " ", -1: "X"}
+
+    # ID von Spieler und KI
+    player_id, ai_id = (-1, 1)
+
+    # Anleitung
     print("Willkommen zu Tic-Tac-Toe mit unbesiegbarer KI!")
-    print("Spieler ist 'X', KI ist 'O'.")
+    print(f"Spieler ist '{tags[-1]}', KI ist '{tags[1]}'.")
     print("Das Spielfeld hat folgende Nummerierung:")
     
     print(" 1 | 2 | 3 ")
@@ -333,20 +339,20 @@ def tic_tac_toe():
         if turn % 2 == 0:
             print("Dein Zug:")
             
-            player_turn(board)
+            player_turn(board, player_id)
         else:
             print("Zug der KI:")
             best_move = find_best_move(board)
-            board[best_move[0]][best_move[1]] = 1
+            board[best_move[0]][best_move[1]] = ai_id
 
         winner = check_winner(board)
         if winner != 0:
             print_board(board)
             
             if winner == 1:
-                print("O hat gewonnen!")
+                print(f"{tags[1]} hat gewonnen!")
             else:
-                print("X hat gewonnen!")
+                print(f"{tags[-1]} hat gewonnen!")
             
             return winner
 
