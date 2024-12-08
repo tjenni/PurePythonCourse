@@ -2,7 +2,7 @@
 #       ______|                          |_____
 #       \     |    14.3 TIC-TAC-TOE      |    /
 #        )    |__________________________|   (
-#       /________)                   (________\     7.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#       /________)                   (________\     8.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Tic-Tac-Toe, auch bekannt als „Kreis und Kreuz“, ist eines der bekanntesten
 # Strategiespiele der Welt. Es bietet eine einfache Möglichkeit, grundlegende
@@ -95,15 +95,19 @@ board = [
 import random
 
 
+DEFAULT_SYMBOLS = {1: "O", 0: " ", -1: "X"}
+AI_ID = 1
+PLAYER_ID = -1
 
-def print_board(board, tags):
+
+def print_board(board, symbols=DEFAULT_SYMBOLS):
     """Gibt das Tic-Tac-Toe-Spielfeld formatiert auf der Konsole aus."""
     row_separator = "-" * (len(board[0]) * 4 - 1)
 
     # Erzeuge den auszugebenden Text für das Brett
     rows = []
     for i, row in enumerate(board):
-        row_text = "|".join(f" {tags[cell]} " for cell in row)
+        row_text = "|".join(f" {symbols[cell]} " for cell in row)
         if i < len(board) - 1:
             row_text += "\n" + row_separator
         rows.append(row_text)
@@ -114,8 +118,12 @@ def print_board(board, tags):
 
 
 def check_winner(board):
-    """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück:
-       -1 für 'X', 1 für 'O', 0 für keinen Gewinner."""
+    """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück."""
+
+    # Wir schauen uns jede Zeile und jede Spalte an, ob die Summe der 
+    # drei Felder dort 3 oder -3 ist.
+    #   - Eine Summe von 3 bedeutet drei O-Felder (1+1+1=3), also hat O gewonnen.
+    #   - Eine Summe von -3 bedeutet drei X-Felder (-1-1-1=-3), also hat X gewonnen.
     for i in range(3):
         # Zeilen überprüfen
         if abs(board[i][0] + board[i][1] + board[i][2]) == 3:
@@ -134,8 +142,8 @@ def check_winner(board):
 
 
 
-def player_turn(board, id=-1):
-    """Lässt den Spieler 'X' einen Zug machen, indem er eine Zahl (1-9) eingibt."""
+def player_turn(board, id=PLAYER_ID):
+    """Lässt den Spieler einen Zug machen, indem er eine Zahl (1-9) eingibt."""
     while True:
         try:
             move = int(input("Wähle ein Feld (1-9): ")) - 1
@@ -146,11 +154,11 @@ def player_turn(board, id=-1):
             else:
                 print("Dieses Feld ist bereits belegt. Wähle ein anderes.")
         except (ValueError, IndexError):
-            print("Ungültige Eingabe. Wähle eine Zahl zwischen 1 und 9.")
+            print("Ungültige Eingabe. Bitte gib eine Zahl zwischen 1 und 9 ein.")
 
 
 
-def ai_random(board, id=1, verbose=True):
+def ai_random(board, id=AI_ID, verbose=True):
     """Funktion für die zufällige KI"""
     while True:
         row = random.randint(0, 2)
@@ -163,56 +171,44 @@ def ai_random(board, id=1, verbose=True):
 
 
 
-def tic_tac_toe(tags=None, verbose=True):
-    """Führt ein vollständiges Tic-Tac-Toe-Spiel durch.
-       Spieler ist 'X', KI ist 'O'.
-       Der Spieler beginnt."""
-    
-    # Zustände der Felder
-    if tags is None:
-        tags = {1: "O", 0: " ", -1: "X"}
-    
-    # ID von Spieler und KI
-    player_id, ai_id = (-1, 1)
+def tic_tac_toe(symbols=DEFAULT_SYMBOLS):
+    """Führt ein Tic-Tac-Toe-Spiel durch."""
 
     # Spielfeld initialisieren
     board = [[0,0,0],[0,0,0],[0,0,0]]
 
-    if verbose:
-        print("Tic-Tac-Toe")
-        print("===========")
-        print(f"Spieler ist '{tags[-1]}', KI ist '{tags[1]}'.")
-        print("Das Spielfeld hat folgende Nummerierung:\n")
-        
-        print(" 1 | 2 | 3 ")
-        print("-----------")
-        print(" 4 | 5 | 6 ")
-        print("-----------")
-        print(" 7 | 8 | 9 ")
+    print("Tic-Tac-Toe")
+    print("===========")
+    print(f"Spieler ist '{symbols[-1]}', KI ist '{symbols[1]}'.")
+    print("Das Spielfeld hat folgende Nummerierung:\n")
+    
+    print(" 1 | 2 | 3 ")
+    print("-----------")
+    print(" 4 | 5 | 6 ")
+    print("-----------")
+    print(" 7 | 8 | 9 ")
     
     # Spielschleife
     for turn in range(9):
-        if verbose:
-            print(f"\nZug {turn+1}")
-            print_board(board, tags)
+        print(f"\nZug {turn+1}")
+        print_board(board, symbols)
 
         if turn % 2 == 0:
-            player_turn(board, player_id)
+            player_turn(board)
         else:
-            ai_random(board, ai_id)
+            ai_random(board)
 
         winner = check_winner(board)
         if winner:
-            if verbose:
-                print_board(board, tags)
-                if winner == 1:
-                    print(f"{tags[1]} hat gewonnen!")
-                else:
-                    print(f"{tags[-1]} hat gewonnen!")
-                
+            print_board(board, symbols)
+            if winner == 1:
+                print(f"{symbols[1]} hat gewonnen!")
+            else:
+                print(f"{symbols[-1]} hat gewonnen!")
+            
             return winner
 
-    print_board(board, tags)
+    print_board(board, symbols)
     print("Das Spiel endet unentschieden.")
     return 0
 
@@ -222,7 +218,7 @@ def simulate_player_vs_random(rounds=10):
     """Simulation mehrer Runden."""
 
     score = {"Spieler": 0, "KI": 0, "Unentschieden": 0}
-    for game in range(1, 11):
+    for game in range(rounds):
         result = tic_tac_toe()
         
         if result == 1:
@@ -232,7 +228,7 @@ def simulate_player_vs_random(rounds=10):
         else:
             score["Unentschieden"] += 1
 
-        print(f"\nErgebnisse nach Runde {game}:")
+        print(f"\nErgebnisse nach Runde {game+1}:")
         for name, punkte in score.items():
             print(f"{name}: {punkte}")
         print()
@@ -324,13 +320,27 @@ if __name__ == "__main__":
 
 
 
-#  ╭━━━━╮╱╱╱╭━━━━╮╱╱╱╱╱╭━━━━╮
-#  ┃╭╮╭╮┃╱╱╱┃╭╮╭╮┃╱╱╱╱╱┃╭╮╭╮┃
-#  ╰╯┃┃┣╋━━╮╰╯┃┃┣┻━┳━━╮╰╯┃┃┣┻━┳━━╮
-#  ╱╱┃┃┣┫╭━╯╱╱┃┃┃╭╮┃╭━╯╱╱┃┃┃╭╮┃┃━┫
-#  ╱╱┃┃┃┃╰━╮╱╱┃┃┃╭╮┃╰━╮╱╱┃┃┃╰╯┃┃━┫
-#  ╱╱╰╯╰┻━━╯╱╱╰╯╰╯╰┻━━╯╱╱╰╯╰━━┻━━╯
-#  
+#             X oder O ....
+#                       \
+#                            ,,,,,,
+#                           /e   ''(
+#                          (_ `     \
+#                         ___>       \
+#                        / ,_\-.___   \_
+#                       /  _)/ /        \
+#                       |  \  /  ` _     |
+#                     __\____/    /    ' |
+#                    /  _        /______/
+#                   / _/ \,_____/o     (
+#                   \__)/`              \
+#                      /   \__________/_/_
+#                    _/     \  \   )/     \
+#                   /      /   |  /\      (
+#                   \_____/ ___/  \ \  _/  \
+#              ______/_/___|_|     ) \     /
+#             /       o\     o\   /  /    /\
+#     b'ger,,,'-----^--',,,,,,',,|_,,\_ ,,\/,,
+#
 #  ___ _  _ ___  ___ 
 # | __| \| |   \| __|
 # | _|| .` | |) | _| 
@@ -367,19 +377,16 @@ def choose_side():
         if side in ['X', 'O']:
             print(f"Du spielst als '{side}'.")
             if side == 'X':
-                return (-1, 1)
+                return {1: "O", 0: " ", -1: "X"}
             else:
-                return (1, -1)
+                return {1: "X", 0: " ", -1: "O"}
         else:
             print("Ungültige Eingabe. Bitte gib 'X' oder 'O' ein.")
 
 
-def tic_tac_toe(verbose=True):
+def tic_tac_toe():
     ...
-
-    player_id, ai_id = choose_side()
-
-
+    symbols = choose_side()
 
 '''
 
@@ -396,7 +403,31 @@ def tic_tac_toe(verbose=True):
 # wie lange die Partie gedauert hat.
 
 
-# Füge hier deine Lösung ein.
+'''
+def tic_tac_toe():
+    ...
+
+    winner = check_winner(board)
+        if winner:
+            print_board(board, symbols)
+
+            print(f"Anzahl Spielzüge: {turn+1}")
+            
+            if winner == 1:
+                print(f"{symbols[1]} hat gewonnen!")
+            else:
+                print(f"{symbols[-1]} hat gewonnen!")
+                
+            return winner
+
+    print_board(board, symbols)
+    
+    print(f"Anzahl Spielzüge: {turn+1}")
+    
+    print("Das Spiel endet unentschieden.")
+    return 0
+    
+'''
 
 
 
@@ -414,8 +445,51 @@ def tic_tac_toe(verbose=True):
 # größeren Anzahl von Spielen verändern.
 
 
-# Füge hier deine Lösung ein.
+'''
+def tic_tac_toe_random_vs_random(symbols=DEFAULT_SYMBOLS):
+    
+    board = [[0,0,0],[0,0,0],[0,0,0]]
+    
+    for turn in range(9):
+        if turn % 2 == 0:
+            ai_random(board, AI_ID, False)
+        else:
+            ai_random(board, PLAYER_ID, False)
 
+        winner = check_winner(board)
+        if winner:
+            return winner
+
+    return 0
+
+
+
+def simulate_random_vs_random(rounds=100):
+    """Simulation mehrer Runden."""
+
+    score = {"KI O": 0, "KI X": 0, "Unentschieden": 0}
+    for game in range(rounds):
+        result = tic_tac_toe_random_vs_random()
+        
+        if result == AI_ID:
+            score["KI O"] += 1
+        elif result == PLAYER_ID:
+            score["KI X"] += 1
+        else:
+            score["Unentschieden"] += 1
+
+        print(f"\nErgebnisse nach Runde {game+1}:")
+        for name, punkte in score.items():
+            print(f"{name}: {punkte}")
+        print()
+
+
+
+# Hauptprogramm starten
+if __name__ == "__main__":
+    simulate_random_vs_random()
+
+'''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><

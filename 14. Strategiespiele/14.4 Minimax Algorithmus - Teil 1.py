@@ -2,7 +2,7 @@
 #       ______|                                         |_____
 #       \     |   14.4 MINIMAX ALGORITHMUS - Teil 1     |    /
 #        )    |_________________________________________|   (
-#       /________)                                  (________\     7.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#       /________)                                  (________\     8.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 # Der Minimax-Algorithmus ist ein rekursives Verfahren, mit dem zwei Spieler 
 # abwechselnd agieren. Dabei versucht der eine Spieler (Maximizer) seine Gewinnchancen 
@@ -151,15 +151,20 @@
 
 import math
 
-def print_board(board):
+
+DEFAULT_SYMBOLS = {1: "O", 0: " ", -1: "X"}
+AI_ID = 1
+PLAYER_ID = -1
+
+
+def print_board(board, symbols=DEFAULT_SYMBOLS):
     """Gibt das Tic-Tac-Toe-Spielfeld formatiert auf der Konsole aus."""
-    tags = {1: "O", 0: " ", -1: "X"}
     row_separator = "-" * (len(board[0]) * 4 - 1)
 
     # Erzeuge den auszugebenden Text für das Brett
     rows = []
     for i, row in enumerate(board):
-        row_text = "|".join(f" {tags[cell]} " for cell in row)
+        row_text = "|".join(f" {symbols[cell]} " for cell in row)
         if i < len(board) - 1:
             row_text += "\n" + row_separator
         rows.append(row_text)
@@ -169,8 +174,7 @@ def print_board(board):
            
 
 def check_winner(board):
-    """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück:
-       -1 für 'X', 1 für 'O', 0 für keinen Gewinner."""
+    """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück."""
     for i in range(3):
         # Zeilen überprüfen
         if abs(board[i][0] + board[i][1] + board[i][2]) == 3:
@@ -211,7 +215,17 @@ def is_moves_left(board):
 
 
 def minimax(board, depth, is_maximizing, move_path=""):
-    """Implementiert den Minimax-Algorithmus, um die Spielzüge zu bewerten."""
+    """Berechnet den besten Zug für den Maximizer oder Minimizer.
+
+    Args:
+        board: Aktuelles Spielfeld.
+        depth: Aktuelle Rekursionstiefe.
+        is_maximizing: True, wenn die KI am Zug ist, sonst False.
+        move_path: Optionaler String zur Nachverfolgung der Züge.
+
+    Returns:
+        Der beste Bewertungswert für den aktuellen Zug.
+    """
     
     indent = "  " * depth  # 2 Leerzeichen pro Tiefe für bessere Übersicht
     
@@ -265,7 +279,7 @@ def minimax(board, depth, is_maximizing, move_path=""):
 
 
 
-def find_best_move(board, id=1):
+def find_best_move(board, id=AI_ID):
     """Findet den besten Zug für die KI mittels Minimax."""
 
     best_value = -math.inf
@@ -287,7 +301,7 @@ def find_best_move(board, id=1):
 
 
 
-def player_turn(board, id=-1):
+def player_turn(board, id=PLAYER_ID):
     """Lässt den Spieler 'X' einen Zug machen, indem er eine Zahl (1-9) eingibt."""
     while True:
         try:
@@ -303,21 +317,15 @@ def player_turn(board, id=-1):
 
 
 
-def tic_tac_toe(tags=None):
+def tic_tac_toe(symbols=DEFAULT_SYMBOLS):
     """Führt ein vollständiges Tic-Tac-Toe-Spiel durch.
        Spieler ist 'X', KI ist 'O'.
        Der Spieler beginnt."""
 
-    # Zustände der Felder
-    if tags is None:
-        tags = {1: "O", 0: " ", -1: "X"}
-
-    # ID von Spieler und KI
-    player_id, ai_id = (-1, 1)
 
     # Anleitung
     print("Willkommen zu Tic-Tac-Toe mit unbesiegbarer KI!")
-    print(f"Spieler ist '{tags[-1]}', KI ist '{tags[1]}'.")
+    print(f"Spieler ist '{symbols[-1]}', KI ist '{symbols[1]}'.")
     print("Das Spielfeld hat folgende Nummerierung:")
     
     print(" 1 | 2 | 3 ")
@@ -339,20 +347,20 @@ def tic_tac_toe(tags=None):
         if turn % 2 == 0:
             print("Dein Zug:")
             
-            player_turn(board, player_id)
+            player_turn(board, PLAYER_ID)
         else:
             print("Zug der KI:")
             best_move = find_best_move(board)
-            board[best_move[0]][best_move[1]] = ai_id
+            board[best_move[0]][best_move[1]] = AI_ID
 
         winner = check_winner(board)
         if winner != 0:
             print_board(board)
             
             if winner == 1:
-                print(f"{tags[1]} hat gewonnen!")
+                print(f"{symbols[1]} hat gewonnen!")
             else:
-                print(f"{tags[-1]} hat gewonnen!")
+                print(f"{symbols[-1]} hat gewonnen!")
             
             return winner
 
@@ -361,6 +369,8 @@ def tic_tac_toe(tags=None):
             print("Das Spiel endet unentschieden.")
             
             return 0
+
+
 
 # Hauptprogramm starten
 if __name__ == "__main__":
@@ -407,9 +417,8 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Implementiere eine Simulation, in der die zufällige KI (`ai_random`) aus dem
-# letzten Kapitel gegen die Minimax-KI antritt. Lass sie 100 Spiele spielen und
-# zähle die Siege, Niederlagen und Unentschieden für beide KIs.
+# Ändere die Anfangsposition des Spielfeldes und versuche die Berechnungen von 
+# Minimax nachzuvollziehen. 
 
 
 # Füge hier deine Lösung ein.
@@ -453,59 +462,13 @@ if __name__ == "__main__":
 # Aufgabe 1  /
 # __________/
 #
-# Implementiere eine Simulation, in der die zufällige KI (`ai_random`) aus dem
-# letzten Kapitel gegen die Minimax-KI antritt. Lass sie 100 Spiele spielen und
-# zähle die Siege, Niederlagen und Unentschieden für beide KIs.
-
-'''
-import random
-
-...
+# Ändere die Anfangsposition des Spielfeldes und versuche die Berechnungen von 
+# Minimax nachzuvollziehen. 
 
 
-def ai_random(board):
-    """Funktion für die zufällige KI"""
-    while True:
-        row = random.randint(0, 2)
-        col = random.randint(0, 2)
-        if board[row][col] == 0:
-            return row, col
+# Füge hier deine Lösung ein.
 
 
-
-def simulate_random_vs_minimax(rounds=100):
-    """Funktion, die die zufällige KI gegen die Minimax-KI antreten lässt."""
-    results = {"Random KI": 0, "Minimax KI": 0, "Draw": 0}
-
-    for _ in range(rounds):
-        board = [[0 for _ in range(3)] for _ in range(3)]
-
-        for turn in range(9):
-            if turn % 2 == 0:
-                # Random KI
-                move = ai_random(board)
-                board[move[0]][move[1]] = 1
-            else:
-                # Minimax KI
-                move = find_best_move(board)
-                board[move[0]][move[1]] = -1
-
-            winner = check_winner(board)
-            if winner == 1:
-                results["Random KI"] += 1
-                break
-            elif winner == -1:
-                results["Minimax KI"] += 1
-                break
-
-        if not any(0 in row for row in board):
-            results["Draw"] += 1
-
-    return results
-
-# Simulation starten
-print(simulate_random_vs_minimax())
-'''
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
