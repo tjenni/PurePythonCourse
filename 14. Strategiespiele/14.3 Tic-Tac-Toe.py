@@ -151,9 +151,7 @@ def check_winner(board):
         board (list): Aktuelles Spielfeld.
 
     Rückgabe:
-        1  zurück, wenn die KI (O) gewonnen hat
-       -1  zurück, wenn der Spieler (X) gewonnen hat
-        0  wenn noch kein Gewinner feststeht
+        int: Gewinner-ID (1 für O, -1 für X, 0 für Unentschieden)
     """
 
     for i in range(3):
@@ -215,25 +213,6 @@ def player_turn(board, id=ID_PLAYER):
             print("Ungültige Eingabe. Bitte gib eine Zahl zwischen 1 und 9 ein.")
 
 
-def moves_left(board):
-    """Gibt eine Liste aller freien (leeren) Felder auf dem Spielfeld zurück.
-    Jedes freie Feld wird als Tupel (zeile, spalte) in die Liste aufgenommen.
-    
-    Parameter:
-        board (list): Das aktuelle Spielfeld.
-
-    Rückgabe:
-        list: Liste mit den Koordinaten der leeren Felder.
-    """
-    moves = []
-    for i, row in enumerate(board):
-        for j, cell in enumerate(row):
-            if cell == 0:
-                moves.append((i,j))
-            
-    return moves
-
-
 def ai_random(board, id=ID_AI):
     """Zufällige KI, die einen freien Platz per Zufall wählt.
     
@@ -245,8 +224,13 @@ def ai_random(board, id=ID_AI):
         id (int): ID der KI (normalerweise 1 für 'O').
     """
     
-    moves = moves_left(board)
-
+    # Erstelle eine Liste mit allen leeren Feldern.
+    moves = []
+    for i, row in enumerate(board):
+        for j, cell in enumerate(row):
+            if cell == 0:
+                moves.append((i,j))
+    
     assert(
         len(moves) > 0, 
         "AI: Ich kann nicht ziehen. Es gibt keine freien Felder mehr."

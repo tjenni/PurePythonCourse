@@ -1,6 +1,6 @@
 #              _______________________________
 #       ______|                               |_____
-#       \     |   14.5 ALGORITHMEN ARENA      |    /
+#       \     |   14.7 ALGORITHMEN ARENA      |    /
 #        )    |_______________________________|   (
 #       /________)                        (________\     21.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 

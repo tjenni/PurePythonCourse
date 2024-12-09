@@ -1,6 +1,6 @@
 #              _______________________________
 #       ______|                               |_____
-#       \     | 14.7 SCHACH - TEIL 2          |    /
+#       \     | 14.9 SCHACH - TEIL 2          |    /
 #        )    |_______________________________|   (
 #       /________)                        (________\     21.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
