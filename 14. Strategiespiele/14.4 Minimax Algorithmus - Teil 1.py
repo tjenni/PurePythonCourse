@@ -171,7 +171,8 @@ def print_board(board, symbols=DEFAULT_SYMBOLS):
 
     output = "\n".join(rows)
     print("\n" + output + "\n")
-           
+
+
 
 def check_winner(board):
     """Prüft, ob ein Spieler gewonnen hat und gibt den Gewinner zurück."""
@@ -192,6 +193,7 @@ def check_winner(board):
     return 0
 
 
+
 def evaluate(board):
     """Bewertet den Zustand des Boards:
        +10 für 'O' Gewinn (KI),
@@ -205,100 +207,55 @@ def evaluate(board):
     return 0
 
 
-# Prüft, ob noch Züge möglich sind.
+
 def is_moves_left(board):
+    """Prüft, ob noch Züge möglich sind."""
     for row in board:
         if 0 in row:
             return True
     return False
 
 
-
-def minimax(board, depth, is_maximizing, move_path=""):
-    """Berechnet den besten Zug für den Maximizer oder Minimizer.
-
-    Args:
-        board: Aktuelles Spielfeld.
-        depth: Aktuelle Rekursionstiefe.
-        is_maximizing: True, wenn die KI am Zug ist, sonst False.
-        move_path: Optionaler String zur Nachverfolgung der Züge.
-
-    Returns:
-        Der beste Bewertungswert für den aktuellen Zug.
-    """
-    
-    indent = "  " * depth  # 2 Leerzeichen pro Tiefe für bessere Übersicht
+def minimax(board, depth, id):
+    """Implementiert den Minimax-Algorithmus, um die Spielzüge zu bewerten."""
     
     score = evaluate(board)
+
+    # Endzustand erreicht oder keine Züge mehr
     if score in [10, -10] or not is_moves_left(board):
-        # Endzustand erreicht
-        print(f"{indent}{move_path} Endzustand: score={score}")
         return score
-    
-    # Wer ist am Zug? KI (is_maximizing=True) = "O", sonst "X"
-    if is_maximizing:
-        current_player = "O"
-    else:
-        current_player = "X"
-    
-    if depth == 0:
-        print_board(board)
-    print(f"{indent}{move_path} Tiefe={depth}, Spieler={current_player}")
 
-    if is_maximizing:
-        best = -math.inf
-        move_index = 1
-        for i in range(3):
-            for j in range(3):
-                if board[i][j] == 0:
-                    board[i][j] = 1
-                    # Neue Tiefe, erweitere den move_path um ".ZugNr"
-                    child_path = f"{move_path}.{move_index}"
-                    val = minimax(board, depth + 1, not is_maximizing, child_path)
-                    board[i][j] = 0
-                    print(f"{indent}{child_path} Zug O->({i},{j}), Wert={val}")
-                    best = max(best, val)
-                    move_index += 1
-        print(f"{indent}{move_path} Bester Wert für O (Maximizer) an Tiefe {depth}: {best}")
-        return best
-    else:
-        best = math.inf
-        move_index = 1
-        for i in range(3):
-            for j in range(3):
-                if board[i][j] == 0:
-                    board[i][j] = -1
-                    child_path = f"{move_path}.{move_index}"
-                    val = minimax(board, depth + 1, not is_maximizing, child_path)
-                    board[i][j] = 0
-                    print(f"{indent}{child_path} Zug X->({i},{j}), Wert={val}")
-                    best = min(best, val)
-                    move_index += 1
-        print(f"{indent}{move_path} Bester Wert für X (Minimizer) an Tiefe {depth}: {best}")
-        return best
+    best = -id * math.inf
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == 0:
+                board[i][j] = id  # Zug platzieren
 
+                if id > 0:
+                    best = max(best, minimax(board, depth + 1, -id))
+                else:
+                    best = min(best, minimax(board, depth + 1, -id))
+
+                board[i][j] = 0  # Zug zurücknehmen
+    return best
 
 
 def find_best_move(board, id=AI_ID):
     """Findet den besten Zug für die KI mittels Minimax."""
-
-    best_value = -math.inf
+    best_value = -id * math.inf
     best_move = (-1, -1)
-    
-    k = 1
+
     for i in range(3):
         for j in range(3):
             if board[i][j] == 0:
                 board[i][j] = id
-                move_value = minimax(board, 0, False, f"{k}")
+                move_value = minimax(board, 0, -id)
                 board[i][j] = 0
-                k += 1
-                if move_value > best_value:
+                if id > 0 and move_value > best_value or id < 0 and move_value < best_value:
                     best_value = move_value
                     best_move = (i, j)
 
     return best_move
-
 
 
 def player_turn(board, id=PLAYER_ID):
@@ -307,74 +264,110 @@ def player_turn(board, id=PLAYER_ID):
         try:
             move = int(input("Wähle ein Feld (1-9): ")) - 1
             row, col = divmod(move, 3)
-            if board[row][col] == 0:
+            if 0 <= row < 3 and 0 <= col < 3 and board[row][col] == 0:
                 board[row][col] = id
                 return
             else:
-                print("Dieses Feld ist bereits belegt. Wähle ein anderes.")
-        except (ValueError, IndexError):
-            print("Ungültige Eingabe. Wähle eine Zahl zwischen 1 und 9.")
+                print("Ungültiger Zug. Versuche es erneut.")
+        except ValueError:
+            print("Bitte eine gültige Zahl eingeben (1-9).")
 
 
 
-def tic_tac_toe(symbols=DEFAULT_SYMBOLS):
+def tic_tac_toe(symbols=DEFAULT_SYMBOLS, verbose=True):
     """Führt ein vollständiges Tic-Tac-Toe-Spiel durch.
        Spieler ist 'X', KI ist 'O'.
        Der Spieler beginnt."""
 
+    if verbose:
+        print("Willkommen zu Tic-Tac-Toe mit unbesiegbarer KI!")
+        print("Spieler ist 'X', KI ist 'O'.")
+        print("Spielfeld-Nummerierung:")
+        print(" 1 | 2 | 3 ")
+        print("-----------")
+        print(" 4 | 5 | 6 ")
+        print("-----------")
+        print(" 7 | 8 | 9 ")
 
-    # Anleitung
-    print("Willkommen zu Tic-Tac-Toe mit unbesiegbarer KI!")
-    print(f"Spieler ist '{symbols[-1]}', KI ist '{symbols[1]}'.")
-    print("Das Spielfeld hat folgende Nummerierung:")
-    
-    print(" 1 | 2 | 3 ")
-    print("-----------")
-    print(" 4 | 5 | 6 ")
-    print("-----------")
-    print(" 7 | 8 | 9 ")
-    print()
+    # Initialisiere das Spielbrett.
+    #board = [[0, 0, 0],[0, 0, 0],[0, 0, 0]]
 
     board = [[ -1,  1,  1],
              [  1,  0,  0],
              [ -1,  0,  0]]
 
+
     for turn in range(9):
-        
-        print(f"---------- Zug {turn+1} ------------")
-        print_board(board)
+        if verbose:
+            print_board(board)
 
         if turn % 2 == 0:
-            print("Dein Zug:")
-            
+            # Spielerzug
+            if verbose:
+                print("Dein Zug:")
+
             player_turn(board, PLAYER_ID)
+
         else:
-            print("Zug der KI:")
-            best_move = find_best_move(board)
+            # KI-Zug
+            if verbose:
+                print("Zug der KI:")
+
+            best_move = find_best_move(board, AI_ID)
             board[best_move[0]][best_move[1]] = AI_ID
 
         winner = check_winner(board)
         if winner != 0:
-            print_board(board)
-            
-            if winner == 1:
-                print(f"{symbols[1]} hat gewonnen!")
-            else:
-                print(f"{symbols[-1]} hat gewonnen!")
+            if verbose:
+                print_board(board)
+                print(f"{symbols[winner]} hat gewonnen!")
             
             return winner
 
         elif not is_moves_left(board):
-            print_board(board)
-            print("Das Spiel endet unentschieden.")
+            if verbose:
+                print_board(board)
+                print("Das Spiel endet unentschieden.")
             
             return 0
 
 
 
+def simulate_player_vs_minimax(rounds=10):
+    """Simulation mehrer Runden."""
+
+    score = {"Spieler": 0, "KI": 0, "Unentschieden": 0}
+    for game in range(1, 11):
+        result = tic_tac_toe()
+
+        if result == 1:
+            score["KI"] += 1
+        elif result == -1:
+            score["Spieler"] += 1
+        else:
+            score["Unentschieden"] += 1
+
+        print(f"\nErgebnisse nach Runde {game}:")
+        for name, punkte in score.items():
+            print(f"{name}: {punkte}")
+        print()
+
+
 # Hauptprogramm starten
 if __name__ == "__main__":
-    tic_tac_toe()
+    simulate_player_vs_minimax()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

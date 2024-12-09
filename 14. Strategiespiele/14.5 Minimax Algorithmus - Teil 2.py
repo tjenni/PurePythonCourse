@@ -139,14 +139,14 @@ def find_best_move(board, id):
     return best_move
 
 
-def player_turn(board):
+def player_turn(board, id=PLAYER_ID):
     """Lässt den Spieler 'X' einen Zug machen, indem er eine Zahl (1-9) eingibt."""
     while True:
         try:
             move = int(input("Wähle ein Feld (1-9): ")) - 1
             row, col = divmod(move, 3)
             if 0 <= row < 3 and 0 <= col < 3 and board[row][col] == 0:
-                board[row][col] = -1
+                board[row][col] = id
                 return
             else:
                 print("Ungültiger Zug. Versuche es erneut.")
@@ -170,6 +170,7 @@ def tic_tac_toe(symbols=DEFAULT_SYMBOLS, verbose=True):
         print("-----------")
         print(" 7 | 8 | 9 ")
 
+    # initialisiere das Spielbrett
     board = [[0, 0, 0],[0, 0, 0],[0, 0, 0]]
 
     for turn in range(9):
@@ -180,7 +181,7 @@ def tic_tac_toe(symbols=DEFAULT_SYMBOLS, verbose=True):
             # Spielerzug
             if verbose:
                 print("Dein Zug:")
-            player_turn(board)
+            player_turn(board, PLAYER_ID)
 
         else:
             # KI-Zug
@@ -193,17 +194,16 @@ def tic_tac_toe(symbols=DEFAULT_SYMBOLS, verbose=True):
         if winner != 0:
             if verbose:
                 print_board(board)
-                if winner == 1:
-                    print("O hat gewonnen!")
-                else:
-                    print("X hat gewonnen!")
-
+                print(f"{symbols[winner]} hat gewonnen!")
+            
             return winner
-
-    if verbose:
-        print_board(board)
-        print("Das Spiel endet unentschieden.")
-    return 0
+        
+        elif not is_moves_left(board):
+            if verbose:
+                print_board(board)
+                print("Das Spiel endet unentschieden.")
+            
+            return 0
 
 
 
