@@ -7,6 +7,10 @@
 # Monte-Carlo-Tree-Search (MCTS) ist ein moderner Algorithmus, der häufig in Strategiespielen verwendet wird.
 # Anders als Minimax oder Alpha-Beta-Pruning basiert MCTS auf zufälligen Simulationen, um gute Züge zu finden.
 
+
+# https://gist.github.com/qpwo/c538c6f73727e254fdc7fab81024f6e1
+
+
 # ________________________
 #                        /
 # Funktionsweise         (
@@ -43,7 +47,8 @@ DEFAULT_SYMBOLS = {ID_AI: "O", 0: " ", ID_PLAYER: "X"}
 
 class Node:
     """
-    Repräsentiert einen Knoten im Monte-Carlo-Baum.
+    Repräsentiert einen Knoten im Monte-Carlo-Baum. 
+    Jeder Knoten repräsentiert einen spezifischen Zustand des Tic-Tac-Toe-Boards.
     """
     def __init__(self, state, player, parent=None):
         self.state = state   # Aktueller Spielzustand als 3x3-Liste
@@ -55,23 +60,24 @@ class Node:
 
     def is_fully_expanded(self):
         """
-        Prüft, ob alle möglichen Züge von diesem Knoten bereits erkundet wurden.
+        Prüft, ob alle legalen Züge bereits Kindknoten erzeugt haben.
         """
         legal = get_legal_moves(self.state)
         return len(self.children) == len(legal)
 
-    def best_child(self, exploration_weight=1.0):
+    def best_child(self, exploration_weight=2):
         """
-        Wählt das beste Kind basierend auf der UCT-Formel.
-        UCT = (child.wins / child.visits) + exploration_weight * sqrt(log(self.visits)/child.visits)
+        Wählt das beste Kind basierend auf der Upper-Confidence-Bounds-Formel (UCT).
         """
         best_score = -math.inf
         best_node = None
 
         for child in self.children:
+
             exploit = child.wins / child.visits
             explore = math.sqrt(math.log(self.visits) / child.visits)
             score = exploit + exploration_weight * explore
+
             if score > best_score:
                 best_score = score
                 best_node = child
@@ -304,7 +310,7 @@ def tic_tac_toe_with_mcts(symbols=DEFAULT_SYMBOLS, verbose=True):
         else:
             # KI-Zug
             print("Zug der KI:")
-            board = find_best_move_mcts(board, player=ID_AI, iterations=10000)
+            board = find_best_move_mcts(board, player=ID_AI, iterations=1000)
 
         winner = check_winner(board)
         if winner != 0:
@@ -331,12 +337,12 @@ if __name__ == "__main__":
 
 # In diesem Kapitel hast du gelernt, wie Monte-Carlo-Tree-Search funktioniert:
 #
-# 1. **Zufällige Simulationen:** MCTS nutzt zufällige Partien, um Entscheidungen zu treffen.
+# 1. Zufällige Simulationen: MCTS nutzt zufällige Partien, um Entscheidungen zu treffen.
 #
-# 2. **Baumstruktur:** Jeder Knoten im Baum repräsentiert einen Spielzustand, und 
+# 2. Baumstruktur: Jeder Knoten im Baum repräsentiert einen Spielzustand, und 
 #    die Werte der Knoten werden durch Simulationen aktualisiert.
 #
-# 3. **Effizienz:** MCTS findet gute Züge ohne den gesamten Spielbaum zu durchsuchen.
+# 3. Effizienz: MCTS findet gute Züge ohne den gesamten Spielbaum zu durchsuchen.
 
 # MCTS ist besonders nützlich für Spiele mit großer Komplexität, wie z. B. Go oder Schach,
 # und bildet die Grundlage vieler moderner KI-Systeme.

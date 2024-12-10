@@ -2,7 +2,7 @@
 #       ______|                        |_____
 #       \     |  1.6 TYPUMWANDLUNGEN   |    /
 #        )    |________________________|   (
-#       /________)                 (________\       27.10.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#       /________)                 (________\       10.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 #  
 
 
@@ -75,6 +75,38 @@ print("Die Zahl + 5 ist:", zahl + 5)
 # oder (für Fortgeschrittene) mit Fehlerbehandlung arbeiten.
 
 
+
+# __________________________
+#                           /
+# Der type()-Befehl        (
+# __________________________\
+
+# Der type()-Befehl in Python zeigt den Datentyp einer Variablen oder eines
+# Wertes an. Dies ist besonders nützlich, um zu überprüfen, mit welchem
+# Typ man gerade arbeitet, oder um Fehler bei Typumwandlungen zu erkennen.
+
+# Syntax:
+# type(variable)
+
+# Beispiele:
+zahl = 42
+print(type(zahl))  # Ausgabe: <class 'int'>
+
+text = "Hallo"
+print(type(text))  # Ausgabe: <class 'str'>
+
+wert = 3.14
+print(type(wert))  # Ausgabe: <class 'float'>
+
+
+
+
+# ____________________________
+#                            /
+# Übungsaufgaben            (
+# ___________________________\
+
+
 # ___________
 #            \
 # Aufgabe 1  /
@@ -132,6 +164,22 @@ print("Die Zahl + 5 ist:", zahl + 5)
 
 
 
+
+# ___________
+#            \
+# Aufgabe 4  /
+# __________/
+#
+# Schreibe ein Programm, das den Benutzer nach einer Eingabe fragt.
+# Verwende den type-Befehl, um den Typ der Eingabe zu überprüfen.
+# Gib den Typ der Eingabe auf der Konsole aus.
+
+
+# Füge hier deine Lösung ein.
+
+
+
+
 # Gratuliere. Du hast die Kunst der Variablenverwandlung gemeistert. 
 # Du bist nun ein/-e Variablenmagier/-in.
 #                     .
@@ -183,6 +231,8 @@ age = now - year
 print(f"Du bist {age} Jahre alt.")
 '''
 
+
+
 # ___________
 #            \
 # Aufgabe 2  /
@@ -197,6 +247,8 @@ result = number1 + number2
 
 print(f"Die Summe ist {result}")
 '''
+
+
 
 # ___________
 #            \
@@ -213,6 +265,27 @@ word = input("Gib ein Wort ein: ")
 result = word * amount
 print(f"{result}")
 '''
+
+
+
+
+# ___________
+#            \
+# Aufgabe 4  /
+# __________/
+#
+# Schreibe ein Programm, das den Benutzer nach einer Eingabe fragt.
+# Verwende den type-Befehl, um den Typ der Eingabe zu überprüfen.
+# Gib den Typ der Eingabe auf der Konsole aus.
+
+
+'''
+user_input = input("Gib etwas ein: ")
+print(f"Der Typ deiner Eingabe ist: {type(user_input)}")
+'''
+
+
+
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
 
