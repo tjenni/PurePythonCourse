@@ -1,13 +1,14 @@
-#              ________________________
-#       ______|                        |_____
-#       \     |   A Kapitelprüfung     |    /
-#        )    |________________________|   (
-#       /________)                 (________\       10.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ____________________
+#       ______|                    |_____
+#       \     |   1 KAPITELTEST    |    /
+#        )    |____________________|   (
+#       /________)             (________\       10.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 #  
 
 
 # Kopiere den folgenden Prompt in ChatGPT und absolviere die Kapitelprüfung. 
-
+# Falls du eine Benotung nach dem Deutschen System möchtest, passe die 
+# Notenwerte entsprechend an `von 6 (schlecht) bis 1 (sehr gut)`.
 
 '''
 Führe mit mir eine Python Programmierprüfung durch. Die Prüfungsthemen sind:
@@ -21,7 +22,8 @@ Führe mit mir eine Python Programmierprüfung durch. Die Prüfungsthemen sind:
 - Typumwandlungen (int, float, str, type-Befehl)
 
 Stelle mir zu jedem Thema eine Aufgabe. Beginne mit einfachen Fragen und steigere 
-dann den Schwierigkeitsgrad leicht. Verwende englische Variablennamen. 
+dann den Schwierigkeitsgrad leicht. Schreibe die Aufgaben auf Deutsch, verwende aber 
+englische Variablen- und Funktionsnamen. 
 
 Korrigiere die Aufgaben erst am Schluss, wenn ich alle Aufgaben abgegeben habe.  
 Korrigiere die Aufgaben wohlwollend und gib mir Teilpunkte. 
@@ -42,8 +44,8 @@ Wenn ich Fragen habe, verrate mir die Lösung nicht, sondern gib mir einen Hinwe
 #
 #                _______________
 #               |@@@@|     |####|
-#               |@@@@|     |####|
-#               |@@@@|     |####|    
+#               |@  Variablen ##|
+#               |@   held*in   #|    
 #               \@@@@|     |####/
 #                \@@@|     |###/
 #                 `@@|_____|##'
@@ -51,12 +53,12 @@ Wenn ich Fragen habe, verrate mir die Lösung nicht, sondern gib mir einen Hinwe
 #                   .-'''''-.
 #                 .'  * * *  `.
 #                :  *       *  :
-#               : ~  N O T E  ~ :     Du bist ein*e Variablenheld*in.
-#               : ~           ~ :
+#               : ~  N O T E  ~ :   
+#               : ~    ___    ~ :
 #                :  *       *  :
 #                 `.  * * *  .'
-#                   `-.....-'
-# joan g stark
+#            jgs    `-.....-'
+#
 #
 #                _                                     _     _   
 #               | |                                   | |   | |  

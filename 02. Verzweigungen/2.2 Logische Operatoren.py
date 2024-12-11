@@ -32,12 +32,12 @@ else:
 
 # Hier ist die Wahrheitstabelle für den `and`-Operator:
 
-# | Bedingung A | Bedingung B | A and B |
-# |-------------|-------------|---------|
-# |    False    |    False    |  False  |
-# |    True     |    False    |  False  |
-# |    False    |    True     |  False  |
-# |    True     |    True     |  True   |
+#  Bedingung A | Bedingung B | A and B 
+# -------------|-------------|---------
+#     False    |    False    |  False  
+#     True     |    False    |  False  
+#     False    |    True     |  False  
+#     True     |    True     |  True   
 
 
 
@@ -63,12 +63,12 @@ else:
 
 # Hier ist die Wahrheitstabelle für den `or`-Operator:
 
-# | Bedingung A | Bedingung B | A or B |
-# |-------------|-------------|--------|
-# |    False    |    False    |  False |
-# |    True     |    False    |  True  |
-# |    False    |    True     |  True  |
-# |    True     |    True     |  True  |
+#  Bedingung A | Bedingung B | A or B 
+# -------------|-------------|--------
+#     False    |    False    |  False 
+#     True     |    False    |  True  
+#     False    |    True     |  True  
+#     True     |    True     |  True  
 
 
 
@@ -93,10 +93,10 @@ else:
 
 # Hier ist die Wahrheitstabelle für den `not`-Operator:
 
-# | Bedingung A | not A |
-# |-------------|-------|
-# |    False    | True  |
-# |    True     | False |
+#  Bedingung A | not A 
+# -------------|-------
+#     False    | True  
+#     True     | False 
 
 
 
