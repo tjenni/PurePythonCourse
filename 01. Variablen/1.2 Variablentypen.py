@@ -2,8 +2,8 @@
 #       ______|                      |_____
 #       \     |  1.2 VARIABLENTYPEN  |    /
 #        )    |______________________|   (
-#       /________)               (________\       27.10.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
-#  
+#       /________)               (________\       20.12.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#
 
 
 # Python kennt fünf grundlegende Typen, die in Variablen gespeichert
@@ -30,7 +30,7 @@
 # als auch negative Zahlen, z.B. -20, 0 oder 7.
 # Beispiele für Integer-Variabeln.
 
-age = 7
+age = 27
 points = -20
 money = 1000
 
@@ -64,7 +64,7 @@ mass = 5.972e24  # das e24 bedeutet "mal 10 hoch 24"
 # Ein String ist jede Art von Text, der zwischen Anführungszeichen
 # steht. Beispiele:
 
-firstname = 'Guido'
+name = 'Guido'
 greeting = "Hallo, wie geht's?"
 
 # Wichtig ist, dass du bei einem String immer Anführungszeichen verwendest,
@@ -125,7 +125,7 @@ print("Name:", name, "Alter:", age, "Punkte:", points)
 # Das Ergebnis wird dann so aussehen:
 
 '''
-Name: Fridolin Alter: 7 Punkte: -20
+Name: Guido Alter: 27 Punkte: -20
 '''
 
 # Python fügt automatisch Leerzeichen zwischen den Ausgaben ein,
@@ -143,7 +143,7 @@ Name: Fridolin Alter: 7 Punkte: -20
 #            \
 # Aufgabe 1  /
 # __________/
-# 
+#
 
 # Erstelle die Variablen `name` mit deinem Vornamen, `height`
 # mit deiner Körpergrösse und `likes_candy`, die True ist, wenn du
@@ -162,7 +162,7 @@ Hallo ich heisse, Hans und bin 1.83 Meter gross. Ich mag Süssigkeiten: True
 #            \
 # Aufgabe 2  /
 # __________/
-# 
+#
 # Erstelle die Variabeln `firstname`, `name`, `street`, `nr`, `plz`, `city`
 # und fülle sie mit deinen Angaben. Gib anschliessend auf der Konsole
 # deine formatierte Adresse aus.
@@ -186,22 +186,22 @@ Beispielstrasse 4
 #     (_)_)  (_)_)
 #
 #
-#  ___ _  _ ___  ___ 
+#  ___ _  _ ___  ___
 # | __| \| |   \| __|
-# | _|| .` | |) | _| 
+# | _|| .` | |) | _|
 # |___|_|\_|___/|___|
-#                
+#
 # -=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-
 
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-#  _    _   _                                  
-# | |  (_)_(_)___ _   _ _ __   __ _  ___ _ __  
-# | |   / _ \/ __| | | | '_ \ / _` |/ _ \ '_ \ 
+#  _    _   _
+# | |  (_)_(_)___ _   _ _ __   __ _  ___ _ __
+# | |   / _ \/ __| | | | '_ \ / _` |/ _ \ '_ \
 # | |__| (_) \__ \ |_| | | | | (_| |  __/ | | |
 # |_____\___/|___/\__,_|_| |_|\__, |\___|_| |_|
-#                             |___/            
+#                             |___/
 
 
 # ___________
@@ -242,5 +242,3 @@ print(plz, city)
 '''
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-
-
