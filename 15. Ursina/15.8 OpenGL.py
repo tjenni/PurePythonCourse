@@ -1,3 +1,6 @@
+# https://metamost.com/post/tech/opengl-with-python/01-opengl-with-python/
+
+
 import glfw
 from OpenGL.GL import *
 import numpy as np

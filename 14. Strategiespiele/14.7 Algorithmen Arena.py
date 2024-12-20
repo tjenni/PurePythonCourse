@@ -23,6 +23,12 @@
 import random
 
 
+ID_AI = 1
+ID_PLAYER = -1
+
+DEFAULT_SYMBOLS = {ID_AI: "O", 0: " ", ID_PLAYER: "X"}
+
+
 # Klasse zur Simulation von Spielen zwischen verschiedenen KI-Algorithmen
 class AlgorithmArena:
     def __init__(self, player1, player2):
@@ -34,13 +40,13 @@ class AlgorithmArena:
         """
         self.player1 = player1  # Algorithmus für Spieler 1
         self.player2 = player2  # Algorithmus für Spieler 2
-        self.board = [" "] * 9  # Startposition
-        self.current_player = "X"  # Startspieler
+        self.board = [[0,0,0],[0,0,0],[0,0,0]]  # Startposition
+        self.current_player = 1  # Startspieler
 
     def reset(self):
         """Setzt das Spiel zurück."""
-        self.board = [" "] * 9
-        self.current_player = "X"
+        self.board = [[0,0,0],[0,0,0],[0,0,0]]
+        self.current_player = 1
 
     def make_move(self, move):
         """
@@ -49,14 +55,20 @@ class AlgorithmArena:
         :param move: Index des Zugs (0-8)
         :return: True, wenn der Zug erfolgreich ist, sonst False
         """
-        if self.board[move] == " ":
+        if self.board[move] == 0:
             self.board[move] = self.current_player
             return True
         return False
 
     def switch_player(self):
         """Wechselt den aktuellen Spieler."""
-        self.current_player = "O" if self.current_player == "X" else "X"
+        self.current_player *= -1
+
+    def is_move_left():
+        for row in self.board:
+            if 0 in row:
+                return True
+        return False
 
     def check_winner(self):
         """Prüft, ob es einen Gewinner gibt."""
@@ -66,10 +78,12 @@ class AlgorithmArena:
             [0, 4, 8], [2, 4, 6],            # Diagonal
         ]
         for pattern in win_patterns:
-            if self.board[pattern[0]] == self.board[pattern[1]] == self.board[pattern[2]] != " ":
+            if abs(self.board[pattern[0]] == self.board[pattern[1]] == self.board[pattern[2]]) == 3:
                 return self.board[pattern[0]]  # Gewinner (X oder O)
-        if " " not in self.board:
-            return "Draw"  # Unentschieden
+        
+        if not self.is_move_left():
+            return 0  # Unentschieden
+
         return None  # Noch kein Gewinner
 
     def play_game(self, verbose=False):
@@ -84,10 +98,10 @@ class AlgorithmArena:
             if verbose:
                 self.print_board()
 
-            if self.current_player == "X":
-                move = self.player1(self.board, "X")
+            if self.current_player == -1:
+                move = self.player1(self.board, -1)
             else:
-                move = self.player2(self.board, "O")
+                move = self.player2(self.board, 1)
 
             if not self.make_move(move):
                 raise ValueError(f"Ungültiger Zug: Spieler {self.current_player} wählte {move}")
@@ -101,13 +115,25 @@ class AlgorithmArena:
 
             self.switch_player()
 
-    def print_board(self):
-        """Zeigt das aktuelle Spielfeld an."""
+    def print_board(board, symbols=DEFAULT_SYMBOLS):
+        """Gibt das Tic-Tac-Toe-Spielfeld formatiert auf der Konsole aus."""
+
+        col_sep = "|"             # Trennzeichen zwischen Spalten
+        row_sep = "---+---+---"   # Trennzeichen zwischen Zeilen
+
+        for i, row in enumerate(board):
+            for j, cell in enumerate(row):
+                print(f" {symbols[cell]} ", end="")
+
+                # Falls wir nicht am Ende der Zeile sind, drucken wir noch ein Trennsymbol.
+                if j < len(row) - 1:
+                    print(col_sep, end="")
+
+            # Am Ende jeder Zeile, außer der letzten, fügen wir eine Trennlinie ein.
+            if i < len(board) - 1:
+                print("\n" + row_sep)
+
         print("\n")
-        for i in range(3):
-            print(" | ".join(self.board[i * 3:(i + 1) * 3]))
-            if i < 2:
-                print("-" * 5)
 
 
 # _________________________________
@@ -125,7 +151,7 @@ def random_player(board, player):
 
 def minimax_player(board, player):
     """Wählt den besten Zug mithilfe des Minimax-Algorithmus."""
-    from minimax import minimax
+    from "14.4 Minimax Algorithmus.py" import minimax
     _, move = minimax(board, player)
     return move
 
@@ -185,10 +211,10 @@ def run_tournament(algorithms, games_per_pair=10):
 
 # Beispiel: Algorithmen registrieren und Turnier starten
 algorithms = [
-    ("Random", random_player),
+    ("Random", random_player)
     ("Minimax", minimax_player),
-    ("Alpha-Beta", alpha_beta_player),
-    ("Monte Carlo", monte_carlo_player)
+    #("Alpha-Beta", alpha_beta_player),
+    #("Monte Carlo", monte_carlo_player)
 ]
 
 # Turnierergebnisse ausgeben

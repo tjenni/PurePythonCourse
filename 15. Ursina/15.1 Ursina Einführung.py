@@ -16,17 +16,17 @@
 
 # Dieses Kapitel führt dich in die Grundlagen der Ursina-Entwicklung ein.
 
+
 # __________________________
 #                          /
 # Installation             (
 # _________________________\
 
 # Bevor wir mit Ursina arbeiten können, musst du das Framework installieren.
-# Führe den folgenden Befehl in deiner Konsole aus:
-#
-# pip install ursina
-#
-# Sobald die Installation abgeschlossen ist, kannst du Ursina in deinem Python-Code verwenden.
+# Gehe dazu in Thonny auf Werkzeuge > Verwaltete Packete und such nach ursina. 
+# Klicke anschliessend auf `installiere`. Sobald die Installation abgeschlossen ist, 
+# kannst du Ursina in deinem Python-Code verwenden.
+
 
 # ___________________________
 #                           /
@@ -37,7 +37,6 @@
 # der `Ursina`-Klasse. Du kannst dann Objekte wie Würfel, Kugeln oder Ebenen hinzufügen und
 # diese rendern.
 
-'''
 # Beispiel: Ein einfacher Würfel in einer 3D-Szene
 from ursina import *
 
@@ -49,25 +48,31 @@ cube = Entity(model='cube', color=color.orange, scale=(2, 2, 2))
 
 # Start der Anwendung
 app.run()
-'''
-# Wenn du dieses Skript ausführst, erscheint ein orangefarbener Würfel auf dem Bildschirm,
-# den du mit der Maus drehen kannst.
 
-# _____________________________
-#                             /
+# Wenn du dieses Skript ausführst, erscheint ein orangefarbener Würfel auf dem Bildschirm.
+
+
+
+
+# _________________________________
+#                                 /
 # Wichtige Komponenten in Ursina (
-# _______________________________\
+# ________________________________\
 
-# 1. **Entity**:
+
+
+
+# 1. Entity:
 #    - Repräsentiert ein Objekt in der 3D-Szene.
 #    - Hat Eigenschaften wie `model`, `color`, `position` und `rotation`.
 
-'''
+
 # Beispiel: Ein rotierender Würfel
 from ursina import *
 
 def update():
-    cube.rotation_y += 1  # Dreht den Würfel in jeder Frame-Aktualisierung
+    cube.rotation_y += 30 * time.dt  # Dreht den Würfel in jeder Frame-Aktualisierung
+    cube.rotation_z += 30 * time.dt
 
 app = Ursina()
 
@@ -76,26 +81,69 @@ cube = Entity(model='cube', color=color.red)
 app.run()
 
 
-# 2. **Modelle**:
+
+
+
+
+
+# 2. Modelle:
 #    - Ursina bietet vorgefertigte Modelle wie `cube`, `sphere`, `plane`, `quad` usw.
 #    - Du kannst auch eigene 3D-Modelle im `.obj`-Format laden.
 
-# Beispiel: Laden eines benutzerdefinierten Modells
-custom_model = Entity(model='path/to/your_model.obj', texture='path/to/texture.png')
 
-# 3. **Farben**:
+# Beispiel: Ein rotierender Apfel
+from ursina import *
+
+def update():
+    apple.rotation_y += 30 * time.dt  # Dreht den Würfel in jeder Frame-Aktualisierung
+    apple.rotation_z += 20 * time.dt
+
+app = Ursina()
+
+apple = Entity(model='_assets/15.1/apple.obj', texture='_assets/15.1/apple.jpg', scale=(30,30,-30))
+
+app.run()
+
+
+
+# Beispiel: Laden eines benutzerdefinierten Modells
+
+
+# 3. Farben:
 #    - Ursina bietet vordefinierte Farben wie `color.red`, `color.green`, `color.blue`.
 #    - Du kannst eigene Farben mit RGB-Werten definieren: `color.rgb(255, 128, 0)`.
 
-# 4. **Ereignisse**:
+
+
+
+# 4. Ereignisse:
 #    - Mit Funktionen wie `update()` und `input()` kannst du Animationen und Benutzerinteraktionen
 #      erstellen.
 
+
+
 # Beispiel: Interaktion mit der Tastatur
+
+from ursina import *
+
+def update():
+    apple.rotation_y += 30 * time.dt  # Dreht den Würfel in jeder Frame-Aktualisierung
+    apple.rotation_z += 20 * time.dt
+
+app = Ursina()
+
+apple = Entity(model='_assets/15.1/apple.obj', texture='_assets/15.1/apple.jpg', scale=(30,30,-30))
+
 def input(key):
     if key == 'space':
         print("Leertaste gedrückt!")
-'''
+
+app.run()
+
+
+
+
+
 # _______________________
 #                       /
 # Arbeiten mit Kameras (
@@ -104,6 +152,32 @@ def input(key):
 # Ursina bietet eine Standardkamera, die du anpassen kannst:
 #camera.position = (0, 10, -20)  # Kamera-Position
 #camera.rotation = (30, 0, 0)    # Kamera-Rotation
+
+
+
+from ursina import *
+
+# Erstellen der Ursina-App
+app = Ursina()
+
+# Hinzufügen eines Würfels zur Szene
+cube = Entity(model='cube', color=color.orange, scale=(2, 2, 2))
+
+camera.position = (0, 0, -10)
+camera.rotation = (0, 5, 0)
+
+# Start der Anwendung
+app.run()
+
+
+
+
+
+
+
+
+
+
 
 # Du kannst auch eine First-Person-Kamera verwenden:
 
@@ -116,11 +190,16 @@ def update():
 
 app = Ursina()
 
+sky = Sky()
+
 cube = Entity(model='cube', color=color.red)
 
-player = FirstPersonController(gravity=0.0)
+player = FirstPersonController(gravity=0.0, position=(0,-2,-5))
+player.cursor.disable()
 
 app.run()
+
+
 # ___________________
 #                   /
 # Zusammenfassung  (

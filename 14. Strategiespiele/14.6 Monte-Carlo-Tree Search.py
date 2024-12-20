@@ -1,15 +1,18 @@
-#              ______________________________________
-#       ______|                                      |_____
-#       \     |   14.6 MONTE-CARLO-TREE-SEARCH (MCTS) |    /
-#        )    |______________________________________|   (
-#       /________)                               (________\     22.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#              ________________________________________
+#       ______|                                        |_____
+#       \     |   14.6 MONTE-CARLO-TREE-SEARCH (MCTS)  |    /
+#        )    |________________________________________|   (
+#       /________)                                 (________\     22.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
-# Monte-Carlo-Tree-Search (MCTS) ist ein moderner Algorithmus, der häufig in Strategiespielen verwendet wird.
-# Anders als Minimax oder Alpha-Beta-Pruning basiert MCTS auf zufälligen Simulationen, um gute Züge zu finden.
+# Monte-Carlo-Tree-Search (MCTS) ist ein moderner Algorithmus, der häufig in Strategiespielen 
+# verwendet wird. 
 
+# Der Name "Monte Carlo" stammt aus dem Bereich des Glücksspiels und bezieht sich auf das berühmte 
+# Casino in Monaco. Dieser Algorithmus verwendet zufällige Simulationen, ähnlich wie Glücksspiele 
+# oft auf Wahrscheinlichkeiten basieren. Die Idee ist, durch viele Stichproben in zufälligen Szenarien 
+# mögliche Entscheidungen zu bewerten und die beste Wahl zu treffen.
 
-# https://gist.github.com/qpwo/c538c6f73727e254fdc7fab81024f6e1
-
+# https://youtu.be/msl0W4A2vIs?si=_oSX4C6iS7OS3XLg
 
 # ________________________
 #                        /
@@ -28,6 +31,39 @@
 #    - Expansion: Füge neue Knoten hinzu, die noch nicht erkundet wurden.
 #    - Simulation: Spiele eine zufällige Partie ab dem neuen Knoten.
 #    - Rückpropagation: Aktualisiere die Erfolgswerte entlang des Baumes.
+
+
+# _______________________________
+#                                /
+# Upper Confidence Bounds (UCT) (
+# _______________________________\
+
+# Um zu entscheiden, welcher Knoten im Spielbaum als nächstes erweitert wird, verwendet MCTS die sogenannte 
+# Upper Confidence Bounds for Trees (UCT)-Formel. Diese Formel balanciert zwischen zwei Strategien:
+#
+# 1. Exploration: Neue Züge ausprobieren, um mehr über das Spiel zu lernen.
+# 2. Exploitation: Die bisher am erfolgreichsten simulierten Züge weiterverfolgen.
+#
+# Die UCT-Formel lautet:
+#
+# UCT = (Gewinnrate des Knotens) / (Anzahl der Besuche) + c * sqrt(ln(Gesamtbesuche des Elternknotens) / Anzahl der Besuche)
+#
+# Parameter:
+# - Gewinnrate: Gewinnrate = Gewinne / Besuche des Knotens. Ein hoher Wert bedeutet, dass dieser Knoten vielversprechend ist.
+# - Explorationsfaktor (c): Ein frei wählbarer Wert (oft 1.41), der bestimmt, wie stark neue Züge bevorzugt werden.
+# - Gesamtbesuche: Die Anzahl der Simulationen, die vom Elternknoten aus gestartet wurden.
+# - Besuche: Die Anzahl der Simulationen, die diesen spezifischen Knoten untersucht haben.
+#
+# Beispiel für den UCT-Wert:
+# Angenommen:
+# - Der Knoten A hat 30 Gewinne bei 100 Besuchen (Gewinnrate = 0.3).
+# - Der Elternknoten wurde 500-mal besucht.
+# - Der Explorationsfaktor c = 1.41.
+#
+# Der UCT-Wert wird berechnet als:
+# UCT = 0.3 + 1.41 * sqrt(ln(500) / 100) ≈ 0.3 + 1.41 * 0.083 ≈ 0.417
+
+
 
 # ________________________________
 #                                /
@@ -348,50 +384,13 @@ if __name__ == "__main__":
 # und bildet die Grundlage vieler moderner KI-Systeme.
 
 
-# ____________________________
-#                            /
-# Übungsaufgaben            (
-# ___________________________\
+#  ___ _  _ ___  ___ 
+# | __| \| |   \| __|
+# | _|| .` | |) | _| 
+# |___|_|\_|___/|___|
+#                
+# -=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=-=x=-=x=-=x=-=-=
 
 
-# ___________
-#            \
-# Aufgabe 1  /
-# __________/
-#
-# Passe den Algorithmus an, um mit einem 4x4-Tic-Tac-Toe-Spielfeld zu funktionieren.
 
 
-# ___________
-#            \
-# Aufgabe 2  /
-# __________/
-#
-# Optimiere den Algorithmus, indem du die Anzahl der Iterationen basierend auf der # verbleibenden Zeit für den Zug berechnest. Stelle sicher, dass MCTS auch in begrenzter Zeit gute Ergebnisse liefert.
-
-
-# ___________
-#            \
-# Aufgabe 3  /
-# __________/
-#
-# Erweitere MCTS, um einen zusätzlichen Parameter für die Spieltiefe einzuführen.
-# Dieser Parameter sollte die Anzahl der Züge begrenzen, die in einer Simulation durchgeführt werden.
-
-
-# ___________
-#            \
-# Aufgabe 4  /
-# __________/
-#
-# Implementiere eine visuelle Ausgabe des MCTS-Baumes nach mehreren Iterationen.
-# Zeige für jeden Knoten die Anzahl der Besuche, die Gewinnrate und die Spielzustände an.
-
-
-# ___________
-#            \
-# Aufgabe 5  /
-# __________/
-#
-# Wende MCTS auf ein anderes Spiel an, wie z. B. Connect Four oder ein 2D-Grid-Spiel,
-# und analysiere, wie gut der Algorithmus in diesen Szenarien funktioniert.
