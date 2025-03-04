@@ -2,7 +2,7 @@
 #       ______|                                       |_____
 #       \     |       12.1 EINFÜHRUNG IN ARCADE       |    /
 #        )    |_______________________________________|   (
-#       /________)                                (________\       16.11.24 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+#       /________)                                (________\       2.3.25 von T. Jenni, CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 
 # Das Arcade-Modul ist ein beliebtes Python-Framework für die einfache Entwicklung 
@@ -42,11 +42,14 @@ class MyFirstGame(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
 
-        arcade.set_background_color(arcade.color.SKY_BLUE)
+        self.background_color = arcade.csscolor.SKY_BLUE
 
     # Zeichnet den Bildschirm jedes Mal, wenn die Fensterfläche aktualisiert wird
     def on_draw(self):
-        arcade.start_render()
+        
+        # löscht den Bildschirm
+        self.clear()
+        
         arcade.draw_text("Willkommen bei Arcade!", 400, 300, 
                             arcade.color.BLACK, 24, 
                             anchor_x="center")
@@ -78,7 +81,7 @@ class SimpleGame(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.LIGHT_GREEN)
+        self.background_color = arcade.csscolor.LIGHT_GREEN
         
         self.frame = 0
 
@@ -86,7 +89,7 @@ class SimpleGame(arcade.Window):
         print("Spiel ist bereit!")
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
 
         arcade.draw_text(self.frame, 400, 300, 
                             arcade.color.BLACK, 24, 
@@ -122,10 +125,11 @@ class ControlGame(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.LIGHT_CORAL)
+        self.background_color = arcade.csscolor.LIGHT_CORAL
+        
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         arcade.draw_text("Drücke eine Taste und betrachte die Konsole!", 400, 300,
                          arcade.color.BLACK, 20,
                          anchor_x="center")
@@ -149,7 +153,7 @@ arcade.run()
 
 # Arcade bietet verschiedene Zeichenfunktionen, z. B.:
 # - `arcade.draw_circle_filled(x, y, radius, color)`: Zeichnet einen gefüllten Kreis.
-# - `arcade.draw_rectangle_filled(x, y, width, height, color)`: Zeichnet ein gefülltes Rechteck.
+# - `arcade.draw_rect_filled(x, y, width, height, color)`: Zeichnet ein gefülltes Rechteck.
 # - `arcade.draw_line(x1, y1, x2, y2, color, line_width)`: Zeichnet eine Linie.
 
 # Beispiel für das Zeichnen mehrerer Formen:
@@ -158,12 +162,14 @@ class ShapesGame(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.WHITE)
+        self.background_color = arcade.csscolor.WHITE
+        
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
+        
         arcade.draw_circle_filled(200, 300, 50, arcade.color.BLUE)
-        arcade.draw_rectangle_filled(500, 300, 100, 50, arcade.color.RED)
+        arcade.draw_rect_filled(arcade.rect.XYWH(500, 300, 100, 50), arcade.color.RED)
         arcade.draw_line(0, 0, 800, 600, arcade.color.GREEN, 3)
 
 shapes_game = ShapesGame(title="Formen zeichnen")
@@ -285,10 +291,11 @@ class HelloWorldWindow(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.LIGHT_YELLOW)
+        self.background_color = arcade.csscolor.LIGHT_YELLOW
+        
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         arcade.draw_text("Hallo, Arcade!", self.width / 2, self.height / 2,
                          arcade.color.BLACK, font_size=30, anchor_x="center")
 
@@ -313,15 +320,15 @@ class ShapesWindow(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.WHITE)
+        self.background_color = arcade.color.WHITE
+        
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         arcade.draw_circle_filled(self.width / 2, self.height / 2,
                                   100, arcade.color.RED)
         
-        arcade.draw_rectangle_filled(self.width / 2, (self.height / 2) - 120,
-                                     80, 40, arcade.color.GREEN)
+        arcade.draw_rect_filled(arcade.rect.XYWH(self.width // 2, (self.height // 2) - 120, 80, 40), arcade.color.GREEN)
 
 # Fenster starten
 window = ShapesWindow(title="Aufgabe 2")
@@ -344,10 +351,11 @@ class KeyPressWindow(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.SKY_BLUE)
+        self.background_color = arcade.csscolor.SKY_BLUE
+        
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         arcade.draw_text("Drücke die Leertaste", self.width / 2, self.height / 2,
                          arcade.color.BLACK, font_size=24, anchor_x="center")
 

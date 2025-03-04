@@ -28,12 +28,13 @@ class ShapeDrawer(arcade.Window):
 
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
+        
+        self.background_color = arcade.color.WHITE
 
-        arcade.set_background_color(arcade.color.WHITE)
 
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         
         # 1. Kreis zeichnen
         # -----------------
@@ -49,7 +50,7 @@ class ShapeDrawer(arcade.Window):
         # - x, y: Die Koordinaten des Mittelpunkts des Rechtecks
         # - width, height: Breite und Höhe des Rechtecks
         # - color: Die Farbe des Rechtecks
-        arcade.draw_rectangle_filled(300, 500, 120, 60, arcade.color.RED)
+        arcade.draw_rect_filled(arcade.rect.XYWH(300, 500, 120, 60), arcade.color.RED)
 
         # 3. Linie zeichnen
         # ------------------
@@ -115,16 +116,17 @@ class ColorExample(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
 
-        arcade.set_background_color(arcade.color.WHITE)
+        self.background_color = arcade.color.WHITE
+        
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         
         # Rotes Rechteck mit voller Deckkraft
-        arcade.draw_rectangle_filled(300, 300, 200, 100, (255, 0, 0, 255))
+        arcade.draw_rect_filled(arcade.rect.XYWH(300, 300, 200, 100), (255, 0, 0, 255))
         
         # Halbtransparentes grünes Rechteck
-        arcade.draw_rectangle_filled(400, 300, 100, 200, (0, 255, 0, 128))
+        arcade.draw_rect_filled(arcade.rect.XYWH(400, 300, 100, 200), (0, 255, 0, 128))
         
         # Blauer Text mit Transparenz
         arcade.draw_text("Transparenz-Beispiel", 200, 300, (0, 0, 255, 128), 24)
@@ -149,16 +151,17 @@ class RepeatedObjects(arcade.Window):
 
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
+        
+        self.background_color = arcade.csscolor.SKY_BLUE
 
-        arcade.set_background_color(arcade.color.SKY_BLUE)
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         
         # Bäume in einer Schleife zeichnen
         for x in range(100, 800, 150):
             arcade.draw_triangle_filled(x, 350, x - 30, 250, x + 30, 250, arcade.color.DARK_GREEN)
-            arcade.draw_rectangle_filled(x, 225, 20, 30, arcade.color.BROWN)
+            arcade.draw_rect_filled(arcade.rect.XYWH(x, 225, 20, 30), arcade.color.BROWN)
 
 # Erzeuge das Fenster und starte das Programm
 repeated_objects = RepeatedObjects(title="Wiederholte Objekte")
@@ -180,15 +183,16 @@ class MovableCircle(arcade.Window):
 
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
+        
+        self.background_color = arcade.csscolor.LIGHT_CORAL
 
-        arcade.set_background_color(arcade.color.LIGHT_CORAL)
 
         self.circle_x = 100
         self.circle_y = 300
         self.circle_radius = 50
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         arcade.draw_circle_filled(self.circle_x, self.circle_y, self.circle_radius, arcade.color.BLUE)
 
     def on_update(self, delta_time):
@@ -350,14 +354,15 @@ arcade.run()
 class ShapesWindow(arcade.Window):
     def __init__(self):
         super().__init__(600, 400, "Verschiedene Formen")
-        arcade.set_background_color(arcade.color.LIGHT_GRAY)
+        
+        self.background_color = arcade.csscolor.LIGHT_GRAY
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         # Kreis
         arcade.draw_circle_filled(100, 300, 50, arcade.color.RED)
         # Rechteck
-        arcade.draw_rectangle_filled(500, 300, 80, 50, arcade.color.BLUE)
+        arcade.draw_rect_filled(arcade.rect.XYWH(500, 300, 80, 50), arcade.color.BLUE)
         # Dreieck
         arcade.draw_triangle_filled(150, 100, 200, 200, 250, 100, arcade.color.GREEN)
         # Linie
@@ -387,14 +392,15 @@ class RowCirclesWindow(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.WHITE)
+        self.background_color = arcade.color.WHITE
+        
         
         self.colors = [arcade.color.RED, arcade.color.GREEN, arcade.color.BLUE,
                        arcade.color.YELLOW, arcade.color.PURPLE, arcade.color.ORANGE,
                        arcade.color.PINK, arcade.color.BROWN, arcade.color.CYAN, arcade.color.BLACK]
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         
         for i in range(9):
             arcade.draw_circle_filled(400, 300, 200-10*i, self.colors[i])
@@ -421,12 +427,12 @@ class MovingSquareWindow(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.WHITE)
+        self.background_color = arcade.color.WHITE
         self.square_y = 600
 
     def on_draw(self):
-        arcade.start_render()
-        arcade.draw_rectangle_filled(self.width // 2, self.square_y, 30, 30, arcade.color.RED)
+        self.clear()
+        arcade.draw_rect_filled(arcade.rect.XYWH(self.width // 2, self.square_y, 30, 30), arcade.color.RED)
 
     def on_update(self, delta_time):
         self.square_y -= 5
