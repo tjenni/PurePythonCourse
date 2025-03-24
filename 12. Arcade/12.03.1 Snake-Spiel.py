@@ -47,7 +47,8 @@ class SnakeGame(arcade.Window):
         super().__init__(width=width, height=height, title=title)
         
         # Hintergrundfarbe setzen
-        arcade.set_background_color(arcade.color.BLACK)
+        self.background_color = arcade.color.BLACK
+        
         
         # Schlange und andere Spielobjekte initialisieren
         self.snake = None  # Liste der Segmente, die die Schlange darstellen
@@ -91,24 +92,24 @@ class SnakeGame(arcade.Window):
 
     # Zeichnet alle Elemente des Spiels.
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         
         # Schlange zeichnen
         for segment in self.snake:
-            arcade.draw_rectangle_filled(
+            arcade.draw_rect_filled(arcade.rect.XYWH(
                 segment[0] + self.tile_size // 2,
                 segment[1] + self.tile_size // 2,
                 self.tile_size,
-                self.tile_size,
+                self.tile_size),
                 arcade.color.GREEN
             )
         
         # Nahrung zeichnen
-        arcade.draw_rectangle_filled(
+        arcade.draw_rect_filled(arcade.rect.XYWH(
             self.food[0] + self.tile_size // 2,
             self.food[1] + self.tile_size // 2,
             self.tile_size,
-            self.tile_size,
+            self.tile_size),
             arcade.color.RED
         )
         

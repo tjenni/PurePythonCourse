@@ -4,8 +4,8 @@
 #        )    |___________________________________|   (
 #       /________)                            (________\
 
-# Schleifen sind besonders nützlich für einfache, interaktive Spiele, bei denen 
-# der Benutzer wiederholt Eingaben machen kann. Hier werden wir zwei einfache 
+# Schleifen sind besonders nützlich für einfache, interaktive Spiele, bei denen
+# der Benutzer wiederholt Eingaben machen kann. Hier werden wir zwei einfache
 # Spiele programmieren: ein „Zahlenraten“-Spiel und das klassische „Schere, Stein, Papier“.
 
 
@@ -30,7 +30,7 @@ print("Ich habe mir eine Zahl zwischen 1 und 100 ausgedacht. Kannst du sie errat
 while True:
     number = int(input("Gib eine Zahl ein: "))
     trials += 1
-    
+
     if number < secret_number:
         print("Zu klein!")
     elif number > secret_number:
@@ -59,9 +59,9 @@ print("Du spielst gegen den Computer.")
 while True:
     player = input("Wähle Schere, Stein oder Papier: ")
     computer = random.choice(options)
-    
-    print(f"Computer wählt: {computer_auswahl}")
-    
+
+    print(f"Computer wählt: {computer}")
+
     if player == computer:
         print("Unentschieden!")
     elif (player == "Schere" and computer == "Papier") or \
@@ -70,7 +70,7 @@ while True:
         print("Du gewinnst!")
     else:
         print("Computer gewinnt!")
-    
+
     again = input("Möchtest du nochmal spielen? (ja/nein): ").lower()
     if again != "ja":
         print("Danke fürs Spielen!")
@@ -106,9 +106,9 @@ while True:
 
 # Erstelle ein Mathematik-Quiz.
 
-# In diesem Quiz stellt der Computer dem Benutzer eine Serie einfacher mathematischer 
-# Fragen. Der Benutzer soll Antworten eingeben, und das Spiel zeigt am Ende die Anzahl 
-# der richtigen Antworten an. Jede Frage ist zufällig und kann eine Addition, 
+# In diesem Quiz stellt der Computer dem Benutzer eine Serie einfacher mathematischer
+# Fragen. Der Benutzer soll Antworten eingeben, und das Spiel zeigt am Ende die Anzahl
+# der richtigen Antworten an. Jede Frage ist zufällig und kann eine Addition,
 # Subtraktion, Multiplikation oder Division beinhalten.
 
 
@@ -116,23 +116,23 @@ while True:
 
 
 
-#  ___ _  _ ___  ___ 
+#  ___ _  _ ___  ___
 # | __| \| |   \| __|
-# | _|| .` | |) | _| 
+# | _|| .` | |) | _|
 # |___|_|\_|___/|___|
-#                
+#
 # -=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=-=x=-=x=-=x=-=-=
 
 
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-#  _    _   _                                  
-# | |  (_)_(_)___ _   _ _ __   __ _  ___ _ __  
-# | |   / _ \/ __| | | | '_ \ / _` |/ _ \ '_ \ 
+#  _    _   _
+# | |  (_)_(_)___ _   _ _ __   __ _  ___ _ __
+# | |   / _ \/ __| | | | '_ \ / _` |/ _ \ '_ \
 # | |__| (_) \__ \ |_| | | | | (_| |  __/ | | |
 # |_____\___/|___/\__,_|_| |_|\__, |\___|_| |_|
-#  
+#
 
 
 # ___________
@@ -142,9 +142,9 @@ while True:
 
 # Erstelle ein Mathematik-Quiz.
 
-# In diesem Quiz stellt der Computer dem Benutzer eine Serie einfacher mathematischer 
-# Fragen. Der Benutzer soll Antworten eingeben, und das Spiel zeigt am Ende die Anzahl 
-# der richtigen Antworten an. Jede Frage ist zufällig und kann eine Addition, 
+# In diesem Quiz stellt der Computer dem Benutzer eine Serie einfacher mathematischer
+# Fragen. Der Benutzer soll Antworten eingeben, und das Spiel zeigt am Ende die Anzahl
+# der richtigen Antworten an. Jede Frage ist zufällig und kann eine Addition,
 # Subtraktion, Multiplikation oder Division beinhalten.
 
 '''
@@ -179,7 +179,7 @@ for i in range(questions):
         question = f"{number1} / {number2} = (auf zwei Dezimalstellen gerundet) "
 
     answer = float(input(question))
-    
+
     if antwort == solution:
         points += 1
         print("Richtig!")
@@ -190,5 +190,3 @@ print(f"\nQuiz beendet! Du hast {points} von {questions} Fragen richtig beantwor
 '''
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-
-

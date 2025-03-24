@@ -41,17 +41,24 @@ class SingleSpriteExample(arcade.Window):
 
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
-
-        arcade.set_background_color(arcade.color.LIGHT_SKY_BLUE)
+        
+        self.background_color = arcade.csscolor.LIGHT_SKY_BLUE
+        
         
         # Erstelle ein Sprite mit einem Bild und einer Größe
         self.player = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png", 0.5)  
         self.player.center_x = 400
         self.player.center_y = 300
+        
+        # Erstelle eine Sprite-Liste
+        self.player_list = arcade.SpriteList()
+        
+        # Füge Spieler zur Sprite-Liste hinzu
+        self.player_list.append(self.player)
 
     def on_draw(self):
-        arcade.start_render()
-        self.player.draw()  # Sprite zeichnen
+        self.clear()
+        self.player_list.draw()  # Sprite zeichnen
 
     def on_update(self, delta_time):
         self.player.center_x += 1  # Bewegung des Sprites
@@ -93,21 +100,21 @@ class SpriteGroupExample(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
 
-        arcade.set_background_color(arcade.color.AIR_SUPERIORITY_BLUE)
+        self.background_color = arcade.csscolor.LIGHT_BLUE
 
         # Erstelle eine Sprite-Liste
-        self.coins = arcade.SpriteList()
+        self.coin_list = arcade.SpriteList()
 
         # Füge der Sprite-Liste mehrere Münzen hinzu
         for i in range(5):
             coin = arcade.Sprite(":resources:images/items/coinGold.png", 0.5)
             coin.center_x = i * 100 + 200
             coin.center_y = 300
-            self.coins.append(coin)
+            self.coin_list.append(coin)
 
     def on_draw(self):
-        arcade.start_render()
-        self.coins.draw()  # Zeichnet alle Sprites in der Liste
+        self.clear()
+        self.coin_list.draw()  # Zeichnet alle Sprites in der Liste
 
 window = SpriteGroupExample(title="Sprite-Gruppen")
 arcade.run()
@@ -141,10 +148,10 @@ class MovingSpriteGroupExample(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.BLUE_GRAY)
+        self.background_color = arcade.csscolor.LIGHT_BLUE
         
         # Erstelle eine Sprite-Liste für fallende Schneeflocken
-        self.snowflakes = arcade.SpriteList()
+        self.flake_list = arcade.SpriteList()
 
         # Füge 20 Schneeflocken zur Sprite-Liste hinzu
         for i in range(20):
@@ -155,7 +162,8 @@ class MovingSpriteGroupExample(arcade.Window):
             flake.angle = random.randint(0, 360)
             
             # Skaliere die Schneeflocke zufällig zwischen 0.05 und 0.1
-            flake.scale = 0.01 * random.randint(5, 10)
+            scale = 0.01 * random.randint(5, 10)
+            flake.scale = (scale,scale)
             
             # Setze die Startposition der Schneeflocke zufällig:
             # - horizontal (x-Koordinate) innerhalb der Fensterbreite
@@ -164,27 +172,27 @@ class MovingSpriteGroupExample(arcade.Window):
             flake.center_y = 600 + random.randint(20, 800)
             
             # Füge die Schneeflocke der Sprite-Liste hinzu
-            self.snowflakes.append(flake)
+            self.flake_list.append(flake)
 
     def on_draw(self):
         # Zeichne den Bildschirm
-        arcade.start_render()
+        self.clear()
         
         # Zeichne alle Schneeflocken in der Sprite-Liste
-        self.snowflakes.draw()
+        self.flake_list.draw()
     
     # Aktualisiere die Position der Schneeflocken
     def on_update(self, delta_time):
         # Iteriere durch jede Schneeflocke in der Sprite-Liste
-        for flake in self.snowflakes:
+        for flake in self.flake_list:
             # Bewege die Schneeflocke nach unten (vertikal)
             flake.center_y -= 1
             
             # Füge eine leichte, sinusförmige Bewegung in horizontaler Richtung hinzu
-            flake.center_x += 0.5 * math.sin(0.01 * flake.center_y + flake.scale)
+            flake.center_x += 0.5 * math.sin(0.01 * flake.center_y + flake.scale[0])
             
             # Lasse die Schneeflocke leicht rotieren, abhängig von ihrer Position
-            flake.angle += 0.1 * math.sin(0.01 * flake.center_y + flake.scale)
+            flake.angle += 0.1 * math.sin(0.01 * flake.center_y + flake.scale[0])
             
             # Wenn die Schneeflocke den unteren Bildschirmrand verlässt
             if flake.center_y < -50:
@@ -218,7 +226,8 @@ class CollisionExample(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.ASPARAGUS)
+        self.background_color = arcade.csscolor.GREEN
+        
 
         # Spieler-Sprite erstellen und initialisieren
         self.player = arcade.Sprite(":resources:images/animated_characters/female_person/femalePerson_idle.png", 0.5)
@@ -227,9 +236,14 @@ class CollisionExample(arcade.Window):
         
         self.player.speed_x = 0  # Anfangsgeschwindigkeit des Spielers in x-Richtung
         self.player.speed_y = 0  # Anfangsgeschwindigkeit des Spielers in y-Richtung
+        
+        # Hindernisse als Sprite-Liste erstellen
+        self.player_list = arcade.SpriteList()
+        self.player_list.append(self.player)
+        
 
         # Hindernisse als Sprite-Liste erstellen
-        self.obstacles = arcade.SpriteList()
+        self.obstacle_list = arcade.SpriteList()
         for i in range(10):
             # Erstelle ein Hindernis-Sprite (z. B. ein Stein)
             obstacle = arcade.Sprite(":resources:images/tiles/rock.png", 0.5)
@@ -239,7 +253,7 @@ class CollisionExample(arcade.Window):
             obstacle.center_y = random.randint(150, self.height - 50)
             
             # Füge das Hindernis zur Sprite-Liste hinzu
-            self.obstacles.append(obstacle)
+            self.obstacle_list.append(obstacle)
     
     # Aktualisiere die Objekte
     def on_update(self, delta_time):
@@ -248,20 +262,20 @@ class CollisionExample(arcade.Window):
         self.player.center_y += self.player.speed_y
         
         # Überprüfe, ob der Spieler mit einem Hindernis kollidiert
-        if arcade.check_for_collision_with_list(self.player, self.obstacles):
+        if arcade.check_for_collision_with_list(self.player, self.obstacle_list):
             # Rückgängig machen der letzten Bewegung, wenn eine Kollision erkannt wird
             self.player.center_x -= self.player.speed_x
             self.player.center_y -= self.player.speed_y
     
     # Zeichne den Bildschirm
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         
         # Zeichne den Spieler
-        self.player.draw()
+        self.player_list.draw()
         
         # Zeichne die Hindernisse
-        self.obstacles.draw()
+        self.obstacle_list.draw()
 
     # Bewege den Spieler basierend auf der gedrückten Taste
     def on_key_press(self, key, modifiers):
@@ -510,7 +524,7 @@ class AquariumApp(arcade.Window):
         """
         Zeichne den aktuellen Zustand des Aquariums, einschließlich aller Fische.
         """
-        arcade.start_render()
+        self.clear()
         self.fish_list.draw()  # Zeichne alle Fische
 
     def on_update(self, delta_time):
@@ -610,7 +624,7 @@ class CoinApp(arcade.Window):
 
     # Zeichne den Spieler und die Münzen
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         
         # Zeichne den Spieler
         self.player.draw()
@@ -708,7 +722,7 @@ class ChasingRobotApp(arcade.Window):
 
     def on_draw(self):
         # Bildschirm rendern
-        arcade.start_render()
+        self.clear()
         
         # Spieler und Roboter zeichnen
         self.player.draw()

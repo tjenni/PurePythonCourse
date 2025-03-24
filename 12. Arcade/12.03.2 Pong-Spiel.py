@@ -75,7 +75,7 @@ class Paddle():
 
     # Zeichnet den Schläger auf dem Bildschirm.
     def draw(self):
-        arcade.draw_rectangle_filled(self.x, self.y, self.width, self.height, self.color)
+        arcade.draw_rect_filled(arcade.rect.XYWH(self.x, self.y, self.width, self.height), self.color)
 
 
 
@@ -128,7 +128,7 @@ class PongGame(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.BLACK)
+        self.background_color = arcade.color.BLACK
 
         self.paddle_left = None  # Linker Schläger
         self.paddle_right = None  # Rechter Schläger
@@ -152,7 +152,7 @@ class PongGame(arcade.Window):
 
     # Zeichnet alle Elemente des Spiels.
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         
         # Zeichnet die Schläger und den Ball.
         self.paddle_left.draw()

@@ -33,7 +33,8 @@ class PlayerControl(arcade.Window):
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
         
-        arcade.set_background_color(arcade.color.LIGHT_BLUE)
+        self.background_color = arcade.csscolor.LIGHT_BLUE
+        
         
         # Spielerposition
         self.player_x = 400
@@ -45,7 +46,7 @@ class PlayerControl(arcade.Window):
     
     # Zeichne den Spieler (als Kreis dargestellt)
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         
         arcade.draw_circle_filled(self.player_x, self.player_y, 20, arcade.color.RED)
     
@@ -126,15 +127,15 @@ class MouseControl(arcade.Window):
 
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
-
-        arcade.set_background_color(arcade.color.LIGHT_GREEN)
+        
+        self.background_color = arcade.csscolor.LIGHT_GREEN
         
         # Spielerposition
         self.player_x = 400
         self.player_y = 300
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         arcade.draw_circle_filled(self.player_x, self.player_y, 20, arcade.color.RED)
 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -165,8 +166,8 @@ class BoundedMovement(arcade.Window):
 
     def __init__(self, width=800, height=600, title=""):
         super().__init__(width=width, height=height, title=title)
-    
-        arcade.set_background_color(arcade.color.SKY_BLUE)
+        
+        self.background_color = arcade.csscolor.SKY_BLUE
 
         self.radius = 20
 
@@ -177,7 +178,7 @@ class BoundedMovement(arcade.Window):
         self.speed_y = 0
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         arcade.draw_circle_filled(self.player_x, self.player_y, self.radius, arcade.color.RED)
 
     def on_update(self, delta_time):
@@ -383,7 +384,7 @@ class PeriodicBoundary(arcade.Window):
         self.speed_y = 0
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         arcade.draw_circle_filled(self.player_x, self.player_y, 20, arcade.color.BLUE)
         
     def on_update(self, delta_time):
@@ -446,7 +447,7 @@ class MouseFollower(arcade.Window):
         self.is_visible = True
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         if self.is_visible:
             arcade.draw_circle_filled(self.circle_x, self.circle_y, 20, arcade.color.RED)
 
@@ -493,7 +494,7 @@ class BorderAlertPlayer(arcade.Window):
         self.speed_y = 0
 
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         arcade.draw_circle_filled(self.player_x, self.player_y, 20, arcade.color.GREEN)
         
     def on_update(self, delta_time):
