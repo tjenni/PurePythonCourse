@@ -170,16 +170,13 @@ class AnimationWindow(arcade.Window):
         super().__init__(width, height, title, resizable=True)
         
         # Hintergrundfarbe des Fensters auf Weiß setzen
-        arcade.set_background_color(arcade.color.WHITE)
-        
-        # Minimale Fenstergröße festlegen
-        self.set_min_size(width, height)
+        self.background_color = arcade.color.WHITE
         
         # Skalierungsfaktor in Pixel/Meter für die Darstellung
-        self.scale = 50                       
+        self.scale_factor = 50                       
         
         # Ursprung des Koordinatensystems in die Mitte des Fensters setzen
-        self.center = [width // 2 + 100, height // 2]  
+        self.center_point = [width // 2 + 100, height // 2]  
         
         # Liste für alle zu simulierenden Körper
         self.bodies = []
@@ -188,7 +185,7 @@ class AnimationWindow(arcade.Window):
         self.interactions = []  
 
         # Simulationszeit in Sekunden
-        self.time = 0
+        self.t = 0
         
         # Simulationsstatus (0 = Pause, 1 = Ausführen)
         self.state = 0
@@ -198,39 +195,22 @@ class AnimationWindow(arcade.Window):
         
         # UI-Manager zur Steuerung der Benutzeroberfläche (Buttons)
         self.uimanager = arcade.gui.UIManager() 
-        self.uimanager.enable() 
-  
-        # Standardstil für Buttons
-        default_style = {
-            "font_name": ("calibri", "arial"),
-            "font_size": 10,
-            "font_color": arcade.color.BLACK,
-            "border_width": 2,
-            "border_color": arcade.color.BLACK,
-            "bg_color": arcade.color.WHITE,
-            "bg_color_pressed": arcade.color.BLACK,
-            "border_color_pressed": arcade.color.BLACK,
-            "font_color_pressed": arcade.color.WHITE,
-        }
+        self.uimanager.enable()
         
         # Erstellen einer vertikalen Box für die Buttons
-        v_box = arcade.gui.UIBoxLayout()
+        anchor = arcade.gui.UIAnchorLayout(x=30)
+        box = arcade.gui.UIBoxLayout(vertical=True,space_between=10)
+        
+        anchor.add(box,anchor_x="left")
         
         # Start/Stop-Button erstellen
-        self.start_button = arcade.gui.UIFlatButton(text="Start", height=30, style=default_style)
+        self.start_button = arcade.gui.UIFlatButton(text="Start", height=30)
         self.start_button.on_click = self.on_click_start
         
-        v_box.add(self.start_button.with_space_around(bottom=20))
+        box.add(self.start_button)
         
         # UI-Komponenten zur Benutzeroberfläche hinzufügen
-        self.uimanager.add( 
-            arcade.gui.UIAnchorWidget( 
-                anchor_x="center_x", 
-                anchor_y="center_y",
-                align_x=-310,
-                align_y=210,
-                child=v_box) 
-        )
+        self.uimanager.add(anchor)
 
         # Initialisiere zwei Körper
         ball1 = Body([-2, 1.1], [2, 2], mass=1.0, radius=0.5, color=arcade.color.RED)
@@ -244,7 +224,7 @@ class AnimationWindow(arcade.Window):
     # Passt die Ursprungsposition bei Fenstergrößenänderung an
     def on_resize(self, width, height):
         super().on_resize(width, height)
-        self.center = [width // 2 + 100, height // 2] 
+        self.center_point = [width // 2 + 100, height // 2] 
     
 
     # Startet und stoppt die Simulation, wenn der Button geklickt wird
@@ -259,13 +239,13 @@ class AnimationWindow(arcade.Window):
 
     # Konvertiert Meterkoordinaten in Pixelkoordinaten für die Darstellung
     def meter_to_pixel(self, x, y):
-        pixel_x = self.center[0] + x * self.scale
-        pixel_y = self.center[1] + y * self.scale
+        pixel_x = self.center_point[0] + x * self.scale_factor
+        pixel_y = self.center_point[1] + y * self.scale_factor
         return pixel_x, pixel_y
 
     # Zeichnet die Szene im Fenster
     def on_draw(self):
-        arcade.start_render()
+        self.clear()
         
         # Zeichnet die Benutzeroberfläche
         self.uimanager.draw() 
@@ -280,7 +260,7 @@ class AnimationWindow(arcade.Window):
         arcade.draw_line_strip(points, arcade.color.BLACK, 2)
         
         # Zeigt die Simulationszeit an
-        time = round(self.time, 1)
+        time = round(self.t, 1)
         x, y = self.meter_to_pixel(-9, 3)
         arcade.draw_text(f"t = {time} s", x, y, arcade.color.BLACK)
         
@@ -292,7 +272,7 @@ class AnimationWindow(arcade.Window):
         # Zeichnet alle Körper in der Szene
         for body in self.bodies:
             x, y = self.meter_to_pixel(body.position[0], body.position[1])
-            r = body.radius * self.scale
+            r = body.radius * self.scale_factor
             arcade.draw_circle_filled(x, y, r, body.color)
 
             # zeichne die Geschwindigkeit
@@ -351,7 +331,7 @@ class AnimationWindow(arcade.Window):
                 body.velocity[0] *= -1
             
         # Erhöht die Simulationszeit
-        self.time += dt  
+        self.t += dt  
 
 
 
