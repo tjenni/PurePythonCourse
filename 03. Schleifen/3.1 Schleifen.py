@@ -8,7 +8,7 @@
 # bestimmte Aktionen beliebig oft zu wiederholen. Mit Schleifen können wir
 # Aufgaben automatisieren, die sonst viel mehr Code erfordern würden.
 
-# In Python gibt es zwei Hauptarten von Schleifen: die `for`-Schleife und 
+# In Python gibt es zwei Hauptarten von Schleifen: die `for`-Schleife und
 # die `while`-Schleife.
 # Beide haben ihre spezifischen Einsatzbereiche und Vorteile. Die `for`-Schleife eignet
 # sich ideal, wenn die Anzahl der Wiederholungen feststeht, während die `while`-Schleife
@@ -38,14 +38,14 @@
 
 # Beispiel:
 for letter in "Hallo wie gehts?":
-    print(zahl)
+    print(letter)
 
 
 # Die `range()`-Funktion ist besonders nützlich, wenn du die Anzahl der
 # Schleifendurchläufe kontrollieren oder bestimmte Zahlenfolgen erzeugen möchtest.
 
 # Beispiel:
-for i in range(10): 
+for i in range(10):
     print("i:", i)
 
 
@@ -115,7 +115,7 @@ while counter < 5:
 # Aufgabe 1  /
 # __________/
 
-# Schreibe eine `for`-Schleife, die die Zahlen von 0 bis 100 der Reihe nach auf 
+# Schreibe eine `for`-Schleife, die die Zahlen von 0 bis 100 der Reihe nach auf
 # der Konsole ausgibt. Nutze dazu die `range()`-Funktion.
 
 # Füge hier deine Lösung ein.
@@ -128,7 +128,7 @@ while counter < 5:
 # Aufgabe 2  /
 # __________/
 
-# Schreibe eine `while`-Schleife, die einen Countdown von 9 bis 0 auf der 
+# Schreibe eine `while`-Schleife, die einen Countdown von 9 bis 0 auf der
 # Konsole ausgibt.
 
 
@@ -148,32 +148,32 @@ while counter < 5:
 #           \ |     | |    |   \   Schleifen sind toll! \
 #            \|ejm__| |____|    \                        \
 #                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#  ___ _  _ ___  ___ 
+#  ___ _  _ ___  ___
 # | __| \| |   \| __|
-# | _|| .` | |) | _| 
+# | _|| .` | |) | _|
 # |___|_|\_|___/|___|
-#                
+#
 # -=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=-=x=-=x=-=x=-=-=
 
 
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-#  _    _   _                                  
-# | |  (_)_(_)___ _   _ _ __   __ _  ___ _ __  
-# | |   / _ \/ __| | | | '_ \ / _` |/ _ \ '_ \ 
+#  _    _   _
+# | |  (_)_(_)___ _   _ _ __   __ _  ___ _ __
+# | |   / _ \/ __| | | | '_ \ / _` |/ _ \ '_ \
 # | |__| (_) \__ \ |_| | | | | (_| |  __/ | | |
 # |_____\___/|___/\__,_|_| |_|\__, |\___|_| |_|
-#                             |___/            
-     
+#                             |___/
+
 
 # ___________
 #            \
 # Aufgabe 1  /
 # __________/
 
-# Schreibe eine `for`-Schleife, die die Zahlen von 1 bis 10 der Reihe nach auf 
-# der Konsole ausgibt. Nutze dazu die `range(start, stop, step)`-Funktion, 
+# Schreibe eine `for`-Schleife, die die Zahlen von 1 bis 10 der Reihe nach auf
+# der Konsole ausgibt. Nutze dazu die `range(start, stop, step)`-Funktion,
 # um den Zahlenbereich festzulegen.
 
 '''
@@ -189,7 +189,7 @@ for zahl in range(101):
 # Aufgabe 2  /
 # __________/
 
-# Schreibe eine `while`-Schleife, die einen Countdown von 9 bis 0 auf der 
+# Schreibe eine `while`-Schleife, die einen Countdown von 9 bis 0 auf der
 # Konsole ausgibt.
 
 '''
@@ -197,7 +197,7 @@ countdown = 9
 while countdown >= 0:
     print(countdown)
 
-    countdown -= 1  
+    countdown -= 1
 '''
 
 
@@ -208,8 +208,8 @@ while countdown >= 0:
 # Aufgabe 3  /
 # __________/
 
-# Schreibe eine `for`-Schleife, die alle geraden Zahlen von 2 bis 20 auf der 
-# Konsole ausgibt. Verwende dazu die `range(start, stop, step)`-Funktion, 
+# Schreibe eine `for`-Schleife, die alle geraden Zahlen von 2 bis 20 auf der
+# Konsole ausgibt. Verwende dazu die `range(start, stop, step)`-Funktion,
 # um nur gerade Zahlen zu erzeugen.
 
 '''
@@ -219,5 +219,3 @@ for zahl in range(2, 21,2):  # Start bei 2, Ende bei 20, Schrittweite von 2
 
 
 # >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< >< < >< >< >< >< >< ><
-
-
